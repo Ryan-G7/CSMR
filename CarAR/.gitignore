@@ -1,0 +1,27 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+
+# IDE
+.idea/
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Crashlytics
+crashlytics-build.properties
+
+# Local Unity and camera backend logs
+*.log
