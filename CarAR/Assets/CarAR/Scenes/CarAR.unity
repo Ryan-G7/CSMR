@@ -652,7 +652,7 @@ MonoBehaviour:
   proximityType: 3
   executionOrder: 0
   minimumScale: {x: 0.1, y: 0.1, z: 0.1}
-  maximumScale: {x: 2, y: 2, z: 2}
+  maximumScale: {x: 10, y: 10, z: 10}
   relativeToInitialState: 0
 --- !u!114 &81236339
 MonoBehaviour:

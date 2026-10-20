@@ -8,6 +8,8 @@ namespace CarAR
     // Application policy only. MRTK owns selection, pinch, dragging and two-hand transforms.
     public class MRTKCarInteraction : MonoBehaviour
     {
+        public const float MinimumScale = .1f;
+        public const float MaximumScale = 10f;
         public ObjectManipulator manipulator;
         readonly List<XRHandSubsystem> hands = new();
         CarShowroom showroom;
@@ -37,7 +39,7 @@ namespace CarAR
         public void ScaleBy(float factor)
         {
             if (!ManipulationEnabled || !float.IsFinite(factor) || factor <= 0 || Mathf.Approximately(factor, 1)) return;
-            transform.localScale = Vector3.one * Mathf.Clamp(transform.localScale.x * factor, .1f, 2f);
+            transform.localScale = Vector3.one * Mathf.Clamp(transform.localScale.x * factor, MinimumScale, MaximumScale);
         }
         public void RotateBy(float angle) { if (ManipulationEnabled) transform.Rotate(Vector3.up, angle, Space.World); }
         public void MoveBy(Vector3 displacement) { if (ManipulationEnabled) transform.position += Vector3.ProjectOnPlane(displacement, Vector3.up); }

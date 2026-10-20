@@ -338,8 +338,8 @@ namespace CarAR.EditorTools
             rotateConstraint.ConstraintOnRotation = AxisFlags.XAxis | AxisFlags.ZAxis;
             var scaleConstraint = carRoot.AddComponent<MinMaxScaleConstraint>();
             scaleConstraint.RelativeToInitialState = false;
-            scaleConstraint.MinimumScale = Vector3.one * .1f;
-            scaleConstraint.MaximumScale = Vector3.one * 2f;
+            scaleConstraint.MinimumScale = Vector3.one * MRTKCarInteraction.MinimumScale;
+            scaleConstraint.MaximumScale = Vector3.one * MRTKCarInteraction.MaximumScale;
             manipulator.enabled = false;
             var gesture = carRoot.AddComponent<MRTKCarInteraction>();
             gesture.manipulator = manipulator;

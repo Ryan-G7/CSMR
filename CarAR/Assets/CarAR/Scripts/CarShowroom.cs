@@ -280,6 +280,18 @@ namespace CarAR
             var originalPosition = car.position; var originalRotation = car.rotation; var originalScale = car.localScale;
             ui.buttons[4].OnClicked.Invoke();
             if (!manipulator.enabled) throw new System.InvalidOperationException("MRTK unlock button failed");
+            gestures.ScaleBy(3);
+            if (Mathf.Abs(car.localScale.x - 3) > .0001f)
+                throw new System.InvalidOperationException("Explicit scaling is still capped at 2x");
+            gestures.ScaleBy(100);
+            if (car.localScale != Vector3.one * 10 || car.position != originalPosition)
+                throw new System.InvalidOperationException("Explicit scaling failed to clamp at 10x around the ground pivot");
+            gestures.ScaleBy(.000001f);
+            if (car.localScale != Vector3.one * .1f)
+                throw new System.InvalidOperationException("Explicit scaling lost its 0.1x minimum");
+            ui.buttons[16].OnClicked.Invoke();
+            if (car.localScale != originalScale)
+                throw new System.InvalidOperationException("1:1 button failed after scaling to the limits");
             var a = new GameObject("Smoke left interactor");
             var b = new GameObject("Smoke right interactor");
             a.transform.position = car.position + Vector3.left * .2f + Vector3.up * .2f;
@@ -320,6 +332,17 @@ namespace CarAR
             yield return new WaitForSeconds(.15f);
             if (Vector3.Distance(car.localScale, beforeCoincidence) > .0001f)
                 throw new System.InvalidOperationException("Recovered controller poses jumped the vehicle scale");
+            a.transform.position += Vector3.left * 20; b.transform.position += Vector3.right * 20;
+            // MRTK smooths toward the constrained scale; allow that transition to settle.
+            float scaleDeadline = Time.time + 3;
+            while (Vector3.Distance(car.localScale, Vector3.one * 10) > .001f && Time.time < scaleDeadline)
+            {
+                if (car.localScale.x > 10.0001f)
+                    throw new System.InvalidOperationException("MRTK two-hand scaling exceeded 10x");
+                yield return null;
+            }
+            if (Vector3.Distance(car.localScale, Vector3.one * 10) > .001f)
+                throw new System.InvalidOperationException("MRTK two-hand scaling did not reach and clamp at 10x: " + car.localScale.ToString("F6"));
             first.EndManualInteraction(); second.EndManualInteraction();
             ui.buttons[4].OnClicked.Invoke();
             var released = car.position;
@@ -332,7 +355,7 @@ namespace CarAR
             yield return new WaitForSeconds(.8f);
             if (!leftDoor.IsOpen) throw new System.InvalidOperationException("MRTK door button binding failed");
             ui.buttons[0].OnClicked.Invoke(); yield return new WaitForSeconds(.8f);
-            Debug.Log("[CarAR MRTK Smoke] PASS: locked 1:1 first activation, XRI selection, one-hand translation without attach-scale changes, deliberate two-hand scaling, coincident/recovered controller poses preserve scale, release and park.");
+            Debug.Log("[CarAR MRTK Smoke] PASS: locked 1:1 first activation, explicit 0.1x/10x limits and 1:1 reset, XRI selection, one-hand translation without attach-scale changes, deliberate two-hand scaling clamped at 10x, coincident/recovered controller poses preserve scale, release and park.");
         }
 
     }

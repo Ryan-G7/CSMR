@@ -128,9 +128,15 @@ namespace CarAR
                 "tracking recovery with held grips/stick silently selected or resized the vehicle");
             Send(left, grip: 0); Send(right, grip: 0, stick: Vector2.zero); yield return new WaitForSeconds(.25f);
             Check(!showroom.gestures.manipulator.isSelected, "grip release retained selection");
+            var beforeLimitScale = car.localScale;
+            car.localScale = Vector3.one * 9.9f;
+            Send(right, stick: Vector2.up); yield return new WaitForSeconds(.4f);
+            Send(right, stick: Vector2.zero); yield return new WaitForSeconds(.1f);
+            Check(Vector3.Distance(car.localScale, Vector3.one * 10) < .0001f, "right stick did not reach and clamp at 10x");
+            car.localScale = beforeLimitScale;
             Send(right, stick: new Vector2(0, -1)); yield return new WaitForSeconds(.4f);
             Send(right, stick: Vector2.zero); yield return new WaitForSeconds(.1f);
-            Check(car.localScale.x < 1.95f, "right stick scaling failed");
+            Check(car.localScale.x < beforeLimitScale.x * .95f, "right stick scaling failed");
             var beforeStick = car.position;
             Send(left, stick: Vector2.right); yield return new WaitForSeconds(.4f);
             Send(left, stick: Vector2.zero); yield return new WaitForSeconds(.1f);
@@ -179,7 +185,7 @@ namespace CarAR
             camera.SetPositionAndRotation(cameraPosition, cameraRotation);
             showroom.placement.AdjustFloor(initialGround - showroom.placement.GroundHeight);
             car.SetPositionAndRotation(initialPosition, initialRotation); car.localScale = initialScale;
-            Debug.Log("[CarAR Controller Smoke] PASS: native trigger/button rays, held-grip unlock and tracking-recovery protection, deliberate grip drag/two-controller scaling, joystick transforms, floor footprint and head-independent parked position/scale/visibility.");
+            Debug.Log("[CarAR Controller Smoke] PASS: native trigger/button rays, held-grip unlock and tracking-recovery protection, deliberate grip drag/two-controller scaling, joystick transforms and 10x scale limit, floor footprint and head-independent parked position/scale/visibility.");
         }
         static void CapturePanel(MRTKShowroomUI ui, string file)
         {
