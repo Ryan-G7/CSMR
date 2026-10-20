@@ -37,16 +37,24 @@
 当前模型来自根目录 `AMG.blend`，默认按源模型米制单位 1:1 展示，未经原厂尺寸标定。后台导出不覆盖 `.blend`：
 
 ```powershell
-& D:/Soft/Blender/blender.exe --background --factory-startup D:/Code/CSMR/AMG.blend --python-exit-code 1 --python D:/Code/CSMR/CarAR/Tools/prepare_amg.py
+$env:OIIO_THREADS = "1"
+$env:OPENIMAGEIO_THREADS = "1"
+& D:/Soft/Blender/blender.exe --background --factory-startup --threads 1 D:/Code/CSMR/AMG.blend --python-exit-code 1 --python D:/Code/CSMR/CarAR/Tools/prepare_amg.py
 ```
 
 导出应用 Mirror / Subdivision，仅沿原有不相连的网格岛分离左右门。门壳、玻璃、门饰件、把手和后视镜使用经过确认的源组件；最新源文件中已拆开的门内饰、扶手、扬声器与按键按明确来源清单归属左右门，座椅 / 仪表台 / 车身密封框保持固定，不再按坐标猜测归属。零碎内饰按总成和材质合批，导出为 165 个网格、1,306,154 三角形，来源保留在 JSON。后窗随尾门、发动机盖独立开合，四轮组件整体爆炸 / 组装。源模型缺少门盖内层厚度与完整发动机，双面渲染只能显示现有几何。
 
-车漆颜色直接读取 Blender 的 Carpaint 节点组，随导出写入 `AMG-interactive.json`，Unity Setup 从同一份数据生成 URP Complex Lit 材质。当前源线性 RGB 约为 `(0.700126, 0.700126, 0.700126)`。Blender 程序化分层着色转换为金属清漆 PBR 近似，无法保证两种渲染器逐像素一致。
+外观以 `AMG.blend` 为唯一材质来源。导出器保留 Principled 数值，使用 Cycles 烘焙 glTF 无法表达的颜色、粗糙度和法线输入图；不再替换车漆、轮毂、皮革、地毯、玻璃或灯管的颜色/粗糙度。没有材质的源面显式导出 Blender 默认 Principled 表面，不再套深色装饰材质。
 
-渲染保留源纹理、法线与切线，使用金属底层 / 清漆高光、1024 HDR 反射探针及卷积 mip、4096 软阴影、SSAO、透明地面阴影与接触阴影。反射中的窗带和条形灯用于呈现车身曲率。纹理使用 16 倍各向异性过滤，不使用负 mip 偏移。
+源 Carpaint 是三层 BSDF 混合，不能直接当成单个 glTF 金属清漆材质。`AMG-interactive.json` 记录原始线性颜色、粗糙度、混合权重、Fresnel IOR、烘焙纹理与源文件 SHA-256；Setup/Build 检查源文件哈希，过期导出会明确报错。Unity 的 `BlenderLayeredPaint` 按这些值重建三层。当前底层粗糙度约 0.668、占比约 93.65%，没有额外的清漆权重 1 或金属度 0.9 覆盖。玻璃和发光材质的视角响应从源节点生成 LUT。
 
-大厅反射与默认灯光是预设。ARFoundation 请求测光与环境探针，只有提供方实际输出数据时才更新；过期 / 非法测光恢复预设。当前厂家链路没有已验证的实时环境贴图接口。为保留透视 Alpha，主颜色缓冲关闭 HDR；反射纹理保留 HDR。
+默认光照使用用户提供的 `Assets/Environment/lauter_waterfall_2k.hdr`，强度 1、旋转 0。该 HDR 同时生成带粗糙度卷积 mip 的反射 Cubemap 和漫反射球谐环境光。已删除虚构大厅、反射灯带和默认强直射灯；补光初始强度为 0，菜单可手动添加。MR 相机仍清为透明，HDR 仅参与照明与反射。桌面预览共用相同光照。纹理使用 16 倍各向异性过滤，无负 mip 偏移。
+
+ARFoundation 请求测光与环境探针，只有提供方实际输出数据时才更新；过期/非法测光恢复 HDR 环境和零补光。当前厂家链路没有已验证的实时环境贴图接口。为保留透视 Alpha，主颜色缓冲关闭 HDR，环境反射纹理保留 HDR。
+
+Blender 截图使用 `forest.exr` 材质预览环境和 AgX；当前使用用户指定的瀑布 HDR，环境内容本身会改变反射。URP 与 Blender 的 BSDF、多次散射、色调映射存在差异，不能宣称逐像素一致。程序化图烘焙在一个 UV 单元内；Object/Generated 坐标纹理在单位平面上求值，不能完全保留每个原始物体的三维程序化分布。实时玻璃不做真实折射，彩色透射近似为标量透明度。这些是转换限制，不通过改色或额外加灯掩盖。
+
+这台 Windows 机器上的 Blender 5.2 在 glTF 导出成功后的原生退出清理中会崩溃。导出器使用临时 `.blend` 副本和一次性导出进程，在文件写入、GLB 头和 JSON 检查后直接退出该进程，父进程继续校验材质、法线、切线并发布结果；失败不会替换模型。原始 `AMG.blend` 不会保存。HDR 漫反射的 27 个球谐系数显式存入场景组件，避免编辑器 RenderSettings 的临时值在播放器中丢失。
 
 ## 验证与现实精度边界
 
@@ -55,7 +63,7 @@ Start-Process -FilePath 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Uni
 Start-Process -FilePath './Build/Windows/CarAR.exe' -ArgumentList '--carar-smoke -force-d3d11 -screen-fullscreen 0 -screen-width 1440 -screen-height 900 -logFile D:/Code/CSMR/CarAR/mr-refresh-smoke.log' -WindowStyle Hidden -Wait
 ```
 
-自动验证覆盖 MRTK 单 / 双手操控、真实 Input System 控制器事件与 XRI 射线、摆放高度和地面轴心、锁定、车门来源白名单与独立运动、门盖、爆炸组装还原、模拟测光失效与模式切换。原生 URP 离屏检查图输出为 `Build/Windows/assembled.png`、`left-door.png`、`panels.png`、`exploded.png`。这些图片不包含真实相机视频。
+自动验证覆盖 MRTK 单 / 双手操控、真实 Input System 控制器事件与 XRI 射线、摆放高度和地面轴心、锁定、车门来源白名单与独立运动、门盖、爆炸组装还原、模拟测光失效与模式切换。原生 URP 离屏检查图输出为 `Build/Windows/hdr-default.png`、`assembled.png`、`left-door.png`、`panels.png`、`exploded.png`。这些图片不包含真实相机视频。
 
 `[CarAR Stability]` 记录车辆与头部变化、跟踪、Origin、帧率和手柄状态；`[CarAR View Sample]` 对比输入、相机和双眼中心。车辆根坐标不变不能单独证明现实中无滑动。头显走动、转头、跟踪丢失 / 恢复、真实地面贴合仍需要佩戴验收，当前没有跨会话持久锚点方案。
 

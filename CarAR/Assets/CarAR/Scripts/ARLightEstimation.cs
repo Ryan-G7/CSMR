@@ -9,19 +9,33 @@ namespace CarAR
         [SerializeField] ARCameraManager cameraManager;
         [SerializeField] Light sun;
         [SerializeField] float smoothTime = 0.4f;
-        [SerializeField] float baseSunIntensity = 1.2f;
-        float targetIntensity = 1.2f, lastSample = -100f;
+        [SerializeField] float baseSunIntensity = 1f;
+        [SerializeField] float[] environmentCoefficients;
+        float targetIntensity, lastSample = -100f;
+        float environmentIntensity = 1;
+        SphericalHarmonicsL2 environmentAmbient;
         Color targetColor = Color.white;
         Quaternion targetRotation = Quaternion.Euler(50f, -30f, 0f);
         SphericalHarmonicsL2 targetAmbient;
         bool hasAmbient, usingLiveData;
         public bool ManualLighting { get; private set; }
         public bool HasLiveData => Time.unscaledTime - lastSample < 3f;
-        public float Brightness { get; private set; } = .65f;
+        public float Brightness { get; private set; }
         public float Temperature { get; private set; } = 6500;
         public bool PreviewLighting { get; private set; }
-        public string DisplayStatus => ManualLighting ? $"手动大厅光照 · {Brightness:F2} / {Temperature:F0}K" : HasLiveData ? "环境光照数据已接入" : "大厅光照预设 · 设备暂未提供实时测光";
-        public string Status => ManualLighting ? "Manual hall lighting" : PreviewLighting ? "Preview light simulation" : HasLiveData ? "Live environment light data" : "No environment light data / default light";
+        public string DisplayStatus => ManualLighting || PreviewLighting ? $"HDR 环境 + 补光 · {Brightness:F2} / {Temperature:F0}K" : HasLiveData ? "环境光照数据已接入" : "HDR 环境光照 · 无额外补光";
+        public string Status => ManualLighting ? "HDR environment + manual fill" : PreviewLighting ? "HDR environment + preview fill" : HasLiveData ? "Live environment light data" : "HDR environment / no direct fill";
+        void Awake()
+        {
+            // RenderSettings.ambientProbe assigned in the editor is not stored
+            // in the scene. Persist the HDR integral explicitly for the player.
+            environmentAmbient = RenderSettings.ambientProbe;
+            if (environmentCoefficients?.Length == 27)
+                for (int c = 0; c < 3; c++) for (int i = 0; i < 9; i++)
+                    environmentAmbient[c, i] = environmentCoefficients[c * 9 + i];
+            RenderSettings.ambientMode = AmbientMode.Custom;
+            RenderSettings.ambientProbe = environmentAmbient;
+        }
         void OnEnable()
         {
             if (cameraManager == null) return;
@@ -35,9 +49,10 @@ namespace CarAR
             if (ManualLighting || PreviewLighting) return;
             var le = args.lightEstimation;
             bool received = false;
-            float? lumens = le.mainLightIntensityLumens ?? le.averageIntensityInLumens;
+            float? lumens = le.mainLightIntensityLumens;
             if (lumens.HasValue && float.IsFinite(lumens.Value)) { targetIntensity = Mathf.Clamp(lumens.Value / 1000f, 0.01f, 4f) * baseSunIntensity; received = true; }
-            else if (le.averageBrightness.HasValue && float.IsFinite(le.averageBrightness.Value)) { targetIntensity = Mathf.Clamp(le.averageBrightness.Value, 0.01f, 4f) * baseSunIntensity; received = true; }
+            else if (le.averageBrightness.HasValue && float.IsFinite(le.averageBrightness.Value)) { environmentIntensity = Mathf.Clamp(le.averageBrightness.Value, .01f, 4f); received = true; }
+            else if (le.averageIntensityInLumens.HasValue && float.IsFinite(le.averageIntensityInLumens.Value)) { environmentIntensity = Mathf.Clamp(le.averageIntensityInLumens.Value / 1000f, .01f, 4f); received = true; }
             if (le.mainLightColor.HasValue && Finite(le.mainLightColor.Value)) { targetColor = le.mainLightColor.Value; received = true; }
             else if (le.colorCorrection.HasValue && Finite(le.colorCorrection.Value)) { targetColor = le.colorCorrection.Value; received = true; }
             else if (le.averageColorTemperature.HasValue && float.IsFinite(le.averageColorTemperature.Value) && le.averageColorTemperature.Value > 0)
@@ -57,23 +72,23 @@ namespace CarAR
             for (int c = 0; c < 3; c++) for (int i = 0; i < 9; i++) if (!float.IsFinite(ambient[c, i])) return false;
             return true;
         }
-        void ClearLiveData() { usingLiveData = hasAmbient = false; lastSample = -100f; }
+        void ClearLiveData() { usingLiveData = hasAmbient = false; lastSample = -100f; environmentIntensity = 1; }
         void UsePreset()
         {
             ClearLiveData();
-            Brightness = targetIntensity = .65f; Temperature = 6500; targetColor = Color.white;
+            Brightness = targetIntensity = 0; Temperature = 6500; targetColor = Color.white;
             targetRotation = Quaternion.Euler(50f, -30f, 0f);
         }
         public void SetPreviewLight(float brightness, float temperature)
         {
             ClearLiveData(); ManualLighting = false; PreviewLighting = true;
-            Brightness = targetIntensity = brightness; Temperature = temperature;
-            targetColor = Mathf.CorrelatedColorTemperatureToRGB(temperature);
+            Brightness = targetIntensity = Mathf.Clamp(brightness, 0, 2); Temperature = Mathf.Clamp(temperature, 2500, 10000);
+            targetColor = Mathf.CorrelatedColorTemperatureToRGB(Temperature);
         }
         public void AdjustManual(float brightnessDelta, float temperatureDelta)
         {
             ClearLiveData(); ManualLighting = true; PreviewLighting = false;
-            Brightness = Mathf.Clamp(Brightness + brightnessDelta, .05f, 2f);
+            Brightness = Mathf.Clamp(Brightness + brightnessDelta, 0, 2f);
             Temperature = Mathf.Clamp(Temperature + temperatureDelta, 2500, 10000);
             targetIntensity = Brightness; targetColor = Mathf.CorrelatedColorTemperatureToRGB(Temperature);
         }
@@ -99,18 +114,17 @@ namespace CarAR
                 sun.color = Color.Lerp(sun.color, targetColor, t);
                 sun.transform.rotation = Quaternion.Slerp(sun.transform.rotation, targetRotation, t);
             }
-            if (hasAmbient)
-            {
-                RenderSettings.ambientMode = AmbientMode.Custom;
-                var current = RenderSettings.ambientProbe;
-                for (int c = 0; c < 3; c++) for (int i = 0; i < 9; i++) current[c, i] = Mathf.Lerp(current[c, i], targetAmbient[c, i], t);
-                RenderSettings.ambientProbe = current;
-            }
-            else
-            {
-                RenderSettings.ambientMode = AmbientMode.Flat;
-                RenderSettings.ambientLight = Color.Lerp(RenderSettings.ambientLight, targetColor * (0.12f + targetIntensity * 0.18f), t);
-            }
+            // Retain HDR diffuse lighting in fallback/manual modes. Never stack a
+            // flat grey ambient preset on top of the environment.
+            RenderSettings.ambientMode = AmbientMode.Custom;
+            var desired = hasAmbient ? targetAmbient : environmentAmbient * environmentIntensity;
+            if (usingLiveData && !hasAmbient)
+                for (int c = 0; c < 3; c++) for (int i = 0; i < 9; i++) desired[c, i] *= targetColor[c];
+            var current = RenderSettings.ambientProbe;
+            for (int c = 0; c < 3; c++) for (int i = 0; i < 9; i++)
+                current[c, i] = Mathf.Lerp(current[c, i], desired[c, i], t);
+            RenderSettings.ambientProbe = current;
+            RenderSettings.reflectionIntensity = environmentIntensity;
         }
     }
 }

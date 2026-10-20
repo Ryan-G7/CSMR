@@ -18,7 +18,7 @@ namespace CarAR
         public ExplodeController explode;
         public CarPanel leftDoor, rightDoor, trunk, hood;
         public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 && !Huijing.HuijingMRBridge.Requested;
-        float brightness = 1.2f, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
+        float brightness = 0, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
         GUIStyle title, text, button;
         bool smokeControlsCamera;
         void Awake()
@@ -42,9 +42,6 @@ namespace CarAR
             var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             material.color = new Color(.13f,.17f,.21f); material.SetFloat("_Smoothness", .3f);
             floor.GetComponent<Renderer>().sharedMaterial = material;
-            // Preview reflections for metallic paint; real AR probes come from the device provider.
-            var sky = new Material(Shader.Find("Skybox/Procedural"));
-            sky.SetFloat("_Exposure", .9f); RenderSettings.skybox = sky;
 
         }
         IEnumerator Start()
@@ -72,7 +69,6 @@ namespace CarAR
                 yield break;
             }
             placement.PlaceAt(Vector3.zero, true);
-            lighting.SetPreviewLight(brightness, temperature);
             if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--carar-smoke") >= 0)
                 yield return Smoke();
         }
@@ -128,9 +124,9 @@ namespace CarAR
             GUI.enabled = car.gameObject.activeInHierarchy;
             if (GUILayout.Button("[Space]  " + (explode.IsExploded ? "Assemble vehicle" : "Explode vehicle"), button)) explode.Toggle();
             GUI.enabled = true; GUILayout.Space(16);
-            GUILayout.Label("LIGHT SIMULATION", text);
-            GUILayout.Label($"Intensity  {brightness:F2}", text);
-            float b = GUILayout.HorizontalSlider(brightness, .03f, 3f);
+            GUILayout.Label("HDR ENVIRONMENT / OPTIONAL FILL", text);
+            GUILayout.Label($"Direct fill  {brightness:F2}", text);
+            float b = GUILayout.HorizontalSlider(brightness, 0, 1f);
             GUILayout.Label($"Color temperature  {temperature:F0} K", text);
             float t = GUILayout.HorizontalSlider(temperature, 2500, 10000);
             if (b != brightness || t != temperature) { brightness = b; temperature = t; lighting.SetPreviewLight(b, t); }
@@ -140,13 +136,18 @@ namespace CarAR
             GUILayout.Space(16);
             GUILayout.Label("AMG.blend: original independent door, window, mirror, hood and hatch meshes. Default scale = 1:1.", text);
             GUILayout.Space(8);
-            GUILayout.Label("Real AR requires the headset's plane / camera / light providers. Desktop lighting is simulated.", text);
+            GUILayout.Label("HDR lighting is shared with MR. Direct fill is optional; live estimation requires a device provider.", text);
             GUILayout.EndArea();
         }
         IEnumerator Smoke()
         {
             Application.logMessageReceived += (condition, stack, type) => { if (type == LogType.Exception) Application.Quit(1); };
             yield return new WaitForSeconds(2);
+            if (RenderSettings.defaultReflectionMode != DefaultReflectionMode.Custom ||
+                RenderSettings.customReflectionTexture == null || RenderSettings.customReflectionTexture.mipmapCount < 5 ||
+                RenderSettings.ambientMode != AmbientMode.Custom || RenderSettings.sun.intensity > .01f)
+                throw new System.InvalidOperationException("HDR diffuse/specular environment or zero-fill default is missing");
+            CaptureVehicle("hdr-default.png");
             yield return MRTKInteractionSmoke();
             smokeControlsCamera = true;
             yield return ControllerInputSmoke.Run(this);
@@ -235,6 +236,8 @@ namespace CarAR
             var camera = go.AddComponent<Camera>(); camera.enabled = false;
             camera.CopyFrom(Camera.main);
             camera.transform.SetPositionAndRotation(Camera.main.transform.position, Camera.main.transform.rotation);
+            camera.fieldOfView = 45;
+            camera.transform.LookAt(car.position + Vector3.up * .65f);
             if (file == "left-door.png")
             {
                 camera.transform.position = leftDoor.transform.position + car.rotation * new Vector3(-2.4f, 1.15f, -1.5f) * car.localScale.x;

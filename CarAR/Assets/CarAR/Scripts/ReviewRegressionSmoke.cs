@@ -78,6 +78,10 @@ namespace CarAR
 
             // Inject provider frames into a separate light component so this suite
             // does not change the showroom's lighting or rely on a physical camera.
+            var originalAmbient = RenderSettings.ambientProbe;
+            var originalMode = RenderSettings.ambientMode;
+            float originalReflection = RenderSettings.reflectionIntensity;
+            showroom.lighting.enabled = false;
             var go = new GameObject("Light provider regression fixture");
             var light = go.AddComponent<Light>();
             var estimation = go.AddComponent<ARLightEstimation>();
@@ -97,20 +101,31 @@ namespace CarAR
                 Check(estimation.HasLiveData && light.intensity > 1.5f, "live provider lighting was not applied");
                 yield return new WaitForSeconds(3.1f);
                 yield return new WaitForSeconds(1);
-                Check(!estimation.HasLiveData && Mathf.Abs(light.intensity - .65f) < .1f && light.color.g > .9f &&
-                    RenderSettings.ambientMode == AmbientMode.Flat, "stale live lighting did not return to the hall preset");
+                Check(!estimation.HasLiveData && light.intensity < .08f && light.color.g > .9f &&
+                    RenderSettings.ambientMode == AmbientMode.Custom && RenderSettings.customReflectionTexture != null, "stale live lighting did not return to HDR with zero direct fill");
+                float ambientError = 0;
+                for (int c = 0; c < 3; c++) for (int i = 0; i < 9; i++)
+                    ambientError = Mathf.Max(ambientError, Mathf.Abs(RenderSettings.ambientProbe[c, i] - originalAmbient[c, i]));
+                Check(ambientError < .08f, $"stale live SH did not restore the original HDR ambient (max error={ambientError}, expected DC={originalAmbient[0, 0]}, actual DC={RenderSettings.ambientProbe[0, 0]})");
                 Frame(new ARLightEstimationData { mainLightColor = new Color(float.NaN, 0, 0) });
                 yield return null;
                 Check(!estimation.HasLiveData && float.IsFinite(light.color.r), "invalid provider values contaminated lighting");
                 Frame(new ARLightEstimationData { mainLightIntensityLumens = 1000, ambientSphericalHarmonics = ambient });
                 estimation.RotateManual(15);
                 yield return null;
-                Check(estimation.ManualLighting && !estimation.HasLiveData && RenderSettings.ambientMode == AmbientMode.Flat,
+                Check(estimation.ManualLighting && !estimation.HasLiveData && RenderSettings.ambientMode == AmbientMode.Custom,
                     "manual direction retained stale automatic ambient data");
                 estimation.RequestAuto();
                 Check(!estimation.ManualLighting && !estimation.HasLiveData, "automatic mode reused old provider evidence");
             }
-            finally { UnityEngine.Object.Destroy(go); }
+            finally
+            {
+                estimation.enabled = false;
+                UnityEngine.Object.Destroy(go);
+                RenderSettings.ambientProbe = originalAmbient; RenderSettings.ambientMode = originalMode;
+                RenderSettings.reflectionIntensity = originalReflection;
+                showroom.lighting.enabled = true;
+            }
             Debug.Log("[CarAR Review Regression] PASS: verified door sources, independent door motion, repeated floor placement, ground pivot, input disable/re-enable and teardown order, stale/invalid light data and manual/auto transitions.");
         }
     }

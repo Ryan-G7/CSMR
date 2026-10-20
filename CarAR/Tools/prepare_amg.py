@@ -1,12 +1,16 @@
 """Export AMG.blend to a portable, articulated GLB. Never save over the source.
 
-Run: blender --background --factory-startup ../AMG.blend --python Tools/prepare_amg.py
+Run: blender --background --factory-startup --threads 1 ../AMG.blend --python-exit-code 1 --python Tools/prepare_amg.py
 The supplied car uses Mirror/Subdivision modifiers. Separate the already-disjoint
 left/right islands of its door assemblies, without cutting any source triangles.
 """
 import bpy
 import json
-import math
+import hashlib
+import sys
+import subprocess
+import tempfile
+import struct
 from pathlib import Path
 from mathutils import Vector, Matrix
 
@@ -24,7 +28,8 @@ DOOR_INTERIORS = {
 DOOR_INTERIOR_SOURCES = set.union(*DOOR_INTERIORS.values())
 HATCH_SOURCES = {'Cube.007', 'Cube.009', 'Cube.010', 'Cube.011', 'Cube.029'}
 HOOD_SOURCES = {'Cube.074'}
-REPORT = {'source': 'AMG.blend', 'units': 'metres', 'assemblies': {}, 'meshes': []}
+REPORT = {'source': 'AMG.blend', 'source_sha256': hashlib.sha256(Path(bpy.data.filepath).read_bytes()).hexdigest(),
+          'units': 'metres', 'assemblies': {}, 'meshes': []}
 
 def assembly(name, pivot=(0, 0, 0)):
     obj = bpy.data.objects.new(name, None)
@@ -45,68 +50,12 @@ for end in ('Ft', 'Bk'):
         key = 'Wheel' + end + side
         roots[key] = assembly(key)
 
-# Translate unsupported Blender node groups into standard glTF PBR materials.
-# Native principled materials keep their texture connections, including tyre normals.
-def principled(mat, color, metallic, roughness, alpha=1, emission=None):
-    mat.use_nodes = True
-    mat.node_tree.nodes.clear()
-    node = mat.node_tree.nodes.new('ShaderNodeBsdfPrincipled')
-    out = mat.node_tree.nodes.new('ShaderNodeOutputMaterial')
-    mat.node_tree.links.new(node.outputs['BSDF'], out.inputs['Surface'])
-    node.inputs['Base Color'].default_value = (*color, alpha)
-    node.inputs['Alpha'].default_value = alpha
-    node.inputs['Metallic'].default_value = metallic
-    node.inputs['Roughness'].default_value = roughness
-    if alpha < 1:
-        mat.surface_render_method = 'DITHERED'
-        # glTF exporter reads the Alpha input; Unity uses native transparent PBR.
-    if emission:
-        node.inputs['Emission Color'].default_value = (*emission, 1)
-        node.inputs['Emission Strength'].default_value = 1
-    return node
-
-for mat in list(bpy.data.materials):
-    if mat.name == 'Black Carpaint':
-        group = mat.node_tree.nodes.get('Carpaint')
-        assert group is not None and group.type == 'GROUP', 'Expected authored Carpaint shader group'
-        color = tuple(group.inputs['Color'].default_value)
-        assert len(color) == 4 and all(math.isfinite(c) and 0 <= c <= 1 for c in color), color
-        matte = max(0, min(1, group.inputs['Mateness'].default_value))
-        # Blender's procedural layered shader cannot travel through glTF. Preserve
-        # its authored linear colour and describe one portable coated-metal finish.
-        REPORT['paint'] = {'color_linear': list(color), 'metallic': .9,
-                           'roughness': .2 + matte * .5, 'clearcoat': 1,
-                           'clearcoat_roughness': .06 + matte * .2}
-        node = principled(mat, color[:3], REPORT['paint']['metallic'], REPORT['paint']['roughness'], color[3])
-        node.inputs['Coat Weight'].default_value = REPORT['paint']['clearcoat']
-        node.inputs['Coat Roughness'].default_value = REPORT['paint']['clearcoat_roughness']
-    elif mat.name in {'Leather Black', 'Leather Red'}:
-        color = (.012, .012, .014) if mat.name == 'Leather Black' else (.025099, .304892, .327911)
-        node = principled(mat, color, 0, .5)
-        image = bpy.data.images.get('MAML_int_Leather_N.jpg.001')
-        if image:
-            texture = mat.node_tree.nodes.new('ShaderNodeTexImage'); texture.image = image
-            image.colorspace_settings.name = 'Non-Color'
-            normal = mat.node_tree.nodes.new('ShaderNodeNormalMap'); normal.inputs['Strength'].default_value = .35
-            mat.node_tree.links.new(texture.outputs['Color'], normal.inputs['Color'])
-            mat.node_tree.links.new(normal.outputs['Normal'], node.inputs['Normal'])
-    elif mat.name == 'Carpat':
-        node = principled(mat, (.022, .025, .028), 0, .95)
-        image = bpy.data.images.get('Fabric_carpet_01_basecolor.jpg.001')
-        if image:
-            texture = mat.node_tree.nodes.new('ShaderNodeTexImage'); texture.image = image
-            mat.node_tree.links.new(texture.outputs['Color'], node.inputs['Base Color'])
-    elif mat.name == 'Windshield': principled(mat, (.16, .21, .23), .06, .09, .24)
-    elif mat.name == 'HeadLight Glass': principled(mat, (.65, .69, .72), .05, .08, .12)
-    elif mat.name in {'mirror', 'Mirror'}: principled(mat, (.72, .76, .8), 1, .06)
-    elif 'Led Tube' in mat.name or mat.name == 'indicatores':
-        color = (.7, .015, .01) if 'Tailight' in mat.name else (1, .32, .03) if mat.name == 'indicatores' else (.7, .8, 1)
-        principled(mat, color, .1, .25, emission=tuple(c * .4 for c in color))
-    elif mat.name == 'Rim':
-        # The original rim uses black metal and roughness=1, which loses all shape in MR.
-        node = next(n for n in mat.node_tree.nodes if n.type == 'BSDF_PRINCIPLED')
-        node.inputs['Base Color'].default_value = (.12, .13, .14, 1)
-        node.inputs['Roughness'].default_value = .25
+# Blender owns appearance. Bake unsupported input graphs and export the authored
+# layered paint separately; do not add application-specific colour/finish presets.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from export_blender_materials import export_materials, export_environment
+REPORT.update(export_materials(PROJECT))
+REPORT['environment'] = export_environment(PROJECT)
 
 # Bake modifiers into portable geometry. Two subdivision levels retain smooth
 # body silhouettes; interior and dense wheel components use one for XR frame time.
@@ -217,7 +166,7 @@ assert all(REPORT['assemblies'][key]['sources'] for key in roots)
 assert all(set(REPORT['assemblies'][key]['sources']) <= DOOR_SOURCES | DOOR_INTERIORS[key] for key in DOOR_INTERIORS)
 assert all(DOOR_INTERIORS[key] <= set(REPORT['assemblies'][key]['sources']) for key in DOOR_INTERIORS)
 assert set(REPORT['assemblies']['DoorLeft']['sources']) | set(REPORT['assemblies']['DoorRight']['sources']) == DOOR_SOURCES | DOOR_INTERIOR_SOURCES
-assert 'paint' in REPORT, 'Source car paint material is missing'
+assert 'source_paint' in REPORT, 'Source car paint material is missing'
 
 # Blender cannot calculate tangent frames on every source n-gon. Triangulate
 # through its native modifier while retaining authored split normals and UVs.
@@ -227,8 +176,26 @@ for obj in meshes:
 
 bpy.ops.object.select_all(action='SELECT')
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-bpy.ops.export_scene.gltf(filepath=str(OUTPUT), export_format='GLB', use_selection=True,
-    export_animations=False, export_yup=True, export_materials='EXPORT', export_extras=True,
-    export_normals=True, export_tangents=True, export_apply=True)
+# Isolate Blender 5.2's native glTF/image teardown in a disposable worker. The
+# intermediate is a disposable copy; the authored source is never saved over.
+(PROJECT / 'tmp').mkdir(exist_ok=True)
+with tempfile.TemporaryDirectory(prefix='amg-export-', dir=PROJECT / 'tmp') as work:
+    prepared = Path(work) / 'prepared.blend'
+    result = Path(work) / 'prepared.glb'
+    bpy.ops.wm.save_as_mainfile(filepath=str(prepared), copy=True, check_existing=False)
+    subprocess.run([bpy.app.binary_path, '--background', '--factory-startup', '--threads', '1',
+                    str(prepared), '--python-exit-code', '1', '--python',
+                    str(Path(__file__).with_name('export_prepared_glb.py')), '--', str(result)], check=True)
+    data = result.read_bytes()
+    assert struct.unpack_from('<4sII', data) == (b'glTF', 2, len(data)), 'Invalid GLB header'
+    gltf = json.loads(data[20:20 + struct.unpack_from('<I', data, 12)[0]])
+    primitives = [p for mesh in gltf['meshes'] for p in mesh['primitives']]
+    assert all('NORMAL' in p['attributes'] and 'material' in p for p in primitives)
+    assert all('TANGENT' in p['attributes'] for p in primitives if 'TEXCOORD_0' in p['attributes'])
+    REPORT['gltf_primitives'] = len(primitives)
+    REPORT['gltf_materials'] = len(gltf['materials'])
+    result.replace(OUTPUT)
 OUTPUT.with_suffix('.json').write_text(json.dumps(REPORT, ensure_ascii=False, indent=2), encoding='utf-8')
 print('AMG_EXPORT', REPORT['exported_mesh_count'], 'meshes', REPORT['triangles'], 'triangles', REPORT['size_blender_xyz_m'])
+# Release bake/export data while Blender's image libraries are still loaded.
+bpy.ops.wm.read_factory_settings(use_empty=True)

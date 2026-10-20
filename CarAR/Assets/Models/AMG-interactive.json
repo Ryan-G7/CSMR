@@ -1,5 +1,6 @@
 {
   "source": "AMG.blend",
+  "source_sha256": "5e20325bf38774c679fef495089ea6e6c75d005584120474c6cacef914fb8636",
   "units": "metres",
   "assemblies": {
     "DoorLeft": {
@@ -2324,17 +2325,419 @@
       "polygons": 13592
     }
   ],
-  "paint": {
+  "material_conversion": [
+    {
+      "material": "black button",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Black Carpaint",
+      "source_shader": "MIX_SHADER",
+      "method": "Authored GGX / Principled / Fresnel layers reconstructed in URP; glTF contains source Principled fallback"
+    },
+    {
+      "material": "Blender Default Surface",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Carbon Fiber PBR Interior.001",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Carpat",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "chrome",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Clipper",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Clipper.001",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "cluster_gt_black",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "gril",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Head Light Led Tube",
+      "source_shader": "EMISSION",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    },
+    {
+      "material": "Head Light Led Tube.001",
+      "source_shader": "EMISSION",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    },
+    {
+      "material": "HeadLight Glass",
+      "source_shader": "MIX_SHADER",
+      "reflection_texture": "Assets/Models/AMGSource/HeadLight_Glass_Reflection.png",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    },
+    {
+      "material": "indicatores",
+      "source_shader": "EMISSION",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    },
+    {
+      "material": "Leather Black",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Leather Red",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Logo",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Material.002",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "mirror",
+      "source_shader": "BSDF_GLASS",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    },
+    {
+      "material": "Mirror",
+      "source_shader": "BSDF_GLOSSY",
+      "method": "Authored Glossy colour/roughness -> metallic GGX lobe"
+    },
+    {
+      "material": "plastic",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Rim",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Rough Plastic",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Side wall",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Steel",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Tailight Led Tube",
+      "source_shader": "EMISSION",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    },
+    {
+      "material": "Tailight Led Tube.001",
+      "source_shader": "EMISSION",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    },
+    {
+      "material": "Tyre",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Wheel Brake Disk.001",
+      "source_shader": "BSDF_PRINCIPLED",
+      "method": "Authored Principled values and Cycles-evaluated input textures"
+    },
+    {
+      "material": "Windshield",
+      "source_shader": "MIX_SHADER",
+      "method": "Source view response LUT (transparent tint reduced to scalar transmittance in URP)"
+    }
+  ],
+  "view_materials": [
+    {
+      "name": "Head Light Led Tube",
+      "emission": true,
+      "color_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "response_texture": "Assets/Models/AMGSource/Head_Light_Led_Tube_view.exr"
+    },
+    {
+      "name": "Head Light Led Tube.001",
+      "emission": true,
+      "color_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "response_texture": "Assets/Models/AMGSource/Head_Light_Led_Tube.001_view.exr"
+    },
+    {
+      "name": "HeadLight Glass",
+      "emission": false,
+      "color_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.0,
+      "response_texture": "Assets/Models/AMGSource/HeadLight_Glass_view.exr",
+      "reflection_texture": "Assets/Models/AMGSource/HeadLight_Glass_Reflection.png"
+    },
+    {
+      "name": "indicatores",
+      "emission": true,
+      "color_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "response_texture": "Assets/Models/AMGSource/indicatores_view.exr"
+    },
+    {
+      "name": "mirror",
+      "emission": false,
+      "color_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "roughness": 0.0,
+      "response_texture": "Assets/Models/AMGSource/mirror_view.exr"
+    },
+    {
+      "name": "Tailight Led Tube",
+      "emission": true,
+      "color_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "response_texture": "Assets/Models/AMGSource/Tailight_Led_Tube_view.exr"
+    },
+    {
+      "name": "Tailight Led Tube.001",
+      "emission": true,
+      "color_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "response_texture": "Assets/Models/AMGSource/Tailight_Led_Tube.001_view.exr"
+    },
+    {
+      "name": "Windshield",
+      "emission": false,
+      "color_linear": [
+        0.7423374652862549,
+        0.7423374652862549,
+        0.7423374652862549,
+        1.0
+      ],
+      "roughness": 0.0,
+      "response_texture": "Assets/Models/AMGSource/Windshield_view.exr"
+    }
+  ],
+  "source_paint": {
     "color_linear": [
       0.700126051902771,
       0.700126051902771,
       0.700126051902771,
       1.0
     ],
-    "metallic": 0.9,
-    "roughness": 0.2,
-    "clearcoat": 1,
-    "clearcoat_roughness": 0.06
+    "principled_color_linear": [
+      0.700126051902771,
+      0.700126051902771,
+      0.700126051902771,
+      1.0
+    ],
+    "principled_metallic": 1.0,
+    "principled_roughness": 0.668181836605072,
+    "principled_mix": 0.9365079402923584,
+    "coat_color_linear": [
+      0.800000011920929,
+      0.800000011920929,
+      0.800000011920929,
+      1.0
+    ],
+    "coat_roughness": 0.0,
+    "coat_ior": 1.4500000476837158,
+    "flake_roughness_texture": "Assets/Models/AMGSource/Black_Carpaint_flake_Roughness.png",
+    "flake_normal_texture": "Assets/Models/AMGSource/Black_Carpaint_flake_Normal.png",
+    "coat_normal_texture": "Assets/Models/AMGSource/Black_Carpaint_coat_Normal.png"
+  },
+  "material_bakes": [
+    {
+      "material": "Black Carpaint",
+      "channel": "flake_Roughness",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Black Carpaint",
+      "channel": "flake_Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Black Carpaint",
+      "channel": "coat_Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Carbon Fiber PBR Interior.001",
+      "channel": "Base_Color",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Carbon Fiber PBR Interior.001",
+      "channel": "Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Carpat",
+      "channel": "Base_Color",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Carpat",
+      "channel": "Metallic",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Carpat",
+      "channel": "Roughness",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Carpat",
+      "channel": "Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "HeadLight Glass",
+      "channel": "Reflection",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Leather Black",
+      "channel": "Roughness",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Leather Black",
+      "channel": "Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Leather Red",
+      "channel": "Roughness",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Leather Red",
+      "channel": "Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Logo",
+      "channel": "Base_Color",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Logo",
+      "channel": "Alpha",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Side wall",
+      "channel": "Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Tyre",
+      "channel": "Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Wheel Brake Disk.001",
+      "channel": "Base_Color",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Wheel Brake Disk.001",
+      "channel": "Roughness",
+      "method": "Cycles EMIT",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    },
+    {
+      "material": "Wheel Brake Disk.001",
+      "channel": "Normal",
+      "method": "Cycles NORMAL",
+      "domain": "UV tile [0,1]; object/generated graphs evaluated on unit tile"
+    }
+  ],
+  "environment": {
+    "source": "lauter_waterfall_2k.hdr",
+    "sha256": "868d91efb2fd881eb34e07bedf8b8a5c44bf589589ef7ae4f14d903fde88bc72",
+    "strength": 1,
+    "rotation_degrees": 0
   },
   "size_blender_xyz_m": [
     2.082115411758423,
@@ -2352,5 +2755,7 @@
     2.34688138961792,
     1.3455181121826172
   ],
-  "triangles": 1306154
+  "triangles": 1306154,
+  "gltf_primitives": 169,
+  "gltf_materials": 27
 }

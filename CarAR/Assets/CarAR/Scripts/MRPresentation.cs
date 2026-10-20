@@ -9,11 +9,8 @@ namespace CarAR
         public CarShowroom showroom;
         public Material shadowMaterial, contactMaterial;
         public ScriptableRendererFeature ambientOcclusion;
-        public const int ReflectionLayer = 30;
         public bool HighQuality { get; private set; } = true;
-        Transform shadow, contact, reflectionRoom;
-        ReflectionProbe fallbackProbe;
-        Material roomMaterial, lightMaterial, floorMaterial;
+        Transform shadow, contact;
 
         void Start()
         {
@@ -24,59 +21,12 @@ namespace CarAR
                         var texture = material.GetTexture(property);
                         if (texture != null) { texture.anisoLevel = 16; texture.mipMapBias = 0; }
                     }
-            // Native Unity probe convolution produces the roughness mip chain for PBR paint.
-            // This fallback represents a neutral hall, and never pretends to be a camera scan.
-            CreateHallReflection();
             if (!showroom.IsPreview)
             {
                 shadow = MakePlane("Transparent ground shadow receiver", shadowMaterial);
                 contact = MakePlane("Soft chassis contact shadow", contactMaterial);
             }
-            Debug.Log("[CarAR Quality] Native resolution, 4x MSAA, 4096 soft shadows, native 1024px HDR hall reflection probe. Hall reflection is a preset; live AR probes take priority if provided.");
-        }
-        Material Unlit(Color color)
-        {
-            var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            material.SetColor("_BaseColor", color); material.SetFloat("_Cull", 0);
-            return material;
-        }
-        void Surface(string name, Vector3 position, Vector3 size, Material material)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube); go.name = name;
-            go.layer = ReflectionLayer; go.transform.SetParent(reflectionRoom, false);
-            go.transform.localPosition = position; go.transform.localScale = size;
-            Destroy(go.GetComponent<Collider>());
-            var renderer = go.GetComponent<Renderer>(); renderer.sharedMaterial = material;
-            renderer.shadowCastingMode = ShadowCastingMode.Off;
-        }
-        void CreateHallReflection()
-        {
-            reflectionRoom = new GameObject("Neutral hall reflection environment (preset only)").transform;
-            roomMaterial = Unlit(new Color(.29f, .31f, .34f));
-            floorMaterial = Unlit(new Color(.09f, .10f, .12f));
-            lightMaterial = Unlit(new Color(4.2f, 4.4f, 4.6f));
-            Surface("Floor", new Vector3(0, -1, 0), new Vector3(24, .1f, 32), floorMaterial);
-            Surface("Ceiling", new Vector3(0, 7, 0), new Vector3(24, .1f, 32), roomMaterial);
-            Surface("Left wall", new Vector3(-12, 3, 0), new Vector3(.1f, 8, 32), roomMaterial);
-            Surface("Right wall", new Vector3(12, 3, 0), new Vector3(.1f, 8, 32), roomMaterial);
-            Surface("Front wall", new Vector3(0, 3, 16), new Vector3(24, 8, .1f), roomMaterial);
-            Surface("Rear wall", new Vector3(0, 3, -16), new Vector3(24, 8, .1f), roomMaterial);
-            for (int i = -1; i <= 1; i++)
-                Surface("Ceiling softbox", new Vector3(i * 5, 6.8f, 0), new Vector3(1.8f, .08f, 18), lightMaterial);
-            Surface("Window bank", new Vector3(-11.9f, 3, 0), new Vector3(.06f, 3.5f, 12), lightMaterial);
-            Surface("Right softbox", new Vector3(11.9f, 2.5f, -2), new Vector3(.06f, 2, 8), lightMaterial);
-            fallbackProbe = new GameObject("Hall fallback reflection probe (preset)").AddComponent<ReflectionProbe>();
-            fallbackProbe.transform.position = Vector3.up * 1.2f;
-            fallbackProbe.mode = ReflectionProbeMode.Realtime;
-            fallbackProbe.refreshMode = ReflectionProbeRefreshMode.ViaScripting;
-            fallbackProbe.timeSlicingMode = ReflectionProbeTimeSlicingMode.AllFacesAtOnce;
-            fallbackProbe.cullingMask = 1 << ReflectionLayer;
-            fallbackProbe.resolution = 1024; fallbackProbe.hdr = true;
-            fallbackProbe.size = Vector3.one * 1000; fallbackProbe.importance = 0;
-            fallbackProbe.boxProjection = false; fallbackProbe.intensity = 1;
-            fallbackProbe.clearFlags = ReflectionProbeClearFlags.SolidColor;
-            fallbackProbe.backgroundColor = Color.gray * .3f;
-            fallbackProbe.RenderProbe();
+            Debug.Log("[CarAR Quality] Native resolution, 4x MSAA, SSAO, imported HDR diffuse SH and prefiltered environment reflections. Direct fill defaults to zero; local AR probes take priority when available.");
         }
         public void ToggleQuality()
         {
@@ -115,11 +65,6 @@ namespace CarAR
         {
             if (shadow != null) Destroy(shadow.gameObject);
             if (contact != null) Destroy(contact.gameObject);
-            if (fallbackProbe != null) Destroy(fallbackProbe.gameObject);
-            if (reflectionRoom != null) Destroy(reflectionRoom.gameObject);
-            if (roomMaterial != null) Destroy(roomMaterial);
-            if (lightMaterial != null) Destroy(lightMaterial);
-            if (floorMaterial != null) Destroy(floorMaterial);
         }
     }
 }
