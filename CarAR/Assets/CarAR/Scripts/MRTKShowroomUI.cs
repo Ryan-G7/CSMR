@@ -46,7 +46,11 @@ namespace CarAR
             Bind(20, () => showroom.lighting.AdjustManual(0, -500));
             Bind(21, () => showroom.lighting.AdjustManual(0, 500));
             Bind(22, () => showroom.lighting.RotateManual(15));
-            Bind(23, showroom.lighting.RequestAuto);
+            Bind(23, () =>
+            {
+                showroom.lighting.RequestAuto();
+                Notice(showroom.lighting.HasCameraProvider ? "等待设备输出有效测光，期间使用 HDR" : "使用静态 HDR");
+            });
             Bind(24, () => GetComponent<MRPresentation>().ToggleQuality());
             Bind(25, () => { settingsPage = !settingsPage; SetPage(); });
             Bind(26, TogglePanel);
@@ -110,9 +114,9 @@ namespace CarAR
         void LateUpdate()
         {
             float scale = showroom.car.localScale.x;
-            status.text = $"AMG GT 整车评审 · {scale:F2} 倍 · 长 {showroom.gestures.ModelSize.z * scale:F2} 米\n" +
+            status.text = $"整车评审 · {scale:F2} 倍 · 长 {showroom.gestures.ModelSize.z * scale:F2} 米\n" +
                 "菜单 / Y / B：面板 · 扳机：点选 · 选择停放位置：对齐地面\n" +
-                (showroom.gestures.ManipulationEnabled ? "已解锁 · 左摇杆平移 / 右摇杆旋转缩放 / 双握键缩放" : "已停车锁定 · 绕车观察 / 点选车门与行李厢");
+                (showroom.gestures.ManipulationEnabled ? "已解锁 · 左摇杆平移 / 右摇杆旋转缩放 / 双握键缩放" : "已停车锁定 / 点选车门与行李厢");
             if (settingsPage) status.text += "\n" + showroom.lighting.DisplayStatus + " · " + showroom.placement.DisplayStatus;
             if (Time.unscaledTime < noticeUntil) status.text += "\n" + notice;
             SetLabel(buttons[4], showroom.gestures.ManipulationEnabled ? "停车锁定" : "解除锁定");

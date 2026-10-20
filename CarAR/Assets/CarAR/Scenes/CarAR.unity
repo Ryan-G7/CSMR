@@ -4415,7 +4415,7 @@ MonoBehaviour:
     rotateLogicType:
       reference: MixedReality.Toolkit.SpatialManipulation.RotateLogic, MixedReality.Toolkit.SpatialManipulation
     scaleLogicType:
-      reference: MixedReality.Toolkit.SpatialManipulation.ScaleLogic, MixedReality.Toolkit.SpatialManipulation
+      reference: CarAR.VehicleScaleLogic, Assembly-CSharp
 --- !u!114 &672987835
 MonoBehaviour:
   m_ObjectHideFlags: 0

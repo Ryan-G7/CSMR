@@ -94,6 +94,8 @@ namespace CarAR
             try
             {
                 yield return null;
+                Check(!estimation.HasCameraProvider && estimation.DisplayStatus.Contains("现实测光未接入"),
+                    "missing AR camera provider was presented as real-world lighting");
                 var ambient = new SphericalHarmonicsL2(); ambient[0, 0] = .8f;
                 Frame(new ARLightEstimationData { mainLightIntensityLumens = 2000, mainLightColor = Color.red,
                     mainLightDirection = Vector3.right, ambientSphericalHarmonics = ambient });

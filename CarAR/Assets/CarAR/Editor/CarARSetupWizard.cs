@@ -329,6 +329,9 @@ namespace CarAR.EditorTools
             manipulator.interactionLayers = MRTKControllerInput.VehicleLayer;
             manipulator.RotationAnchorFar = ObjectManipulator.RotateAnchorType.RotateAboutObjectCenter;
             manipulator.ReleaseBehavior = ObjectManipulator.ReleaseBehaviorType.None;
+            var vehicleLogic = manipulator.ManipulationLogicTypes;
+            vehicleLogic.scaleLogicType = typeof(VehicleScaleLogic);
+            manipulator.ManipulationLogicTypes = vehicleLogic;
             var moveConstraint = carRoot.AddComponent<MoveAxisConstraint>();
             moveConstraint.ConstraintOnMovement = AxisFlags.YAxis;
             var rotateConstraint = carRoot.AddComponent<RotationAxisConstraint>();

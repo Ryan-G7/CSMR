@@ -124,7 +124,7 @@ namespace CarAR
             stageFloor = manualFloor = false;
             placed = true;
             carRoot.gameObject.SetActive(true);
-            Debug.Log($"[CarAR] Placed: {Status}, ground={GroundHeight:F3}");
+            Debug.Log($"[CarAR] Placed: {Status}, ground={GroundHeight:F3}, scale={carRoot.localScale:F4}, position={carRoot.position:F3}");
         }
         public string DisplayStatus => !placed ? waitingForHeadset ? "请佩戴头显，等待空间定位恢复" : "正在寻找地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
         public void PlaceOnFloorPoint(Vector3 ground)

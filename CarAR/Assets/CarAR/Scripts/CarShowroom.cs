@@ -68,8 +68,17 @@ namespace CarAR
                 }
                 yield break;
             }
+            bool smoke = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--carar-smoke") >= 0;
+            if (smoke)
+            {
+                Application.logMessageReceived += (condition, stack, type) => { if (type == LogType.Exception) Application.Quit(1); };
+                // Exercise the same inactive-to-first-placement lifecycle used in MR.
+                yield return new WaitForSeconds(.25f);
+                if (car.gameObject.activeInHierarchy || car.localScale != Vector3.one)
+                    throw new System.InvalidOperationException("Vehicle became visible or changed scale before initial placement");
+            }
             placement.PlaceAt(Vector3.zero, true);
-            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--carar-smoke") >= 0)
+            if (smoke)
                 yield return Smoke();
         }
         void OnDestroy()
@@ -141,8 +150,9 @@ namespace CarAR
         }
         IEnumerator Smoke()
         {
-            Application.logMessageReceived += (condition, stack, type) => { if (type == LogType.Exception) Application.Quit(1); };
             yield return new WaitForSeconds(2);
+            if (car.localScale != Vector3.one || gestures.ManipulationEnabled || !car.gameObject.activeInHierarchy)
+                throw new System.InvalidOperationException("First activation did not retain a visible, locked 1:1 vehicle");
             if (RenderSettings.defaultReflectionMode != DefaultReflectionMode.Custom ||
                 RenderSettings.customReflectionTexture == null || RenderSettings.customReflectionTexture.mipmapCount < 5 ||
                 RenderSettings.ambientMode != AmbientMode.Custom || RenderSettings.sun.intensity > .01f)
@@ -284,6 +294,14 @@ namespace CarAR
             yield return new WaitForSeconds(.6f);
             if (!manipulator.isSelected || car.position.x < originalPosition.x + .1f)
                 throw new System.InvalidOperationException("MRTK selection / one-hand translation failed");
+            var singleHandScale = car.localScale;
+            var attach = first.GetAttachTransform(manipulator);
+            var attachScale = attach.localScale;
+            attach.localScale = Vector3.one * .25f;
+            yield return new WaitForSeconds(.15f);
+            if (car.localScale != singleHandScale)
+                throw new System.InvalidOperationException("One-hand ray attach scale resized the vehicle");
+            attach.localScale = attachScale;
             second.StartManualInteraction((IXRSelectInteractable)manipulator);
             yield return null;
             float scale = car.localScale.x;
@@ -291,6 +309,16 @@ namespace CarAR
             yield return new WaitForSeconds(.6f);
             if (manipulator.interactorsSelecting.Count != 2 || car.localScale.x <= scale * 1.1f)
                 throw new System.InvalidOperationException("MRTK two-hand scaling failed");
+            var beforeCoincidence = car.localScale;
+            var secondPosition = b.transform.position;
+            b.transform.position = a.transform.position;
+            yield return new WaitForSeconds(.15f);
+            if (Vector3.Distance(car.localScale, beforeCoincidence) > .0001f)
+                throw new System.InvalidOperationException("Coincident controller poses collapsed the vehicle scale: " + car.localScale);
+            b.transform.position = secondPosition;
+            yield return new WaitForSeconds(.15f);
+            if (Vector3.Distance(car.localScale, beforeCoincidence) > .0001f)
+                throw new System.InvalidOperationException("Recovered controller poses jumped the vehicle scale");
             first.EndManualInteraction(); second.EndManualInteraction();
             ui.buttons[4].OnClicked.Invoke();
             var released = car.position;
@@ -303,7 +331,7 @@ namespace CarAR
             yield return new WaitForSeconds(.8f);
             if (!leftDoor.IsOpen) throw new System.InvalidOperationException("MRTK door button binding failed");
             ui.buttons[0].OnClicked.Invoke(); yield return new WaitForSeconds(.8f);
-            Debug.Log("[CarAR MRTK Smoke] PASS: standard UX bindings, XRI selection, ObjectManipulator one-hand translation and two-hand scaling, release and park.");
+            Debug.Log("[CarAR MRTK Smoke] PASS: locked 1:1 first activation, XRI selection, one-hand translation without attach-scale changes, deliberate two-hand scaling, coincident/recovered controller poses preserve scale, release and park.");
         }
 
     }

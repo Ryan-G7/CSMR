@@ -18,13 +18,16 @@ namespace CarAR
         Quaternion targetRotation = Quaternion.Euler(50f, -30f, 0f);
         SphericalHarmonicsL2 targetAmbient;
         bool hasAmbient, usingLiveData;
+        float nextSourceCheck;
+        string reportedSource;
         public bool ManualLighting { get; private set; }
         public bool HasLiveData => Time.unscaledTime - lastSample < 3f;
+        public bool HasCameraProvider => cameraManager != null && cameraManager.isActiveAndEnabled && cameraManager.subsystem != null && cameraManager.subsystem.running;
         public float Brightness { get; private set; }
         public float Temperature { get; private set; } = 6500;
         public bool PreviewLighting { get; private set; }
-        public string DisplayStatus => ManualLighting || PreviewLighting ? $"HDR 环境 + 补光 · {Brightness:F2} / {Temperature:F0}K" : HasLiveData ? "环境光照数据已接入" : "HDR 环境光照 · 无额外补光";
-        public string Status => ManualLighting ? "HDR environment + manual fill" : PreviewLighting ? "HDR environment + preview fill" : HasLiveData ? "Live environment light data" : "HDR environment / no direct fill";
+        public string DisplayStatus => ManualLighting || PreviewLighting ? $"静态 HDR + 补光 · {Brightness:F2} / {Temperature:F0}K" : HasLiveData ? "现实环境测光已接入" : HasCameraProvider ? "静态 HDR · 等待有效测光" : "静态 HDR · 现实测光未接入";
+        public string Status => ManualLighting ? "Static HDR + manual fill" : PreviewLighting ? "Static HDR + preview fill" : HasLiveData ? "Live environment light data" : HasCameraProvider ? "Static HDR / waiting for light data" : "Static HDR / no running AR camera provider";
         void Awake()
         {
             // RenderSettings.ambientProbe assigned in the editor is not stored
@@ -107,6 +110,17 @@ namespace CarAR
         void Update()
         {
             if (usingLiveData && !HasLiveData && !ManualLighting && !PreviewLighting) UsePreset();
+            if (Time.unscaledTime >= nextSourceCheck)
+            {
+                nextSourceCheck = Time.unscaledTime + 1;
+                string provider = HasCameraProvider ? cameraManager.subsystem.subsystemDescriptor.id : "none";
+                string source = $"{Status}; cameraProvider={provider}; measuredFrames={HasLiveData}; activeFeatures={(HasCameraProvider ? cameraManager.currentLightEstimation : LightEstimation.None)}";
+                if (source != reportedSource)
+                {
+                    reportedSource = source;
+                    Debug.Log("[CarAR Lighting] " + source);
+                }
+            }
             float t = 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(0.01f, smoothTime));
             if (sun != null)
             {

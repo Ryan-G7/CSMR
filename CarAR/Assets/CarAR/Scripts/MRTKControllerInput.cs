@@ -31,11 +31,11 @@ namespace CarAR
             public ActionBasedController controller;
             public XRRayInteractor ray, grab;
             public XRInteractorLineVisual line;
-            public InputAction menu, stick;
+            public InputAction menu, stick, grip;
             public InputActionProperty aimPosition, aimRotation, gripPosition, gripRotation, aimTracked, aimState, gripTracked, gripState;
             public LineRenderer renderer;
             public string poseSource;
-            public bool tracked;
+            public bool tracked, gripReleased, axesReady;
         }
         Hand left, right;
         LineRenderer footprint;
@@ -56,6 +56,9 @@ namespace CarAR
         }
         void OnEnable()
         {
+            // Re-activating a parent immediately registers its enabled XRI rays.
+            // Keep grip selection disarmed before the first manager update.
+            left.grab.enabled = right.grab.enabled = false;
             left.controller.gameObject.SetActive(true); right.controller.gameObject.SetActive(true);
             foreach (var action in ownedActions) action.Enable();
             InputSystem.onDeviceChange += OnDeviceChange;
@@ -70,6 +73,8 @@ namespace CarAR
             if (left?.controller != null) left.controller.gameObject.SetActive(false);
             if (right?.controller != null) right.controller.gameObject.SetActive(false);
             foreach (var action in ownedActions) action.Disable();
+            left.gripReleased = right.gripReleased = false;
+            left.axesReady = right.axesReady = false;
         }
         Hand CreateHand(string hand)
         {
@@ -107,6 +112,7 @@ namespace CarAR
             var controller = grip.AddComponent<ActionBasedController>();
             controller.enableInputTracking = false;
             controller.selectAction = Property("Grip", path + "gripPressed", "Button");
+            h.grip = controller.selectAction.action;
             h.grab = CreateRay(grip, VehicleLayer);
             h.menu = Own(new InputAction(hand + " Menu", InputActionType.Button));
             h.menu.AddBinding(path + "menuButton"); h.menu.AddBinding(path + "secondaryButton");
@@ -146,12 +152,12 @@ namespace CarAR
             if (IsPlacing) { UpdatePlacement(); return; }
             var car = ui.showroom;
             if (!car.placement.IsPlaced || !car.gestures.ManipulationEnabled || car.explode.IsBusy || car.gestures.manipulator.isSelected) return;
-            var move = left.tracked ? DeadZone(left.stick.ReadValue<Vector2>()) : Vector2.zero;
-            var turn = right.tracked ? DeadZone(right.stick.ReadValue<Vector2>()) : Vector2.zero;
+            var move = left.tracked && left.axesReady ? DeadZone(left.stick.ReadValue<Vector2>()) : Vector2.zero;
+            var turn = right.tracked && right.axesReady ? DeadZone(right.stick.ReadValue<Vector2>()) : Vector2.zero;
             var forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, Vector3.up).normalized;
             car.gestures.MoveBy((forward * move.y + Vector3.Cross(Vector3.up, forward) * move.x) * (.6f * Time.deltaTime));
             car.gestures.RotateBy(turn.x * 35f * Time.deltaTime);
-            car.gestures.ScaleBy(Mathf.Exp(turn.y * .45f * Time.deltaTime));
+            car.gestures.ScaleBy(Mathf.Exp(turn.y * .45f * Time.deltaTime), "right stick");
         }
         static Vector2 DeadZone(Vector2 value) => value.magnitude > .2f ? value.normalized * ((Mathf.Min(1, value.magnitude) - .2f) / .8f) : Vector2.zero;
         void UpdateHand(Hand h)
@@ -166,7 +172,16 @@ namespace CarAR
             // Keep the native pointing line visible during floor placement too.
             h.ray.interactionLayers = IsPlacing ? 0 : 1;
             h.ray.enabled = tracked;
-            h.grab.enabled = tracked && !IsPlacing;
+            // State-triggered XRI rays otherwise select immediately when tracking
+            // resumes or the vehicle unlocks with a grip already held down.
+            bool canGrab = tracked && !IsPlacing && ui.showroom.gestures.ManipulationEnabled;
+            if (!canGrab) h.gripReleased = h.axesReady = false;
+            else
+            {
+                if (!h.grip.IsPressed()) h.gripReleased = true;
+                if (DeadZone(h.stick.ReadValue<Vector2>()) == Vector2.zero) h.axesReady = true;
+            }
+            h.grab.enabled = canGrab && h.gripReleased;
             h.line.enabled = tracked;
         }
         static bool PoseValid(InputActionProperty position, InputActionProperty rotation, InputActionProperty tracked, InputActionProperty state)
