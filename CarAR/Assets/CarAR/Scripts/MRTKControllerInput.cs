@@ -157,7 +157,7 @@ namespace CarAR
             var forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, Vector3.up).normalized;
             car.gestures.MoveBy((forward * move.y + Vector3.Cross(Vector3.up, forward) * move.x) * (.6f * Time.deltaTime));
             car.gestures.RotateBy(turn.x * 35f * Time.deltaTime);
-            car.gestures.ScaleBy(Mathf.Exp(turn.y * .45f * Time.deltaTime), "right stick");
+            car.gestures.ScaleBy(Mathf.Exp(turn.y * .45f * Time.deltaTime));
         }
         static Vector2 DeadZone(Vector2 value) => value.magnitude > .2f ? value.normalized * ((Mathf.Min(1, value.magnitude) - .2f) / .8f) : Vector2.zero;
         void UpdateHand(Hand h)
@@ -174,7 +174,7 @@ namespace CarAR
             h.ray.enabled = tracked;
             // State-triggered XRI rays otherwise select immediately when tracking
             // resumes or the vehicle unlocks with a grip already held down.
-            bool canGrab = tracked && !IsPlacing && ui.showroom.gestures.ManipulationEnabled;
+            bool canGrab = tracked && !IsPlacing && ui.showroom.placement.IsPlaced && ui.showroom.gestures.ManipulationEnabled;
             if (!canGrab) h.gripReleased = h.axesReady = false;
             else
             {
@@ -192,6 +192,21 @@ namespace CarAR
             var p = position.action.ReadValue<Vector3>(); var q = rotation.action.ReadValue<Quaternion>();
             float norm = Quaternion.Dot(q, q);
             return float.IsFinite(p.x) && float.IsFinite(p.y) && float.IsFinite(p.z) && float.IsFinite(norm) && norm > .8f && norm < 1.2f;
+        }
+        // Read native grip actions, not controller transforms updated later by XRI.
+        // One coherent hand is sufficient; inactive controllers do not block a parked review.
+        public bool HasCoherentController(Vector3 head, out bool anyTracked)
+        {
+            bool l = TryGripPoint(left, out var lp), r = TryGripPoint(right, out var rp);
+            anyTracked = l || r;
+            return l && Vector3.Distance(head, lp) <= 3f || r && Vector3.Distance(head, rp) <= 3f;
+        }
+        bool TryGripPoint(Hand hand, out Vector3 point)
+        {
+            point = default;
+            if (hand == null || !PoseValid(hand.gripPosition, hand.gripRotation, hand.gripTracked, hand.gripState)) return false;
+            point = trackingOrigin.TransformPoint(hand.gripPosition.action.ReadValue<Vector3>());
+            return true;
         }
         static void SetPoseSource(Hand h, bool aim)
         {
@@ -224,6 +239,7 @@ namespace CarAR
         }
         public void BeginPlacement()
         {
+            if (!ui.showroom.placement.TrackingReady) { ui.Notice(ui.showroom.placement.DisplayStatus); return; }
             if (ui.showroom.explode.IsBusy) { ui.Notice("请先组装还原，再重新放置"); return; }
             ui.showroom.gestures.SetManipulation(false);
             IsPlacing = true; PlacementValid = false; triggerReleased = false; placementHand = null; placementStarted = Time.unscaledTime;

@@ -25,7 +25,9 @@ namespace CarAR
             Bind(0, showroom.leftDoor.Toggle); Bind(1, showroom.rightDoor.Toggle); Bind(2, showroom.trunk.Toggle);
             Bind(3, () =>
             {
-                if (!showroom.placement.IsPlaced) return;
+                // A tracking reset can suspend an exploded vehicle. Always allow
+                // assembly so the subsequent placement is not blocked by IsBusy.
+                if (!showroom.placement.IsPlaced && !showroom.explode.IsExploded) return;
                 showroom.gestures.SetManipulation(false); showroom.explode.Toggle();
             });
             Bind(4, ToggleLock); Bind(5, controllers.BeginPlacement);
@@ -118,6 +120,7 @@ namespace CarAR
                 "菜单 / Y / B：面板 · 扳机：点选 · 选择停放位置：对齐地面\n" +
                 (showroom.gestures.ManipulationEnabled ? "已解锁 · 左摇杆平移 / 右摇杆旋转缩放 / 双握键缩放" : "已停车锁定 / 点选车门与行李厢");
             if (settingsPage) status.text += "\n" + showroom.lighting.DisplayStatus + " · " + showroom.placement.DisplayStatus;
+            else if (!showroom.placement.IsPlaced) status.text += "\n" + showroom.placement.DisplayStatus;
             if (Time.unscaledTime < noticeUntil) status.text += "\n" + notice;
             SetLabel(buttons[4], showroom.gestures.ManipulationEnabled ? "停车锁定" : "解除锁定");
             SetLabel(buttons[3], showroom.explode.IsExploded ? "组装还原" : "整车爆炸");

@@ -1,9 +1,13 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.XR;
+using UnityEngine.XR;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 namespace CarAR
 {
+    [DefaultExecutionOrder(-150)]
     public class CarPlacementManager : MonoBehaviour
     {
         [SerializeField] ARPlaneManager planeManager;
@@ -14,12 +18,30 @@ namespace CarAR
         [SerializeField] float fallbackEyeHeight = 1.5f;
         bool placed, estimated, stageFloor, manualFloor;
         float startTime;
-        bool waitingForHeadset;
+        bool guardTracking, needsReposition, hasHeadSample, suppressed;
+        float stableSince = -1, headSampleTime;
+        Vector3 lastHead;
+        Renderer[] hiddenRenderers;
+        Collider[] hiddenColliders;
+        bool[] renderingState, colliderState;
+        TrackedPoseDriver poseDriver;
+        MRTKControllerInput controllers;
         CarShowroom showroom;
-        public string Status => !placed ? waitingForHeadset ? "Waiting for worn, tracked headset" : "Scanning for floor..." : manualFloor ? "Manually aligned floor" : estimated ? "Estimated floor (no plane data)" : stageFloor ? "OpenXR stage floor" : "Tracked horizontal plane";
-        public bool IsPlaced => placed;
-        public float PlacementPreviewHeight => placed || Camera.main == null ? GroundHeight : Camera.main.transform.position.y - fallbackEyeHeight;
-        void Start() => showroom = FindAnyObjectByType<CarShowroom>();
+        public string Status => !TrackingReady ? "Waiting for coherent headset/controller tracking" : needsReposition ? "Tracking origin changed; place vehicle again" : !placed ? "Scanning for floor..." : manualFloor ? "Manually aligned floor" : estimated ? "Estimated floor (no plane data)" : stageFloor ? "OpenXR stage floor" : "Tracked horizontal plane";
+        public bool TrackingReady { get; private set; } = true;
+        public bool IsPlaced => placed && TrackingReady && !needsReposition;
+        public float PlacementPreviewHeight => (placed && !needsReposition) || Camera.main == null ? GroundHeight : Camera.main.transform.position.y - fallbackEyeHeight;
+        void Start()
+        {
+            showroom = FindAnyObjectByType<CarShowroom>();
+            controllers = showroom != null ? showroom.GetComponent<MRTKControllerInput>() : null;
+            guardTracking = showroom != null && !showroom.IsPreview && Application.platform != RuntimePlatform.Android;
+            if (guardTracking)
+            {
+                TrackingReady = false;
+                poseDriver = Camera.main.GetComponent<TrackedPoseDriver>();
+            }
+        }
         void OnEnable()
         {
             startTime = Time.time;
@@ -27,27 +49,10 @@ namespace CarAR
         }
         void Update()
         {
+            if (guardTracking) ReadTracking();
             // Lock the first placement. Later plane refinements must not move a parked car.
-            if (placed || carRoot == null) return;
+            if (placed || !TrackingReady || carRoot == null) return;
             if (showroom != null && showroom.GetComponent<MRTKControllerInput>()?.IsPlacing == true) return;
-            // A PC runtime can publish its last cached pose while the headset is unworn.
-            // Start the initial floor timeout only after wearing and positional tracking recover.
-            if (showroom != null && !showroom.IsPreview && Application.platform != RuntimePlatform.Android)
-            {
-                var hmd = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.Head);
-                bool ready = hmd.isValid && hmd.TryGetFeatureValue(UnityEngine.XR.CommonUsages.trackingState, out UnityEngine.XR.InputTrackingState state)
-                    && (state & (UnityEngine.XR.InputTrackingState.Position | UnityEngine.XR.InputTrackingState.Rotation))
-                    == (UnityEngine.XR.InputTrackingState.Position | UnityEngine.XR.InputTrackingState.Rotation);
-                if (hmd.TryGetFeatureValue(UnityEngine.XR.CommonUsages.userPresence, out bool present) && !present) ready = false;
-                if (!ready)
-                {
-                    if (!waitingForHeadset) Debug.Log("[CarAR Placement] Waiting for a worn, position-tracked headset before initial floor placement.");
-                    waitingForHeadset = true; startTime = Time.time; return;
-                }
-                if (waitingForHeadset) Debug.Log("[CarAR Placement] Headset tracking ready; initial floor search started.");
-                waitingForHeadset = false;
-                if (Time.time - startTime < 1f) return;
-            }
             ARPlane best = null;
             float bestArea = minPlaneArea;
             if (planeManager != null)
@@ -68,9 +73,85 @@ namespace CarAR
                 Recenter();
             }
         }
+        void ReadTracking()
+        {
+            // Use the same native HMD as the camera's TrackedPoseDriver. No camera
+            // offsets or input transforms can repair an incoherent runtime pose.
+            var hmd = (poseDriver?.positionInput.action?.activeControl?.device as XRHMD) ?? InputSystem.GetDevice<XRHMD>();
+            var legacy = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(XRNode.Head);
+            const InputTrackingState flags = InputTrackingState.Position | InputTrackingState.Rotation;
+            bool valid = hmd != null && hmd.isTracked.isPressed && ((InputTrackingState)hmd.trackingState.ReadValue() & flags) == flags;
+            if (hmd != null)
+            {
+                var rotation = hmd.centerEyeRotation.ReadValue();
+                float norm = Quaternion.Dot(rotation, rotation);
+                valid &= float.IsFinite(norm) && norm > .8f && norm < 1.2f;
+            }
+            if (legacy.TryGetFeatureValue(UnityEngine.XR.CommonUsages.userPresence, out bool present) && !present) valid = false;
+            var local = hmd != null ? hmd.centerEyePosition.ReadValue() : Vector3.zero;
+            var head = Camera.main.transform.parent.TransformPoint(local);
+            valid &= float.IsFinite(head.x) && float.IsFinite(head.y) && float.IsFinite(head.z);
+            bool any = false;
+            bool coherent = controllers != null && controllers.HasCoherentController(head, out any);
+            ObserveTracking(valid, head, coherent, any, Time.unscaledTime);
+        }
+        // Also used to replay recorded runtime coordinates in the smoke suite.
+        internal void ObserveTracking(bool headValid, Vector3 head, bool coherentHand, bool anyHand, float now)
+        {
+            bool valid = headValid && (coherentHand || (placed && !anyHand));
+            if (!valid) stableSince = -1;
+            else
+            {
+                float limit = .5f + 8f * Mathf.Min(Mathf.Max(0, now - headSampleTime), .25f);
+                if (hasHeadSample && Vector3.Distance(lastHead, head) > limit)
+                {
+                    stableSince = -1;
+                    if (placed && !needsReposition)
+                    {
+                        needsReposition = true;
+                        Debug.LogWarning($"[CarAR Placement] Tracking origin discontinuity ({Vector3.Distance(lastHead, head):F3}m); vehicle hidden until explicit placement. Scale is unchanged.");
+                    }
+                }
+                lastHead = head; headSampleTime = now; hasHeadSample = true;
+                if (stableSince < 0) stableSince = now;
+            }
+            bool ready = valid && now - stableSince >= 1f;
+            if (!ready) startTime = Time.time;
+            if (TrackingReady != ready)
+                Debug.Log("[CarAR Placement] " + (ready ? "Coherent tracking stable; placement available." : "Waiting for worn headset and coherent tracking."));
+            TrackingReady = ready;
+            if (!IsPlaced)
+            {
+                showroom?.gestures.SetManipulation(false);
+                if (!ready) controllers?.CancelPlacement();
+            }
+            SetSuppressed(placed && !IsPlaced);
+        }
+        void SetSuppressed(bool value)
+        {
+            if (suppressed == value || carRoot == null) return;
+            suppressed = value;
+            // Keep the root active: deactivation would stop explode coroutines.
+            if (value)
+            {
+                hiddenRenderers = carRoot.GetComponentsInChildren<Renderer>(true);
+                hiddenColliders = carRoot.GetComponentsInChildren<Collider>(true);
+                renderingState = new bool[hiddenRenderers.Length]; colliderState = new bool[hiddenColliders.Length];
+                for (int i = 0; i < hiddenRenderers.Length; i++)
+                { renderingState[i] = hiddenRenderers[i].forceRenderingOff; hiddenRenderers[i].forceRenderingOff = true; }
+                for (int i = 0; i < hiddenColliders.Length; i++)
+                { colliderState[i] = hiddenColliders[i].enabled; hiddenColliders[i].enabled = false; }
+            }
+            else
+            {
+                for (int i = 0; i < hiddenRenderers.Length; i++) if (hiddenRenderers[i] != null) hiddenRenderers[i].forceRenderingOff = renderingState[i];
+                for (int i = 0; i < hiddenColliders.Length; i++) if (hiddenColliders[i] != null) hiddenColliders[i].enabled = colliderState[i];
+            }
+        }
+        void OnDisable() => SetSuppressed(false);
         public void Recenter()
         {
-            if (Camera.main == null || carRoot == null) return;
+            if (!TrackingReady || Camera.main == null || carRoot == null) return;
             if (showroom != null)
             {
                 showroom.GetComponent<MRTKControllerInput>()?.CancelPlacement();
@@ -107,7 +188,7 @@ namespace CarAR
         }
         public void PlaceAt(Vector3 groundPos, bool isEstimated = false)
         {
-            if (carRoot == null) return;
+            if (!TrackingReady || carRoot == null) return;
             // Every subsequent placement preserves the established ground pivot,
             // including open panels, exploded parts and manually adjusted floors.
             float offset = carRoot.position.y - GroundHeight;
@@ -123,19 +204,22 @@ namespace CarAR
             estimated = isEstimated;
             stageFloor = manualFloor = false;
             placed = true;
+            needsReposition = false;
             carRoot.gameObject.SetActive(true);
+            SetSuppressed(false);
             Debug.Log($"[CarAR] Placed: {Status}, ground={GroundHeight:F3}, scale={carRoot.localScale:F4}, position={carRoot.position:F3}");
         }
-        public string DisplayStatus => !placed ? waitingForHeadset ? "请佩戴头显，等待空间定位恢复" : "正在寻找地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
+        public string DisplayStatus => !TrackingReady ? "请佩戴头显并唤醒手柄，等待空间定位稳定" : needsReposition ? "空间定位已重置，请重新选择停放位置" : !placed ? "正在寻找地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
         public void PlaceOnFloorPoint(Vector3 ground)
         {
+            if (!TrackingReady || carRoot == null) return;
             PlaceAt(ground, true);
             manualFloor = true;
         }
         public float GroundHeight { get; private set; }
         public void AdjustFloor(float delta)
         {
-            if (!placed || carRoot == null) return;
+            if (!IsPlaced || carRoot == null) return;
             carRoot.position += Vector3.up * delta; GroundHeight += delta; manualFloor = true;
         }
     }

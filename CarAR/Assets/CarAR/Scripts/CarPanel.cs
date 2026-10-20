@@ -8,10 +8,15 @@ namespace CarAR
         public float duration = 0.65f;
         Quaternion closedRotation;
         float progress, target;
+        CarShowroom showroom;
         public bool IsOpen => target > 0.5f;
         public bool IsClosed => progress < 0.001f && target == 0;
-        void Awake() { closedRotation = transform.localRotation; }
-        public void Toggle() { if (!GetComponentInParent<ExplodeController>().IsBusy) target = 1f - target; }
+        void Awake() { closedRotation = transform.localRotation; showroom = FindAnyObjectByType<CarShowroom>(); }
+        public void Toggle()
+        {
+            if (showroom != null && !showroom.placement.IsPlaced) return;
+            if (!GetComponentInParent<ExplodeController>().IsBusy) target = 1f - target;
+        }
         public void Close() { target = 0f; }
         void Update()
         {

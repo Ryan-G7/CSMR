@@ -11,8 +11,10 @@
       ],
       "sources": [
         "Cube.002",
+        "Cube.013",
         "Cube.017",
         "Cube.083",
+        "Cube.092",
         "Cube.106",
         "Cube.129",
         "Cube.130",
@@ -105,8 +107,10 @@
         0.8
       ],
       "sources": [
+        "Cube.013",
         "Cube.017",
         "Cube.083",
+        "Cube.092",
         "Cube.106",
         "Cube.124",
         "Cube.125",
@@ -189,7 +193,6 @@
         "Cube.006",
         "Cube.008",
         "Cube.012",
-        "Cube.013",
         "Cube.014",
         "Cube.015",
         "Cube.016",
@@ -654,13 +657,22 @@
       "polygons": 3632
     },
     {
-      "name": "Cube.013__Body",
+      "name": "Cube.013__DoorLeft",
       "sources": [
         "Cube.013"
       ],
-      "assembly": "Body",
-      "vertices": 590,
-      "polygons": 544
+      "assembly": "DoorLeft",
+      "vertices": 295,
+      "polygons": 272
+    },
+    {
+      "name": "Cube.013__DoorRight",
+      "sources": [
+        "Cube.013"
+      ],
+      "assembly": "DoorRight",
+      "vertices": 295,
+      "polygons": 272
     },
     {
       "name": "Cube.014__Body",
@@ -1566,8 +1578,26 @@
         "Cube.092"
       ],
       "assembly": "Body",
-      "vertices": 4222,
-      "polygons": 3844
+      "vertices": 4004,
+      "polygons": 3660
+    },
+    {
+      "name": "Cube.092__DoorLeft",
+      "sources": [
+        "Cube.092"
+      ],
+      "assembly": "DoorLeft",
+      "vertices": 109,
+      "polygons": 92
+    },
+    {
+      "name": "Cube.092__DoorRight",
+      "sources": [
+        "Cube.092"
+      ],
+      "assembly": "DoorRight",
+      "vertices": 109,
+      "polygons": 92
     },
     {
       "name": "Cube.093__Body",
@@ -2744,7 +2774,7 @@
     4.676258563995361,
     1.3488428592681885
   ],
-  "exported_mesh_count": 165,
+  "exported_mesh_count": 168,
   "bounds_blender_min": [
     -1.0440645217895508,
     -2.3293771743774414,
@@ -2756,6 +2786,6 @@
     1.3455181121826172
   ],
   "triangles": 1306154,
-  "gltf_primitives": 169,
+  "gltf_primitives": 172,
   "gltf_materials": 27
 }

@@ -48,7 +48,7 @@ namespace CarAR
         void LateUpdate()
         {
             if (shadow == null) return;
-            bool active = showroom.car.gameObject.activeInHierarchy;
+            bool active = showroom.car.gameObject.activeInHierarchy && showroom.placement.IsPlaced;
             shadow.gameObject.SetActive(active); contact.gameObject.SetActive(active);
             if (!active) return;
             var car = showroom.car;

@@ -54,6 +54,10 @@ namespace CarAR
             Pose(right, camera.position + Vector3.right * .2f, car.position);
             yield return new WaitForSeconds(.2f);
             Check(input.LeftRayVisible && input.RightRayVisible, "native line visuals are not rendering for tracked controllers");
+            Check(input.HasCoherentController(camera.position, out bool anyHand) && anyHand,
+                "native grip samples did not establish a coherent head/controller space");
+            Check(!input.HasCoherentController(camera.position + Vector3.down * 14.7f, out anyHand) && anyHand,
+                "native grip samples accepted the recorded 14.7m HMD mismatch");
             using (StateEvent.From(right, out var fallbackEvent))
             {
                 // Reproduce a runtime that tracks grip while its aim pose is invalid.

@@ -16,8 +16,11 @@ from mathutils import Vector, Matrix
 
 PROJECT = Path(__file__).resolve().parents[1]
 OUTPUT = PROJECT / 'Assets/Models/AMG-interactive.glb'
-DOOR_SOURCES = {'Cube.002', 'Cube.135', 'Cube.017', 'Cube.083', 'Cube.106',
+DOOR_SOURCES = {'Cube.002', 'Cube.135', 'Cube.013', 'Cube.017', 'Cube.083', 'Cube.106',
                 'Cube.139', 'Cube.140', 'Cube.141', 'Cube.142'}
+# Cube.092 contains two 109-vertex door trim islands AND centre-console pieces.
+# Keep the console static; match only the audited disconnected trim geometry.
+MIXED_DOOR_SOURCE = 'Cube.092'
 # Audited against the current source's individual geometry: door cards, armrests,
 # speaker grilles, window switches and inner seals. Roof/jamb seals, seat rails,
 # seat controls and dashboard pieces are deliberately absent from this manifest.
@@ -119,6 +122,18 @@ for obj in objects:
             lo, hi = bounds(piece)
             assert lo.x > .5 or hi.x < -.5, (source, list(lo), list(hi))
             attach(piece, 'DoorLeft' if lo.x > .5 else 'DoorRight', source)
+    elif source == MIXED_DOOR_SOURCE:
+        counts = {'DoorLeft': 0, 'DoorRight': 0, 'Body': 0}
+        for piece in island_objects(obj):
+            lo, hi = bounds(piece)
+            key = 'DoorLeft' if lo.x > .70 else 'DoorRight' if hi.x < -.72 else 'Body'
+            if key != 'Body':
+                assert len(piece.data.vertices) == 109 and -.025 < lo.y < 0 and .58 < hi.y < .59 and .55 < lo.z < hi.z < .61, (source, list(lo), list(hi))
+            else:
+                assert lo.x > -.22 and hi.x < .20, (source, list(lo), list(hi))
+            attach(piece, key, source)
+            counts[key] += 1
+        assert counts == {'DoorLeft': 1, 'DoorRight': 1, 'Body': 2}, counts
     elif source in HATCH_SOURCES: attach(obj, 'RearHatch', source)
     elif source in HOOD_SOURCES: attach(obj, 'Hood', source)
     elif source.startswith(('mycar-wheel.', 'mycar-wheelbrake.')):
@@ -163,9 +178,9 @@ REPORT['triangles'] = sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o 
 for value in REPORT['assemblies'].values(): value['sources'] = sorted(value['sources'])
 assert 4.4 < hi.y-lo.y < 5.0 and 1.8 < hi.x-lo.x < 2.3
 assert all(REPORT['assemblies'][key]['sources'] for key in roots)
-assert all(set(REPORT['assemblies'][key]['sources']) <= DOOR_SOURCES | DOOR_INTERIORS[key] for key in DOOR_INTERIORS)
+assert all(set(REPORT['assemblies'][key]['sources']) <= DOOR_SOURCES | DOOR_INTERIORS[key] | {MIXED_DOOR_SOURCE} for key in DOOR_INTERIORS)
 assert all(DOOR_INTERIORS[key] <= set(REPORT['assemblies'][key]['sources']) for key in DOOR_INTERIORS)
-assert set(REPORT['assemblies']['DoorLeft']['sources']) | set(REPORT['assemblies']['DoorRight']['sources']) == DOOR_SOURCES | DOOR_INTERIOR_SOURCES
+assert set(REPORT['assemblies']['DoorLeft']['sources']) | set(REPORT['assemblies']['DoorRight']['sources']) == DOOR_SOURCES | DOOR_INTERIOR_SOURCES | {MIXED_DOOR_SOURCE}
 assert 'source_paint' in REPORT, 'Source car paint material is missing'
 
 # Blender cannot calculate tangent frames on every source n-gon. Triangulate
