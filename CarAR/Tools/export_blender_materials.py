@@ -294,7 +294,7 @@ def export_materials(project):
 
 
 def export_environment(project):
-    source=project.parent/'lauter_waterfall_2k.hdr'
+    source=project.parent/'brown_photostudio_02_2k.hdr'
     directory=project/'Assets/Environment';directory.mkdir(parents=True,exist_ok=True)
     destination=directory/source.name
     if not source.exists(): source=destination

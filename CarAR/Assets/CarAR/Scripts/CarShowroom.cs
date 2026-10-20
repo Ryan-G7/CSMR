@@ -155,6 +155,7 @@ namespace CarAR
                 throw new System.InvalidOperationException("First activation did not retain a visible, locked 1:1 vehicle");
             if (RenderSettings.defaultReflectionMode != DefaultReflectionMode.Custom ||
                 RenderSettings.customReflectionTexture == null || RenderSettings.customReflectionTexture.mipmapCount < 5 ||
+                RenderSettings.skybox == null || RenderSettings.skybox.GetTexture("_Tex") != RenderSettings.customReflectionTexture ||
                 RenderSettings.ambientMode != AmbientMode.Custom || RenderSettings.sun.intensity > .01f)
                 throw new System.InvalidOperationException("HDR diffuse/specular environment or zero-fill default is missing");
             CaptureVehicle("hdr-default.png");

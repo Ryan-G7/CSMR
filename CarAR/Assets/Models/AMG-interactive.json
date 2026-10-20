@@ -2764,8 +2764,8 @@
     }
   ],
   "environment": {
-    "source": "lauter_waterfall_2k.hdr",
-    "sha256": "868d91efb2fd881eb34e07bedf8b8a5c44bf589589ef7ae4f14d903fde88bc72",
+    "source": "brown_photostudio_02_2k.hdr",
+    "sha256": "153ca0cb899575c00f5b23065958d250a0f73e8789c8cf5957ccea313baf2bb6",
     "strength": 1,
     "rotation_degrees": 0
   },

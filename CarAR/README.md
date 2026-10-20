@@ -58,7 +58,7 @@ $env:OPENIMAGEIO_THREADS = "1"
 
 源 Carpaint 是三层 BSDF 混合，不能直接当成单个 glTF 金属清漆材质。`AMG-interactive.json` 记录原始线性颜色、粗糙度、混合权重、Fresnel IOR、烘焙纹理与源文件 SHA-256；Setup/Build 检查源文件哈希，过期导出会明确报错。Unity 的 `BlenderLayeredPaint` 按这些值重建三层。当前底层粗糙度约 0.668、占比约 93.65%，没有额外的清漆权重 1 或金属度 0.9 覆盖。玻璃和发光材质的视角响应从源节点生成 LUT。
 
-默认光照使用用户提供的 `Assets/Environment/lauter_waterfall_2k.hdr`，强度 1、旋转 0。该 HDR 同时生成带粗糙度卷积 mip 的反射 Cubemap 和漫反射球谐环境光。已删除虚构大厅、反射灯带和默认强直射灯；补光初始强度为 0，菜单可手动添加。MR 相机仍清为透明，HDR 仅参与照明与反射。桌面预览共用相同光照。纹理使用 16 倍各向异性过滤，无负 mip 偏移。
+默认光照使用项目中的室内摄影棚 `Assets/Environment/brown_photostudio_02_2k.hdr`，强度 1、旋转 0。该 HDR 同时生成带粗糙度卷积 mip 的反射 Cubemap 和漫反射球谐环境光；场景保存同一 HDR 的反射引用与 27 个漫反射系数。已删除虚构大厅、反射灯带和默认强直射灯；补光初始强度为 0，菜单可手动添加。MR 相机仍清为透明，HDR 仅参与照明与反射。桌面预览共用相同光照。纹理使用 16 倍各向异性过滤，无负 mip 偏移。
 
 ARFoundation 请求测光与环境探针，只有提供方实际输出数据时才更新；过期/非法测光恢复 HDR 环境和零补光。当前厂家链路没有已验证的实时环境贴图接口。为保留透视 Alpha，主颜色缓冲关闭 HDR，环境反射纹理保留 HDR。
 
