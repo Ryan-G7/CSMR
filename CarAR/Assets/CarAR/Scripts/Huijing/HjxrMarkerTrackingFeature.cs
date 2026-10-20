@@ -81,6 +81,7 @@ namespace CarAR.Huijing
         public static int InputSpaceCount { get { lock (spacesLock) return inputSpaces.Count; } }
         public static void SetAlignment(Matrix4x4 nativeMatrix)
         {
+            if (!HjxrMarkerFeedback.IsRigid(nativeMatrix)) throw new ArgumentException("Marker alignment must be a finite rigid transform", nameof(nativeMatrix));
             // Construct on the Unity thread; native callbacks read an immutable object.
             Volatile.Write(ref alignment, new Alignment(nativeMatrix));
         }

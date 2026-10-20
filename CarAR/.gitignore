@@ -25,3 +25,8 @@ crashlytics-build.properties
 
 # Local Unity and camera backend logs
 *.log
+
+# Local inspection dependencies and Python bytecode
+tmp/
+__pycache__/
+*.py[cod]

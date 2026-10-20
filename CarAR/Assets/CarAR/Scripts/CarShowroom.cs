@@ -17,6 +17,7 @@ namespace CarAR
         public MRTKCarInteraction gestures;
         public ExplodeController explode;
         public CarPanel leftDoor, rightDoor, trunk, hood;
+        public bool IsCalibrating => GetComponent<Huijing.HuijingMRBridge>()?.AlignmentPending == true;
         public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 && !Huijing.HuijingMRBridge.Requested;
         float brightness = 1.2f, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
         GUIStyle title, text, button;
@@ -150,6 +151,7 @@ namespace CarAR
             yield return MRTKInteractionSmoke();
             smokeControlsCamera = true;
             yield return ControllerInputSmoke.Run(this);
+            yield return ReviewRegressionSmoke.Run(this);
             smokeControlsCamera = false;
             var parked = car.position;
             var parkedScale = car.localScale;

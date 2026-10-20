@@ -34,10 +34,10 @@ namespace CarAR
             float initialGround = showroom.placement.GroundHeight;
             var camera = Camera.main.transform;
             var cameraPosition = camera.position; var cameraRotation = camera.rotation;
-            void Pose(UnityEngine.InputSystem.InputDevice device, Vector3 position, Vector3 target)
+            void Pose(UnityEngine.InputSystem.InputDevice device, Vector3 position, Vector3 target, float? trigger = null)
             {
                 var rotation = Quaternion.LookRotation(target - position);
-                Send(device, input.trackingOrigin.InverseTransformPoint(position), Quaternion.Inverse(input.trackingOrigin.rotation) * rotation);
+                Send(device, input.trackingOrigin.InverseTransformPoint(position), Quaternion.Inverse(input.trackingOrigin.rotation) * rotation, trigger: trigger);
             }
             IEnumerator Click(int index)
             {
@@ -125,6 +125,13 @@ namespace CarAR
             Pose(right, ground + new Vector3(0, 1.5f, -3), ground);
             yield return new WaitForSeconds(.4f);
             Check(input.IsPlacing && input.PlacementValid, "floor placement preview unavailable");
+            Send(right, tracked: false);
+            Pose(left, ground + new Vector3(0, 1.5f, -3), ground, trigger: 1);
+            yield return new WaitForSeconds(.2f);
+            Check(input.IsPlacing, "switching to a hand with a held trigger confirmed placement without a release");
+            Send(left, trigger: 0);
+            Pose(right, ground + new Vector3(0, 1.5f, -3), ground);
+            yield return new WaitForSeconds(.4f);
             Send(right, stick: Vector2.up); yield return new WaitForSeconds(.3f);
             Send(right, stick: Vector2.zero); yield return new WaitForSeconds(.1f);
             Send(right, trigger: 1); yield return new WaitForSeconds(.2f);
@@ -164,12 +171,12 @@ namespace CarAR
             RenderTexture.ReleaseTemporary(target); UnityEngine.Object.Destroy(image); UnityEngine.Object.Destroy(go);
         }
         static void Send(UnityEngine.InputSystem.InputDevice device, Vector3? position = null, Quaternion? rotation = null,
-            float? trigger = null, float? grip = null, float? menu = null, Vector2? stick = null)
+            float? trigger = null, float? grip = null, float? menu = null, Vector2? stick = null, bool tracked = true)
         {
             using (StateEvent.From(device, out var pointer))
             {
-                ((ButtonControl)device["isTracked"]).WriteValueIntoEvent(1f, pointer);
-                ((IntegerControl)device["trackingState"]).WriteValueIntoEvent(3, pointer);
+                ((ButtonControl)device["isTracked"]).WriteValueIntoEvent(tracked ? 1f : 0f, pointer);
+                ((IntegerControl)device["trackingState"]).WriteValueIntoEvent(tracked ? 3 : 0, pointer);
                 if (position.HasValue)
                 {
                     ((Vector3Control)device["pointerPosition"]).WriteValueIntoEvent(position.Value, pointer);

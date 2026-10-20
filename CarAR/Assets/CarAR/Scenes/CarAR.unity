@@ -4561,7 +4561,7 @@ GameObject:
   m_Component:
   - component: {fileID: 516330254}
   m_Layer: 0
-  m_Name: Huijing Virtual Marker (configured floor reference)
+  m_Name: Huijing Virtual Marker (vertical board reference)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6541,7 +6541,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CarAR.Huijing.HuijingMRBridge
   virtualMarker: {fileID: 516330254}
   placement: {fileID: 1422952219}
-  carOffsetFromMarker: {x: 0, y: 0, z: 4.5}
   markerLength: 0.0678
 --- !u!114 &866899359
 MonoBehaviour:

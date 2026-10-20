@@ -13,7 +13,6 @@ namespace CarAR
         void Awake() { closedRotation = transform.localRotation; }
         public void Toggle() { if (!GetComponentInParent<ExplodeController>().IsBusy) target = 1f - target; }
         public void Close() { target = 0f; }
-        public void ResetImmediate() { target = progress = 0; transform.localRotation = closedRotation; }
         void Update()
         {
             progress = Mathf.MoveTowards(progress, target, Time.deltaTime / Mathf.Max(.01f, duration));

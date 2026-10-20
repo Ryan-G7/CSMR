@@ -33,6 +33,7 @@ namespace CarAR.EditorTools
         [MenuItem("CarAR/Setup Project and Scene")]
         public static void Setup()
         {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             try
             {
                 ConfigurePlayer();
@@ -42,7 +43,7 @@ namespace CarAR.EditorTools
                 BuildScene();
                 AssetDatabase.SaveAssets();
                 EditorUtility.DisplayDialog("CarAR",
-                    "Setup complete.\n\nScene: Assets/CarAR/Scenes/CarAR.unity\nBuild target: Android / OpenXR\n\nConnect the headset and use Build And Run.",
+                    "Setup complete.\n\nScene: Assets/CarAR/Scenes/CarAR.unity\nBuild target: Windows / OpenXR\n\nUse CarARSetupWizard.BuildPreview to build the desktop and HJXR player.",
                     "OK");
             }
             catch (Exception e)
@@ -58,9 +59,10 @@ namespace CarAR.EditorTools
             PlayerSettings.productName = "CarAR AMG GT";
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.preserveFramebufferAlpha = true;
-            if (BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, BuildTarget.Android))
-                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
-            else Debug.LogWarning("[CarAR] Android Build Support is not installed. Desktop preview is available; install Android module before building an APK.");
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneWindows64 &&
+                !EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64))
+                throw new Exception("Cannot activate the Windows build target");
+            PlayerSettings.runInBackground = true;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -239,7 +241,6 @@ namespace CarAR.EditorTools
             EnsureFolder(PrefabDir);
             EnsureFolder(SceneDir);
 
-            if (!Application.isBatchMode) EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             new GameObject("AR Session", typeof(ARSession), typeof(ARInputManager));
@@ -426,7 +427,7 @@ namespace CarAR.EditorTools
             controllerInput.rayMaterial = rayMaterial;
             var diagnostics = showroom.gameObject.AddComponent<XRReviewDiagnostics>();
             diagnostics.showroom = showroom; diagnostics.origin = origin;
-            var marker = new GameObject("Huijing Virtual Marker (configured floor reference)");
+            var marker = new GameObject("Huijing Virtual Marker (vertical board reference)");
             var vendor = showroom.gameObject.AddComponent<Huijing.HuijingMRBridge>();
             vendor.virtualMarker = marker.transform; vendor.placement = placement;
             carRoot.SetActive(false);
@@ -542,21 +543,12 @@ namespace CarAR.EditorTools
         // Headless entry point: generate a reproducible scene, validate it and build a runnable desktop preview.
         public static void BuildPreview()
         {
+            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             try
             {
-                PlayerSettings.companyName = "CarAR";
-                PlayerSettings.productName = "CarAR AMG GT";
-                PlayerSettings.colorSpace = ColorSpace.Linear;
-                PlayerSettings.preserveFramebufferAlpha = true;
-                PlayerSettings.runInBackground = true;
-                var player = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);
-                var input = player.FindProperty("activeInputHandler");
-                if (input != null) { input.intValue = 1; player.ApplyModifiedPropertiesWithoutUndo(); }
+                ConfigurePlayer();
                 HuijingInteropValidation.Validate();
                 ConfigureUrp(); AssignOpenXRLoader(); EnableHandTrackingFeatures(); BuildScene();
-                PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
-                PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
-                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
                 AssetDatabase.SaveAssets();
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                     scenes = new[] { "Assets/CarAR/Scenes/CarAR.unity" },

@@ -132,10 +132,37 @@ namespace CarAR.EditorTools
                 if (midnight.State != HjxrMarkerFeedback.Outcome.AlignmentCalculated || midnight.CompletedAt.Day != 20 || midnight.NativeAlignment != Matrix4x4.identity)
                     throw new Exception("Calibration correlation failed across midnight");
             }
+            var invalidTranslation = Matrix4x4.identity;
+            invalidTranslation.m03 = float.NaN;
+            bool rejected = false;
+            try { HjxrMarkerTrackingFeature.SetAlignment(invalidTranslation); }
+            catch (ArgumentException) { rejected = true; }
+            if (!rejected) throw new Exception("Non-finite alignment translation reached the OpenXR input hook");
+            string feedbackPath = System.IO.Path.GetTempFileName();
+            try
+            {
+                var requested = new DateTime(2026, 10, 20, 9, 0, 0);
+                using (var reader = new HjxrMarkerFeedback(feedbackPath, requestedAt: requested))
+                {
+                    if (!reader.CanRead) throw new Exception("Readable calibration log was rejected");
+                    System.IO.File.AppendAllText(feedbackPath,
+                        "09:00:00.001 1 2 JXR_SDK::JxrWorldManager::detectMakerInMat:653 T_slamw2objw mat:\n" +
+                        "1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n" +
+                        "09:00:00.002 1 2 JXR_SDK::JxrWorldManager::frameProcessLoop:409 detectMakerInMat return 0\n");
+                    reader.Poll();
+                    if (reader.State != HjxrMarkerFeedback.Outcome.AlignmentCalculated)
+                        throw new Exception("Calibration log polling did not consume appended completion evidence");
+                }
+                using (var locked = new System.IO.FileStream(feedbackPath, System.IO.FileMode.Open, System.IO.FileAccess.ReadWrite, System.IO.FileShare.None))
+                using (var reader = new HjxrMarkerFeedback(feedbackPath))
+                    if (reader.CanRead) throw new Exception("Locked calibration log was reported as readable");
+            }
+            finally { System.IO.File.Delete(feedbackPath); }
             Debug.Log("[HJXR Validation] PASS: native ABI and marker coordinate conversion");
             Debug.Log("[HJXR Validation] PASS: asynchronous marker feedback and observed camera failure trace");
             Debug.Log("[HJXR Validation] PASS: captured marker matrix, OpenXR input ABI, pose validity and velocity basis");
             Debug.Log("[HJXR Validation] PASS: buffered prior-result rejection, final marker pose and detector completion, midnight timestamps");
+            Debug.Log("[HJXR Validation] PASS: non-finite translation rejection, actual file polling and unreadable-log detection");
         }
     }
 }

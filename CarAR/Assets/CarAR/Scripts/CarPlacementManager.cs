@@ -12,12 +12,12 @@ namespace CarAR
         [SerializeField] float fallbackDelay = 8f;
         [SerializeField] float fallbackDistance = 4.5f;
         [SerializeField] float fallbackEyeHeight = 1.5f;
-        bool placed, estimated, referenceFloor, stageFloor, manualFloor;
+        bool placed, estimated, stageFloor, manualFloor;
         float startTime;
         bool waitingForHeadset;
         bool refreshPlacementPreview;
         CarShowroom showroom;
-        public string Status => referenceFloor ? "Configured marker floor (verify alignment)" : !placed ? waitingForHeadset ? "Waiting for worn, tracked headset" : "Scanning for floor..." : estimated ? "Estimated floor (no plane data)" : stageFloor ? "OpenXR stage floor" : "Tracked horizontal plane";
+        public string Status => !placed ? waitingForHeadset ? "Waiting for worn, tracked headset" : "Scanning for floor..." : manualFloor ? "Manually aligned floor" : estimated ? "Estimated floor (no plane data)" : stageFloor ? "OpenXR stage floor" : "Tracked horizontal plane";
         public bool IsPlaced => placed;
         public void RefreshPlacementPreviewAfterAlignment() => refreshPlacementPreview = true;
         public float PlacementPreviewHeight => refreshPlacementPreview && Camera.main != null ? Camera.main.transform.position.y - fallbackEyeHeight : GroundHeight;
@@ -30,7 +30,8 @@ namespace CarAR
         void Update()
         {
             // Lock the first placement. Later plane refinements must not move a parked car.
-            if (placed || carRoot == null) return;
+            if (placed || carRoot == null || showroom != null && showroom.IsCalibrating) return;
+            if (showroom != null && showroom.GetComponent<MRTKControllerInput>()?.IsPlacing == true) return;
             // A PC runtime can publish its last cached pose while the headset is unworn.
             // Start the initial floor timeout only after wearing and positional tracking recover.
             if (showroom != null && !showroom.IsPreview && Application.platform != RuntimePlatform.Android)
@@ -71,7 +72,12 @@ namespace CarAR
         }
         public void Recenter()
         {
-            if (Camera.main == null || carRoot == null) return;
+            if (Camera.main == null || carRoot == null || showroom != null && showroom.IsCalibrating) return;
+            if (showroom != null)
+            {
+                showroom.GetComponent<MRTKControllerInput>()?.CancelPlacement();
+                showroom.gestures.SetManipulation(false);
+            }
             var cam = Camera.main.transform;
             var fwd = Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized;
             if (fwd.sqrMagnitude < .001f) fwd = Vector3.forward;
@@ -87,9 +93,6 @@ namespace CarAR
             }
             var ground = cam.position + fwd * fallbackDistance;
             ground.y = floor ? origin.transform.position.y : cam.position.y - fallbackEyeHeight;
-            // Recenter must move horizontally too, including after an estimated placement.
-            if (placed) carRoot.position = ground + Vector3.up * (carRoot.position.y - GroundHeight);
-            referenceFloor = false;
             PlaceAt(ground, !floor);
             stageFloor = floor;
             LogVisibility();
@@ -106,45 +109,39 @@ namespace CarAR
         }
         public void PlaceAt(Vector3 groundPos, bool isEstimated = false)
         {
-            if (carRoot == null) return;
-            // Do not measure exploded or open geometry when a better floor arrives.
-            if (placed && estimated)
-            {
-                var delta = groundPos.y - GroundHeight;
-                carRoot.position += Vector3.up * delta;
-            }
-            else
+            if (carRoot == null || showroom != null && showroom.IsCalibrating) return;
+            // Every subsequent placement preserves the established ground pivot,
+            // including open panels, exploded parts and manually adjusted floors.
+            float offset = carRoot.position.y - GroundHeight;
+            if (!placed)
             {
                 var renderers = carRoot.GetComponentsInChildren<Renderer>(true);
                 float bottom = float.PositiveInfinity;
                 foreach (var r in renderers) bottom = Mathf.Min(bottom, r.bounds.min.y);
-                float offset = float.IsPositiveInfinity(bottom) ? 0f : carRoot.position.y - bottom;
-                carRoot.position = groundPos + Vector3.up * offset;
+                offset = float.IsPositiveInfinity(bottom) ? 0f : carRoot.position.y - bottom;
             }
+            carRoot.position = groundPos + Vector3.up * offset;
             GroundHeight = groundPos.y;
             estimated = isEstimated;
+            stageFloor = manualFloor = false;
             placed = true;
             carRoot.gameObject.SetActive(true);
             Debug.Log($"[CarAR] Placed: {Status}, ground={GroundHeight:F3}");
         }
-        public string DisplayStatus => !placed ? waitingForHeadset ? "请佩戴头显，等待空间定位恢复" : "正在寻找地面" : referenceFloor ? "使用标记参考地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
+        public string DisplayStatus => !placed ? waitingForHeadset ? "请佩戴头显，等待空间定位恢复" : "正在寻找地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
         public void PlaceOnFloorPoint(Vector3 ground)
         {
+            if (showroom != null && showroom.IsCalibrating) return;
             refreshPlacementPreview = false;
-            // Preserve the ground pivot even when panels are open or exploded.
-            if (placed) { carRoot.position = ground + Vector3.up * (carRoot.position.y - GroundHeight); GroundHeight = ground.y; }
-            else PlaceAt(ground, true);
-            referenceFloor = false; manualFloor = true;
-        }
-        public void PlaceOnReferenceFloor(Vector3 ground)
-        {
-            PlaceOnFloorPoint(ground); referenceFloor = true;
+            PlaceAt(ground, true);
+            manualFloor = true;
         }
         public float GroundHeight { get; private set; }
         public void AdjustFloor(float delta)
         {
             if (!placed || carRoot == null) return;
-            carRoot.position += Vector3.up * delta; GroundHeight += delta; manualFloor = true; referenceFloor = false;
+            if (showroom != null && showroom.IsCalibrating) return;
+            carRoot.position += Vector3.up * delta; GroundHeight += delta; manualFloor = true;
         }
     }
 }

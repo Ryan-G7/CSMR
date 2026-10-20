@@ -60,7 +60,6 @@ namespace CarAR.Huijing
             return HjxrResult.NotSupported;
 #endif
         }
-        public HjxrResult Command(HjxrCommand command) => IsInitialized ? (HjxrResult)ioctl(session, (int)command, IntPtr.Zero, IntPtr.Zero) : HjxrResult.InvalidParam;
         public HjxrResult Command<T>(HjxrCommand command, ref T value) where T : struct
         {
             if (!IsInitialized) return HjxrResult.InvalidParam;

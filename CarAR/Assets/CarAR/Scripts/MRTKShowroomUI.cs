@@ -23,7 +23,11 @@ namespace CarAR
         void Start()
         {
             Bind(0, showroom.leftDoor.Toggle); Bind(1, showroom.rightDoor.Toggle); Bind(2, showroom.trunk.Toggle);
-            Bind(3, () => { showroom.gestures.SetManipulation(false); showroom.explode.Toggle(); });
+            Bind(3, () =>
+            {
+                if (CalibrationBlocksCommand() || !showroom.placement.IsPlaced) return;
+                showroom.gestures.SetManipulation(false); showroom.explode.Toggle();
+            });
             Bind(4, ToggleLock); Bind(5, controllers.BeginPlacement);
             Bind(6, () => TransformCommand(() => showroom.gestures.MoveBy(-ViewRight() * .1f)));
             Bind(7, () => TransformCommand(() => showroom.gestures.MoveBy(ViewRight() * .1f)));
@@ -57,6 +61,8 @@ namespace CarAR
         }
         void ToggleLock()
         {
+            if (CalibrationBlocksCommand()) return;
+            if (!showroom.placement.IsPlaced) { Notice("正在放置汽车，请稍候"); return; }
             if (showroom.explode.IsBusy) { Notice("请先组装还原，再解锁车辆"); return; }
             showroom.gestures.SetManipulation(!showroom.gestures.ManipulationEnabled);
         }
@@ -65,9 +71,6 @@ namespace CarAR
             var vendor = GetComponent<Huijing.HuijingMRBridge>();
             if (!Huijing.HuijingMRBridge.Requested || vendor == null)
             { Notice("定位板校准需要连接荟镜头显"); return; }
-            if (showroom.explode.IsBusy) { Notice("请等待动画完成后再校准"); return; }
-            if (controllers.IsPlacing) controllers.CancelPlacement();
-            showroom.gestures.SetManipulation(false);
             vendor.RequestAlignment();
             Notice(vendor.AlignmentStatus);
             // Keep the physical board visible instead of covering it with the menu.
@@ -94,10 +97,17 @@ namespace CarAR
         static Vector3 ViewRight() => Vector3.Cross(Vector3.up, ViewForward());
         void TransformCommand(System.Action command)
         {
+            if (CalibrationBlocksCommand()) return;
             if (!showroom.placement.IsPlaced) { Notice("正在放置汽车，请稍候"); return; }
             if (showroom.explode.IsBusy) { Notice("请先组装还原，再移动汽车"); return; }
             if (!showroom.gestures.ManipulationEnabled) { Notice("请先按“解除锁定”"); return; }
             command();
+        }
+        bool CalibrationBlocksCommand()
+        {
+            if (!showroom.IsCalibrating) return false;
+            Notice("定位板校准中，请等待结果后再操作车辆");
+            return true;
         }
         public void Notice(string message) { notice = message; noticeUntil = Time.unscaledTime + 4; }
         public void ShowAlignmentResult(string message)

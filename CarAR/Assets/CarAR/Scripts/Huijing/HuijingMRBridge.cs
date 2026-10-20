@@ -9,7 +9,6 @@ namespace CarAR.Huijing
     {
         public Transform virtualMarker;
         public CarPlacementManager placement;
-        public Vector3 carOffsetFromMarker = new Vector3(0, 0, 4.5f);
         // Physical black-square side, excluding the white border; measured by the user as 6.78 cm.
         // Keep this outline consistent with the installed vendor marker YAML and Core.marker.size.
         public float markerLength = .0678f;
@@ -184,6 +183,9 @@ namespace CarAR.Huijing
         public void RequestAlignment()
         {
             if (AlignmentPending || MarkerRestartRequired) return;
+            var showroom = GetComponent<CarShowroom>();
+            if (showroom.explode.IsBusy)
+            { AlignmentStatus = "请先组装还原，再校准定位板"; return; }
             if (sdk == null || !sdk.IsInitialized || virtualMarker == null)
             {
                 AlignmentStatus = "标记对齐不可用，请检查头显连接";
@@ -196,6 +198,12 @@ namespace CarAR.Huijing
             markerFeedback?.Dispose();
             var requestedAt = DateTime.Now;
             markerFeedback = new HjxrMarkerFeedback(Application.consoleLogPath, nativeMarker, requestedAt);
+            // Without a readable completion channel the native renderer could align
+            // while Unity input remains uncorrected. Do not start that operation.
+            if (!markerFeedback.CanRead)
+            { FinishMarkerRequest("校准结果日志不可读取，请检查日志路径后重试", false); return; }
+            GetComponent<MRTKControllerInput>().CancelPlacement();
+            showroom.gestures.SetManipulation(false);
             // The supplied board is a single DICT_6X6_50 / ID 0 marker, not a cube.
             int cube = 0;
             var result = sdk.Command(HjxrCommand.SetUseCubeMarker, ref cube);
@@ -244,7 +252,9 @@ namespace CarAR.Huijing
             {
                 nextMarkerPoll = Time.unscaledTime + .25f;
                 markerFeedback?.Poll();
-                if (markerFeedback?.State == HjxrMarkerFeedback.Outcome.CameraUnavailable)
+                if (markerFeedback == null || !markerFeedback.CanRead)
+                    FinishMarkerRequest("校准日志读取中断，请重启程序后重试", true);
+                else if (markerFeedback.State == HjxrMarkerFeedback.Outcome.CameraUnavailable)
                     FinishMarkerRequest("校准失败：识别相机图像不可用，请重启程序", true);
                 else if (markerFeedback?.State == HjxrMarkerFeedback.Outcome.DetectionStopped)
                     FinishMarkerRequest("识别已结束，未收到对齐结果，请对准定位板后重试", false);
@@ -269,7 +279,7 @@ namespace CarAR.Huijing
                 nextAlignmentCheck = Time.unscaledTime + .5f;
                 CheckAlignmentRequest();
             }
-            if (Application.isFocused && Requested && Keyboard.current != null && Keyboard.current.kKey.wasPressedThisFrame) RequestAlignment();
+            if (Application.isFocused && Requested && Keyboard.current != null && Keyboard.current.kKey.wasPressedThisFrame) GetComponent<MRTKShowroomUI>().RequestMarkerAlignment();
             if (Application.isFocused && Requested && Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame) placement.Recenter();
         }
         void FinishMarkerRequest(string message, bool restartRequired)

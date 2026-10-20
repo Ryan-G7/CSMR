@@ -10,9 +10,11 @@ namespace CarAR
     {
         public ObjectManipulator manipulator;
         readonly List<XRHandSubsystem> hands = new();
+        CarShowroom showroom;
         public Vector3 ModelSize { get; private set; } = new Vector3(2, 1.3f, 4.4f);
         void Awake()
         {
+            showroom = FindAnyObjectByType<CarShowroom>();
             var renderers = GetComponentsInChildren<Renderer>(true);
             if (renderers.Length == 0) return;
             var bounds = renderers[0].bounds;
@@ -25,6 +27,9 @@ namespace CarAR
         public string Status { get; private set; } = "MRTK input initializing";
         public void SetManipulation(bool value)
         {
+            if (manipulator == null) return;
+            if (value && showroom != null && (!showroom.placement.IsPlaced || showroom.IsCalibrating || showroom.explode.IsBusy ||
+                showroom.GetComponent<MRTKControllerInput>()?.IsPlacing == true)) return;
             if (manipulator.enabled == value) return;
             manipulator.enabled = value;
             Debug.Log("[CarAR MRTK] Vehicle manipulation " + (value ? "unlocked" : "locked"));

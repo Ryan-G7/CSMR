@@ -17,6 +17,7 @@ namespace CarAR.Huijing
         public enum Outcome { Waiting, CameraUnavailable, DetectionStopped, AlignmentCalculated }
         public Outcome State { get; private set; }
         FileStream input;
+        public bool CanRead => input != null;
         readonly byte[] buffer = new byte[16384];
         string fragment = "";
         int imageFailures;
@@ -77,6 +78,7 @@ namespace CarAR.Huijing
             try
             {
                 FlushNativeOutput();
+                if (input.Length < input.Position) throw new IOException("Calibration log was truncated");
                 // Bound disk work even when a broken native detector floods the log.
                 for (int i = 0; i < 4 && State == Outcome.Waiting; i++)
                 {
@@ -221,8 +223,9 @@ namespace CarAR.Huijing
             }
             return true;
         }
-        static bool IsRigid(Matrix4x4 matrix)
+        internal static bool IsRigid(Matrix4x4 matrix)
         {
+            for (int i = 0; i < 16; i++) if (!float.IsFinite(matrix[i])) return false;
             if (Mathf.Abs(matrix.m30) + Mathf.Abs(matrix.m31) + Mathf.Abs(matrix.m32) > .001f || Mathf.Abs(matrix.m33 - 1) > .001f) return false;
             Vector3 x = matrix.GetColumn(0), y = matrix.GetColumn(1), z = matrix.GetColumn(2);
             return Mathf.Abs(x.sqrMagnitude - 1) < .003f && Mathf.Abs(y.sqrMagnitude - 1) < .003f && Mathf.Abs(z.sqrMagnitude - 1) < .003f &&

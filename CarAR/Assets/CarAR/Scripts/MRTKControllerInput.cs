@@ -44,6 +44,7 @@ namespace CarAR
         float placementHeight;
         float placementStarted;
         bool triggerReleased;
+        Hand placementHand;
         InputAction calibrate;
         float calibrationHeldSince = -1, nextDiagnostics;
         bool calibrationSubmitted;
@@ -54,10 +55,23 @@ namespace CarAR
         {
             left = CreateHand("LeftHand"); right = CreateHand("RightHand");
             calibrate = Own(new InputAction("Marker calibration shortcut", InputActionType.Button, "<XRController>{LeftHand}/primaryButton"));
-            calibrate.Enable();
-            InputSystem.onDeviceChange += OnDeviceChange;
             foreach (var device in InputSystem.devices) LogDevice(device, "present");
+        }
+        void OnEnable()
+        {
+            left.controller.gameObject.SetActive(true); right.controller.gameObject.SetActive(true);
+            foreach (var action in ownedActions) action.Enable();
+            InputSystem.onDeviceChange += OnDeviceChange;
             Application.onBeforeRender += LogRayDiagnostics;
+        }
+        void OnDisable()
+        {
+            InputSystem.onDeviceChange -= OnDeviceChange;
+            Application.onBeforeRender -= LogRayDiagnostics;
+            CancelPlacement();
+            left.controller.gameObject.SetActive(false); right.controller.gameObject.SetActive(false);
+            foreach (var action in ownedActions) action.Disable();
+            calibrationHeldSince = -1; calibrationSubmitted = false;
         }
         Hand CreateHand(string hand)
         {
@@ -204,9 +218,10 @@ namespace CarAR
         }
         public void BeginPlacement()
         {
+            if (ui.showroom.IsCalibrating) { ui.Notice("定位板校准中，请等待结果后再选择停放位置"); return; }
             if (ui.showroom.explode.IsBusy) { ui.Notice("请先组装还原，再重新放置"); return; }
             ui.showroom.gestures.SetManipulation(false);
-            IsPlacing = true; PlacementValid = false; triggerReleased = false; placementStarted = Time.unscaledTime;
+            IsPlacing = true; PlacementValid = false; triggerReleased = false; placementHand = null; placementStarted = Time.unscaledTime;
             placementHeight = ui.showroom.placement.PlacementPreviewHeight;
             ui.controlPanel.gameObject.SetActive(false);
             if (footprint == null)
@@ -233,6 +248,9 @@ namespace CarAR
         void UpdatePlacement()
         {
             var h = right.tracked ? right : left.tracked ? left : null;
+            // A newly tracked or different hand must release its own trigger first.
+            // The previous hand's released state cannot authorize a held trigger.
+            if (h != placementHand) { placementHand = h; triggerReleased = false; placementStarted = Time.unscaledTime; }
             PlacementValid = false;
             if (h != null)
             {
@@ -276,8 +294,9 @@ namespace CarAR
         void OnDeviceChange(UnityEngine.InputSystem.InputDevice device, InputDeviceChange change) => LogDevice(device, change.ToString());
         void OnDestroy()
         {
-            InputSystem.onDeviceChange -= OnDeviceChange;
-            Application.onBeforeRender -= LogRayDiagnostics;
+            // These objects belong to the input component but live under the XR origin.
+            if (left?.controller != null) Destroy(left.controller.gameObject);
+            if (right?.controller != null) Destroy(right.controller.gameObject);
             foreach (var action in ownedActions) action.Dispose();
             if (footprint != null) Destroy(footprint.gameObject);
             if (placementHint != null) Destroy(placementHint.gameObject);
