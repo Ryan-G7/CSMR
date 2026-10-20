@@ -20,7 +20,20 @@ try {
     $zip = Join-Path $work 'CarAR-Windows-x64.zip'
     Write-Host "Downloading CarAR $($release.version) from GitHub Releases..."
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $release.url -OutFile $zip -UseBasicParsing
+    $previousProgress = $ProgressPreference
+    $ProgressPreference = 'SilentlyContinue'
+    try {
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            try {
+                Invoke-WebRequest -Uri $release.url -OutFile $zip -UseBasicParsing -TimeoutSec 120
+                break
+            } catch {
+                if ($attempt -eq 3) { throw }
+                Write-Host 'Connection interrupted; retrying the release download...'
+                Start-Sleep -Seconds 2
+            }
+        }
+    } finally { $ProgressPreference = $previousProgress }
     if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $release.sha256) {
         throw 'Player archive checksum mismatch. Installation aborted.'
     }
