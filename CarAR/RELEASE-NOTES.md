@@ -21,6 +21,12 @@ Validation on Windows with Unity 6000.6.3f1:
 - The archive contains the complete 372-file player, including UnityPlayer,
   Mono runtime, plugins and `CarAR_Data`; local logs, screenshots, timing trials
   and Unity's build backup folder are excluded.
+- After publication, a new HTTPS clone from GitHub passed `git lfs fsck`,
+  resolved all six local MRTK packages, and matched the source/model hashes.
+  The Windows PowerShell launcher downloaded the public release, verified its
+  checksum and installed it in an empty directory. The downloaded player passed
+  all four runtime suites with exit code 0; a second launcher call reused the
+  installation without downloading again.
 
 Existing Unity editor assembly-analysis and JobTempAlloc shutdown diagnostics
 remain in build logs. These checks do not certify headset registration accuracy,
