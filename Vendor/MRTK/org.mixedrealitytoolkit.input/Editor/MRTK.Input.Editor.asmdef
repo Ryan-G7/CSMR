@@ -1,0 +1,58 @@
+{
+    "name": "MixedReality.Toolkit.Input.Editor",
+    "rootNamespace": "MixedReality.Toolkit.Input.Editor",
+    "references": [
+        "MixedReality.Toolkit.Core",
+        "MixedReality.Toolkit.Core.Editor",
+        "MixedReality.Toolkit.Input",
+        "Unity.XR.CoreUtils",
+        "Unity.XR.CoreUtils.Editor",
+        "Unity.XR.Hands",
+        "Unity.XR.Interaction.Toolkit",
+        "Unity.XR.Interaction.Toolkit.Editor",
+        "Unity.XR.Management",
+        "Unity.XR.OpenXR"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.cloud.gltfast",
+            "expression": "",
+            "define": "GLTFAST_PRESENT"
+        },
+        {
+            "name": "com.atteneder.gltfast",
+            "expression": "",
+            "define": "GLTFAST_PRESENT"
+        },
+        {
+            "name": "com.unity.cloud.ktx",
+            "expression": "",
+            "define": "KTX_PRESENT"
+        },
+        {
+            "name": "com.atteneder.ktx",
+            "expression": "",
+            "define": "KTX_PRESENT"
+        },
+        {
+            "name": "com.unity.xr.management",
+            "expression": "4.2",
+            "define": "UNITYXR_MANAGEMENT_PRESENT"
+        },
+        {
+            "name": "com.unity.xr.openxr",
+            "expression": "",
+            "define": "UNITY_OPENXR_PRESENT"
+        }
+    ],
+    "noEngineReferences": false
+}

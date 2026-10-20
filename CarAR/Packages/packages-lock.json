@@ -260,7 +260,7 @@
       "url": "https://packages.unity.com"
     },
     "org.mixedrealitytoolkit.core": {
-      "version": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.core",
+      "version": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.core",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -270,7 +270,7 @@
       }
     },
     "org.mixedrealitytoolkit.input": {
-      "version": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.input",
+      "version": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.input",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -284,7 +284,7 @@
       }
     },
     "org.mixedrealitytoolkit.spatialmanipulation": {
-      "version": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.spatialmanipulation",
+      "version": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.spatialmanipulation",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -295,7 +295,7 @@
       }
     },
     "org.mixedrealitytoolkit.standardassets": {
-      "version": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.standardassets",
+      "version": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.standardassets",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -303,7 +303,7 @@
       }
     },
     "org.mixedrealitytoolkit.uxcomponents": {
-      "version": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.uxcomponents",
+      "version": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.uxcomponents",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -315,7 +315,7 @@
       }
     },
     "org.mixedrealitytoolkit.uxcore": {
-      "version": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.uxcore",
+      "version": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.uxcore",
       "depth": 0,
       "source": "local",
       "dependencies": {

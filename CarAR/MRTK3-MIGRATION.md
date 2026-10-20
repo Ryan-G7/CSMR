@@ -79,3 +79,12 @@ The previous LOCAL run logged occasional camera steps of about 6.75 metres. The 
 `tracking-validity-smoke.log` records PASS for the MRTK, controller-input and animation suites with exit code 0. The final build additionally filters velocity-only validity changes between Dynamic and BeforeRender to avoid per-frame diagnostic messages; `tracking-validity-build.log` passes. The 16:49 device restart confirms LOCAL and one active position/rotation control with a bound HMD tracking-state action. `tracking-validity-device.log` subsequently records headset presence, first placement, right-controller tracking and approximately 72fps with an unchanged parked root. No 6.75-metre step was observed in that sample. Wearer feedback about physical registration remains pending.
 
 This PimaxXR 0.4.5 runtime advertises no spatial-anchor extension among its 13 extensions. No active ARFoundation anchor provider has been established for this device, so attaching an inert ARAnchor was not presented as a fix. Consistent 6DoF tracking can support session-local world locking without such an extension; persistent recovery in the same hall across sessions is not implemented or verified. The SDK's existing marker alignment remains conditional on the corresponding physical marker and calibrated reference pose.
+# Portable checkout (2026-10-20)
+
+The six required MRTK packages are now ordinary files in `Vendor/MRTK`, copied
+from local snapshot `e54736851ec6ed7768e628d0791c43d5e8826571`. Their Unity
+compatibility fixes and licenses are included. CarAR package paths point there;
+the previous `MixedRealityToolkit-Unity` gitlink had no `.gitmodules` and could
+not supply these packages to a normal clone. The remaining notes below describe
+the earlier local development checkout.
+

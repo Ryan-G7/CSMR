@@ -2,6 +2,8 @@
 
 实际 Unity 工程在本目录 `CarAR`，使用 Unity 6000.6.3f1。部署链路为 Windows / Pimax OpenXR / 荟镜 HJXR 透视。系统审查与尚缺少的正式评审能力见 [代码审查报告](CODE-REVIEW.md)。
 
+首次克隆、免编辑器运行包下载和可移植构建命令见 [仓库首页](../README.md)。MRTK 依赖随仓库位于 `../Vendor/MRTK`，无需子模块；原始模型使用 Git LFS。
+
 ## 当前空间定位方式
 
 2026-10-20 已删除实体定位板工作流，包括绿色参考框、校准按钮、长按 X / K 快捷键、WorldSync 调用、厂商日志结果解析和自定义 OpenXR 输入空间变换。
@@ -15,7 +17,7 @@
 双击工作区根目录 `启动汽车MR.cmd`，或运行：
 
 ```powershell
-& D:/Code/CSMR/CarAR/Launch/Start-HuijingMR.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\CarAR\Launch\Start-HuijingMR.ps1
 ```
 
 启动脚本自动启动或复用厂家相机后台和 MR 服务器，等待新启动的相机就绪，不重复启动现有 CarAR。缺少真实画面时运行根目录 `修复透视并重启.cmd`，或加 `-RestartCameraBackend`。日志为 `CarAR/huijing-mr.log`，重启前自动备份旧日志。

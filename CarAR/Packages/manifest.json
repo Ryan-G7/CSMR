@@ -18,11 +18,11 @@
     "com.unity.modules.unitywebrequest": "1.0.0",
     "com.unity.modules.xr": "1.0.0",
     "com.unity.xr.interaction.toolkit": "2.6.5",
-    "org.mixedrealitytoolkit.input": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.input",
-    "org.mixedrealitytoolkit.uxcomponents": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.uxcomponents",
-    "org.mixedrealitytoolkit.standardassets": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.standardassets",
-    "org.mixedrealitytoolkit.core": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.core",
-    "org.mixedrealitytoolkit.uxcore": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.uxcore",
-    "org.mixedrealitytoolkit.spatialmanipulation": "file:../../MixedRealityToolkit-Unity/org.mixedrealitytoolkit.spatialmanipulation"
+    "org.mixedrealitytoolkit.input": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.input",
+    "org.mixedrealitytoolkit.uxcomponents": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.uxcomponents",
+    "org.mixedrealitytoolkit.standardassets": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.standardassets",
+    "org.mixedrealitytoolkit.core": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.core",
+    "org.mixedrealitytoolkit.uxcore": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.uxcore",
+    "org.mixedrealitytoolkit.spatialmanipulation": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.spatialmanipulation"
   }
 }

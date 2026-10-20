@@ -1,5 +1,5 @@
 ﻿param(
-    [string]$AgentRoot = 'D:\Soft\AIXR Agent',
+    [string]$AgentRoot = $env:CARAR_AGENT_ROOT,
     [string]$ApplicationPath = (Join-Path $PSScriptRoot '..\Build\Windows\CarAR.exe'),
     [switch]$UseSystemRuntime,
     [switch]$NoStartSensors,
@@ -7,6 +7,16 @@
     [switch]$RestartCameraBackend
 )
 $ErrorActionPreference = 'Stop'
+if (-not $AgentRoot) {
+    $candidates = @((Join-Path $env:ProgramFiles 'AIXR Agent'), (Join-Path ${env:ProgramFiles(x86)} 'AIXR Agent'), 'D:\Soft\AIXR Agent')
+    $AgentRoot = $candidates | Where-Object { Test-Path -LiteralPath (Join-Path $_ 'resource/tool/api_layer/Release/jxrsdk.dll') } | Select-Object -First 1
+}
+if (-not $AgentRoot) { throw 'Install the manufacturer AIXR Agent and camera drivers. Set CARAR_AGENT_ROOT or pass -AgentRoot <installation folder>.' }
+if (-not (Test-Path -LiteralPath $ApplicationPath -PathType Leaf)) {
+    $defaultApplication = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../Build/Windows/CarAR.exe'))
+    if ([IO.Path]::GetFullPath($ApplicationPath) -ne $defaultApplication) { throw "Application not found: $ApplicationPath" }
+    $ApplicationPath = & (Join-Path $PSScriptRoot 'Get-CarARPlayer.ps1')
+}
 $layerDir = Join-Path $AgentRoot 'resource\tool\api_layer\Release'
 $sdkPath = Join-Path $layerDir 'jxrsdk.dll'
 $manifest = Join-Path $layerDir 'openxr-api-layer.json'
