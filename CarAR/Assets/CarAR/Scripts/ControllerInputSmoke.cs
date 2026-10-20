@@ -137,10 +137,17 @@ namespace CarAR
             Check(Vector3.Distance(beforeStick, car.position) > .15f, "left stick translation failed");
 
             input.BeginPlacement();
+            car.rotation = Quaternion.Euler(11, 38, -8);
+            var floorHeading = Vector3.ProjectOnPlane(car.forward, Vector3.up).normalized;
             var ground = new Vector3(2, showroom.placement.GroundHeight, 2);
             Pose(right, ground + new Vector3(0, 1.5f, -3), ground);
             yield return new WaitForSeconds(.4f);
             Check(input.IsPlacing && input.PlacementValid, "floor placement preview unavailable");
+            var footprint = (LineRenderer)typeof(MRTKControllerInput).GetField("footprint",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(input);
+            for (int i = 0; i < footprint.positionCount; i++)
+                Check(Mathf.Abs(footprint.GetPosition(i).y - ground.y - .012f) < .0001f,
+                    "tilted vehicle lifted a footprint corner off the preview floor");
             Send(right, tracked: false);
             Pose(left, ground + new Vector3(0, 1.5f, -3), ground, trigger: 1);
             yield return new WaitForSeconds(.2f);
@@ -153,6 +160,8 @@ namespace CarAR
             Send(right, trigger: 1); yield return new WaitForSeconds(.2f);
             Send(right, trigger: 0); yield return new WaitForSeconds(.2f);
             Check(!input.IsPlacing && !showroom.gestures.ManipulationEnabled, "placement failed to confirm and park");
+            Check(Vector3.Angle(car.up, Vector3.up) < .01f && Vector3.Angle(car.forward, floorHeading) < .05f,
+                "trigger-confirmed floor placement retained tilt or changed heading");
             Check(input.RightRayVisible, "ray did not remain visible after floor placement");
             Check(showroom.placement.GroundHeight > initialGround + .04f, "placement stick height calibration failed");
             // The oblique aim ray moves its intersection horizontally when the floor height changes.

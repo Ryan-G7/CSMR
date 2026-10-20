@@ -56,7 +56,7 @@ namespace CarAR
             shadow.position = new Vector3(car.position.x, showroom.placement.GroundHeight + .001f, car.position.z);
             shadow.localScale = Vector3.one * Mathf.Max(.5f, scale * .9f);
             contact.position = shadow.position + Vector3.up * .001f;
-            contact.rotation = car.rotation;
+            contact.rotation = CarPlacementManager.FloorRotation(car.rotation);
             var size = showroom.gestures.ModelSize;
             contact.localScale = new Vector3(size.x * .095f, .1f, size.z * .095f) * scale;
             contactMaterial.SetFloat("_Strength", showroom.explode.Progress > .1f ? .04f : .16f);

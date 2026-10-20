@@ -189,6 +189,12 @@ namespace CarAR
         public void PlaceAt(Vector3 groundPos, bool isEstimated = false)
         {
             if (!TrackingReady || carRoot == null) return;
+            // Floor placement always parks upright, retaining the horizontal heading.
+            // RotationAxisConstraint only limits changes relative to the grab's
+            // starting pose; it cannot repair a previously tilted pose.
+            showroom?.gestures?.SetManipulation(false);
+            float tilt = Vector3.Angle(carRoot.up, Vector3.up);
+            carRoot.rotation = FloorRotation(carRoot.rotation);
             // Every subsequent placement preserves the established ground pivot,
             // including open panels, exploded parts and manually adjusted floors.
             float offset = carRoot.position.y - GroundHeight;
@@ -196,7 +202,16 @@ namespace CarAR
             {
                 var renderers = carRoot.GetComponentsInChildren<Renderer>(true);
                 float bottom = float.PositiveInfinity;
-                foreach (var r in renderers) bottom = Mathf.Min(bottom, r.bounds.min.y);
+                foreach (var r in renderers)
+                {
+                    // World renderer bounds can be stale while the vehicle is
+                    // inactive or just rotated. Transform local bounds explicitly.
+                    var bounds = r.localBounds;
+                    var matrix = r.transform.localToWorldMatrix;
+                    var extent = bounds.extents;
+                    float radius = Mathf.Abs(matrix.m10) * extent.x + Mathf.Abs(matrix.m11) * extent.y + Mathf.Abs(matrix.m12) * extent.z;
+                    bottom = Mathf.Min(bottom, matrix.MultiplyPoint3x4(bounds.center).y - radius);
+                }
                 offset = float.IsPositiveInfinity(bottom) ? 0f : carRoot.position.y - bottom;
             }
             carRoot.position = groundPos + Vector3.up * offset;
@@ -207,7 +222,15 @@ namespace CarAR
             needsReposition = false;
             carRoot.gameObject.SetActive(true);
             SetSuppressed(false);
-            Debug.Log($"[CarAR] Placed: {Status}, ground={GroundHeight:F3}, scale={carRoot.localScale:F4}, position={carRoot.position:F3}");
+            Debug.Log($"[CarAR] Placed: {Status}, ground={GroundHeight:F3}, scale={carRoot.localScale:F4}, position={carRoot.position:F3}, tiltBefore={tilt:F3}deg tiltAfter={Vector3.Angle(carRoot.up, Vector3.up):F3}deg heading={carRoot.eulerAngles.y:F2}deg");
+        }
+        internal static Quaternion FloorRotation(Quaternion rotation)
+        {
+            var forward = Vector3.ProjectOnPlane(rotation * Vector3.forward, Vector3.up);
+            // A vertical forward axis has no heading; recover it from the right axis.
+            if (forward.sqrMagnitude < .0001f)
+                forward = Vector3.Cross(Vector3.ProjectOnPlane(rotation * Vector3.right, Vector3.up), Vector3.up);
+            return Quaternion.LookRotation(forward.normalized, Vector3.up);
         }
         public string DisplayStatus => !TrackingReady ? "请佩戴头显并唤醒手柄，等待空间定位稳定" : needsReposition ? "空间定位已重置，请重新选择停放位置" : !placed ? "正在寻找地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
         public void PlaceOnFloorPoint(Vector3 ground)

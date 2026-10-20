@@ -144,6 +144,7 @@ namespace CarAR
             bool presenceAvailable = hmd.TryGetFeatureValue(CommonUsages.userPresence, out bool present);
             float movement = baseline ? Vector3.Distance(showroom.car.position, parkedPosition) : 0;
             float rotation = baseline ? Quaternion.Angle(showroom.car.rotation, parkedRotation) : 0;
+            Debug.Log($"[CarAR Floor Pose] source={showroom.placement.Status} ground={showroom.placement.GroundHeight:F3}m tilt={Vector3.Angle(showroom.car.up, Vector3.up):F3}deg euler={showroom.car.eulerAngles:F3}");
             float headMovement = baseline ? Vector3.Distance(camera.position, headPosition) : 0;
             float fps = frames / Mathf.Max(.001f, Time.unscaledTime - periodStarted);
             Debug.Log($"[CarAR Stability] placed={showroom.placement.IsPlaced} locked={!showroom.gestures.ManipulationEnabled} carDelta={movement:F5}m carAngle={rotation:F3}deg scale={showroom.car.localScale:F4} worldScale={showroom.car.lossyScale:F4} headDelta={headMovement:F4}m headStepMax={maxHeadStep:F4}m headTurnMax={maxHeadTurn:F2}deg head={camera.position:F3} car={showroom.car.position:F3} HMDtracking={tracking} presence={(presenceAvailable ? present.ToString() : "unavailable")} focused={Application.isFocused} originMode={origin.CurrentTrackingOriginMode} origin={origin.transform.position:F3} offset={origin.CameraFloorOffsetObject.transform.localPosition:F3} fps={fps:F1} worstFrame={worstFrame * 1000:F1}ms controllers={GetComponent<MRTKControllerInput>().Status}");

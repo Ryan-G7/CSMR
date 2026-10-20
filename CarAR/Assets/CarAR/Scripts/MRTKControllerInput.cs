@@ -283,19 +283,19 @@ namespace CarAR
                 {
                     candidate = ray.GetPoint(distance); PlacementValid = true;
                     var size = ui.showroom.gestures.ModelSize * ui.showroom.car.localScale.x;
-                    var rotation = ui.showroom.car.rotation;
+                    var rotation = CarPlacementManager.FloorRotation(ui.showroom.car.rotation);
                     var corners = new[] { new Vector3(-size.x, 0, -size.z), new Vector3(-size.x, 0, size.z), new Vector3(size.x, 0, size.z), new Vector3(size.x, 0, -size.z), new Vector3(-size.x, 0, -size.z) };
                     for (int i = 0; i < corners.Length; i++) footprint.SetPosition(i, candidate + rotation * corners[i] * .5f + Vector3.up * .012f);
                     placementHint.position = candidate + Vector3.up * .4f;
                     placementHint.rotation = Quaternion.LookRotation(placementHint.position - Camera.main.transform.position);
-                    placementText.text = "停放预览：扳机确认 · 菜单 / Y / B 取消\n摇杆上下调整地面高度，边框应贴合真实地面";
+                    placementText.text = "停放预览：扳机确认 · 菜单 / Y / B 取消\n摇杆上下调高度，让四角贴合真实地面；确认后车身自动放平";
                 }
                 var trigger = h.controller.selectAction.action;
                 if (!trigger.IsPressed()) triggerReleased = true;
                 if (PlacementValid && triggerReleased && Time.unscaledTime - placementStarted > .3f && trigger.WasPressedThisFrame())
                 {
                     ui.showroom.placement.PlaceOnFloorPoint(candidate);
-                    CancelPlacement(); ui.Notice("已停放并锁定，尺寸与姿态保持不变");
+                    CancelPlacement(); ui.Notice("已放平并停车锁定，保留车头朝向和尺寸");
                 }
             }
             footprint.gameObject.SetActive(IsPlacing && PlacementValid);

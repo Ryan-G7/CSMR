@@ -21,6 +21,7 @@ namespace CarAR
             var position = car.position;
             float ground = placement.GroundHeight;
             float pivot = position.y - ground;
+            FloorPlacementRegression(showroom);
             // A door may move only its verified assembly, never mixed seat/dashboard meshes.
             var allowedDoorSources = new System.Collections.Generic.HashSet<string> {
                 "Cube.002", "Cube.135", "Cube.013", "Cube.017", "Cube.083", "Cube.092", "Cube.106", "Cube.139", "Cube.140", "Cube.141", "Cube.142",
@@ -53,15 +54,21 @@ namespace CarAR
             for (int i = 0; i < staticParts.Length; i++)
                 Check(staticParts[i].transform.localToWorldMatrix == worldBefore[i],
                     "opening left door moved a body/interior/opposite-door part: " + staticParts[i].name);
+            var originalRotation = car.rotation;
+            car.rotation = Quaternion.Euler(9, 35, -6);
+            var heading = Vector3.ProjectOnPlane(car.forward, Vector3.up).normalized;
             placement.PlaceAt(new Vector3(2, ground + .3f, -3), true);
             Check(Vector3.Distance(car.position, new Vector3(2, ground + .3f + pivot, -3)) < .0001f,
                 "estimated placement lost horizontal coordinates or the ground pivot");
+            Check(Vector3.Angle(car.up, Vector3.up) < .01f && Vector3.Angle(car.forward, heading) < .05f,
+                "placement with an open door retained body tilt or lost heading");
             placement.PlaceOnFloorPoint(new Vector3(-2, ground - .2f, 3));
             placement.PlaceAt(new Vector3(1, ground + .1f, 2));
             Check(Vector3.Distance(car.position, new Vector3(1, ground + .1f + pivot, 2)) < .0001f,
                 "repeated placement remeasured open geometry");
             Check(placement.Status == "Tracked horizontal plane", "tracked placement retained the previous manual-floor status");
             placement.PlaceAt(new Vector3(position.x, ground, position.z), true);
+            car.rotation = originalRotation;
             showroom.leftDoor.Close();
             yield return new WaitForSeconds(.8f);
 
@@ -158,7 +165,59 @@ namespace CarAR
                 RenderSettings.reflectionIntensity = originalReflection;
                 showroom.lighting.enabled = true;
             }
-            Debug.Log("[CarAR Review Regression] PASS: recorded 14.7m HMD/controller mismatch, delayed placement and origin recovery; upper/lower door trim with static console; independent door motion, repeated floor placement, ground pivot, input lifecycle, stale/invalid lighting.");
+            Debug.Log("[CarAR Review Regression] PASS: upright inactive-first/repeated placement, heading and four-wheel contact at three scales; recorded 14.7m HMD/controller mismatch, delayed placement and origin recovery; upper/lower door trim with static console; independent door motion, ground pivot, input lifecycle, stale/invalid lighting.");
+        }
+        static void FloorPlacementRegression(CarShowroom showroom)
+        {
+            var car = showroom.car;
+            var position = car.position; var rotation = car.rotation; var scale = car.localScale;
+            float ground = showroom.placement.GroundHeight;
+            try
+            {
+                foreach (float factor in new[] { .25f, 1f, 1.8f })
+                {
+                    car.localScale = Vector3.one * factor;
+                    car.rotation = Quaternion.Euler(12, 47, -9);
+                    var forward = Vector3.ProjectOnPlane(car.forward, Vector3.up).normalized;
+                    showroom.placement.PlaceOnFloorPoint(new Vector3(.3f, ground, -.4f));
+                    Check(Vector3.Angle(car.up, Vector3.up) < .01f && Vector3.Angle(car.forward, forward) < .05f,
+                        "floor placement failed to level the vehicle while retaining its heading");
+                    Check(car.localScale == Vector3.one * factor, "leveling changed vehicle scale");
+                    Check(!showroom.gestures.ManipulationEnabled, "floor placement did not lock manipulation");
+                    foreach (var wheel in showroom.explode.assemblyRoots)
+                    {
+                        float bottom = float.PositiveInfinity;
+                        foreach (var renderer in wheel.GetComponentsInChildren<MeshRenderer>())
+                            bottom = Mathf.Min(bottom, renderer.bounds.min.y);
+                        Check(Mathf.Abs(bottom - ground) < .002f,
+                            $"{wheel.name} is not on the floor at scale {factor}: bottom={bottom:F5}, ground={ground:F5}");
+                    }
+                }
+            }
+            finally
+            {
+                car.localScale = scale;
+                showroom.placement.PlaceAt(new Vector3(position.x, ground, position.z), true);
+                car.SetPositionAndRotation(position, rotation);
+            }
+
+            var fixture = new GameObject("Inactive tilted first-placement regression");
+            var placement = fixture.AddComponent<CarPlacementManager>(); placement.enabled = false;
+            var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.SetActive(false); cube.transform.SetParent(fixture.transform);
+            cube.transform.localScale = Vector3.one * .4f;
+            cube.transform.SetPositionAndRotation(new Vector3(7, 8, 9), Quaternion.Euler(90, 32, 0));
+            typeof(CarPlacementManager).GetField("carRoot", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(placement, cube.transform);
+            try
+            {
+                var floor = new Vector3(-2, -.6f, 1);
+                placement.PlaceAt(floor, true);
+                Check(cube.activeSelf && Vector3.Distance(cube.transform.position, floor + Vector3.up * .2f) < .0001f,
+                    "inactive first placement used stale bounds or measured them before leveling");
+                Check(Vector3.Angle(cube.transform.up, Vector3.up) < .01f && Mathf.Abs(Mathf.DeltaAngle(cube.transform.eulerAngles.y, 32)) < .05f,
+                    "vertical-forward fallback lost heading or failed to level the object");
+            }
+            finally { UnityEngine.Object.Destroy(fixture); }
         }
         static void TrackingReplay()
         {
