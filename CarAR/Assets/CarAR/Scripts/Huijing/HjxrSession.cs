@@ -6,13 +6,7 @@ using UnityEngine;
 namespace CarAR.Huijing
 {
     public enum HjxrResult { Success = 0, Failed = -1, DllFailed = -2, DllWrong = -3, InterfaceNotFound = -4, InvalidParam = -5, RpcFailed = -6, ShareMemFailed = -7, UnsupportedRender = -8, NoDisplay = -9, NoRenderDevice = -10, AppNotVisible = -11, ServerNotReady = -12, VersionMismatch = -13, AdapterMismatch = -14, NotSupported = -15 }
-    public enum HjxrCommand { SetLayerZOrder = 0, SetLayerEnable = 2, GetLayerEnable = 3, WorldSync = 16, SetLayerPoseTimeOffset = 21, GetLayerPoseTimeOffset = 22, GetVstVsyncOffset = 27, SetTrackLocateSpace = 41, SetLayerPoseDefer = 43, SetHeadLock = 60, SetUseCubeMarker = 61, WorldSetMarkerPose = 63 }
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct HjxrPose
-    {
-        public float px, py, pz, qx, qy, qz, qw;
-        public static HjxrPose FromUnity(Vector3 p, Quaternion q) => new HjxrPose { px = p.x, py = p.y, pz = -p.z, qx = q.x, qy = q.y, qz = -q.z, qw = -q.w };
-    }
+    public enum HjxrCommand { SetLayerZOrder = 0, SetLayerEnable = 2, GetLayerEnable = 3, SetLayerPoseTimeOffset = 21, GetLayerPoseTimeOffset = 22, GetVstVsyncOffset = 27, SetLayerPoseDefer = 43, SetHeadLock = 60 }
     [StructLayout(LayoutKind.Sequential)]
     public struct HjxrLayer { public int layer, enabled; } // 0 = VR, 1 = VST; hjxr_Bool is int32.
     [StructLayout(LayoutKind.Sequential)]

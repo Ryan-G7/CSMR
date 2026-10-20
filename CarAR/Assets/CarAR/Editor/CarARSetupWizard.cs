@@ -29,6 +29,12 @@ namespace CarAR.EditorTools
         const string SettingsDir = "Assets/CarAR/Settings";
         const string PrefabDir = "Assets/CarAR/Prefabs";
         const string SceneDir = "Assets/CarAR/Scenes";
+        [Serializable] sealed class ModelMetadata { public PaintSettings paint; }
+        [Serializable] sealed class PaintSettings
+        {
+            public float[] color_linear;
+            public float metallic, roughness, clearcoat, clearcoat_roughness;
+        }
 
         [MenuItem("CarAR/Setup Project and Scene")]
         public static void Setup()
@@ -196,9 +202,6 @@ namespace CarAR.EditorTools
                 throw new Exception("Cannot assign Unity OpenXR loader without PreInit");
             UnityEditor.XR.OpenXR.Features.FeatureHelpers.RefreshFeatures(BuildTargetGroup.Standalone);
             var ds = OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Standalone);
-            var markerInput = ds != null ? ds.GetFeature<Huijing.HjxrMarkerTrackingFeature>() : null;
-            if (markerInput == null) throw new Exception("HJXR marker input feature was not discovered");
-            markerInput.enabled = true;
             var dh = ds != null ? ds.GetFeature<UnityEngine.XR.Hands.OpenXR.HandTracking>() : null;
             if (dh != null) dh.enabled = true;
             // Pimax normally exposes its controllers through Touch, Index or Vive compatibility.
@@ -286,7 +289,7 @@ namespace CarAR.EditorTools
             sun.shadows = LightShadows.Soft;
             sun.shadowStrength = .5f;
             sun.shadowBias = .015f;
-            sun.shadowNormalBias = .08f;
+            sun.shadowNormalBias = .02f;
             sun.shadowNearPlane = .05f;
             sunGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             RenderSettings.sun = sun;
@@ -307,15 +310,23 @@ namespace CarAR.EditorTools
             // Put the root pivot on the wheel contact plane so scaling preserves floor contact.
             var modelRenderers = car.GetComponentsInChildren<Renderer>();
             const string paintPath = SettingsDir + "/AMGCarPaint.mat";
+            var metadata = JsonUtility.FromJson<ModelMetadata>(System.IO.File.ReadAllText("Assets/Models/AMG-interactive.json"));
+            var finish = metadata?.paint;
+            if (finish?.color_linear == null || finish.color_linear.Length != 4 ||
+                Array.Exists(finish.color_linear, c => !float.IsFinite(c) || c < 0 || c > 1) ||
+                Array.Exists(new[] { finish.metallic, finish.roughness, finish.clearcoat, finish.clearcoat_roughness },
+                    v => !float.IsFinite(v) || v < 0 || v > 1))
+                throw new Exception("Exported AMG paint metadata is invalid. Re-export AMG.blend first.");
             var paint = AssetDatabase.LoadAssetAtPath<Material>(paintPath);
             if (paint == null) { paint = new Material(Shader.Find("Universal Render Pipeline/Complex Lit")); AssetDatabase.CreateAsset(paint, paintPath); }
-            paint.SetColor("_BaseColor", new Color(.174346f,.174346f,.174346f,1));
-            paint.SetFloat("_Metallic", .62f); paint.SetFloat("_Smoothness", .78f);
-            paint.SetFloat("_ClearCoat", 1); paint.SetFloat("_ClearCoatMask", .8f); paint.SetFloat("_ClearCoatSmoothness", .85f);
+            paint.SetColor("_BaseColor", new Color(finish.color_linear[0], finish.color_linear[1], finish.color_linear[2], finish.color_linear[3]));
+            paint.SetFloat("_Metallic", finish.metallic); paint.SetFloat("_Smoothness", 1 - finish.roughness);
+            paint.SetFloat("_ClearCoat", 1); paint.SetFloat("_ClearCoatMask", finish.clearcoat); paint.SetFloat("_ClearCoatSmoothness", 1 - finish.clearcoat_roughness);
             // The supplied hood/door skins have no inner thickness. Keep their
             // back faces visible when the original independent panels open.
             paint.SetFloat("_Cull", (float)CullMode.Off);
             paint.EnableKeyword("_CLEARCOAT");
+            Debug.Log($"[CarAR Paint] Source linear colour={paint.GetColor("_BaseColor"):F4}, metallic={finish.metallic}, roughness={finish.roughness}; portable layered PBR finish.");
             EditorUtility.SetDirty(paint);
             const string trimPath = SettingsDir + "/AMGDefaultTrim.mat";
             var defaultTrim = AssetDatabase.LoadAssetAtPath<Material>(trimPath);
@@ -427,9 +438,8 @@ namespace CarAR.EditorTools
             controllerInput.rayMaterial = rayMaterial;
             var diagnostics = showroom.gameObject.AddComponent<XRReviewDiagnostics>();
             diagnostics.showroom = showroom; diagnostics.origin = origin;
-            var marker = new GameObject("Huijing Virtual Marker (vertical board reference)");
             var vendor = showroom.gameObject.AddComponent<Huijing.HuijingMRBridge>();
-            vendor.virtualMarker = marker.transform; vendor.placement = placement;
+            vendor.placement = placement;
             carRoot.SetActive(false);
 
             const string scenePath = SceneDir + "/CarAR.unity";
@@ -483,7 +493,7 @@ namespace CarAR.EditorTools
             rect.localScale = Vector3.one * .001f;
             controls.controlPanel = rect;
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/org.mixedrealitytoolkit.uxcomponents/Button/Prefabs/Action Button.prefab");
-            string[] labels = { "左车门", "右车门", "后备厢尾门", "整车爆炸", "解除锁定", "选择停放位置", "向左 10cm", "向右 10cm", "远离 10cm", "靠近 10cm", "缩小 10%", "放大 10%", "左转 5°", "右转 5°", "地面 +1cm", "地面 -1cm", "1:1 尺寸", "1:4 展示", "灯光调亮", "灯光调暗", "色温调暖", "色温调冷", "光线方向", "自动光照", "切换流畅画质", "精细调整", "收起面板", "定位板校准", "发动机盖" };
+            string[] labels = { "左车门", "右车门", "后备厢尾门", "整车爆炸", "解除锁定", "选择停放位置", "向左 10cm", "向右 10cm", "远离 10cm", "靠近 10cm", "缩小 10%", "放大 10%", "左转 5°", "右转 5°", "地面 +1cm", "地面 -1cm", "1:1 尺寸", "1:4 展示", "灯光调亮", "灯光调暗", "色温调暖", "色温调冷", "光线方向", "自动光照", "切换流畅画质", "精细调整", "收起面板", "发动机盖" };
             controls.buttons = new StatefulInteractable[labels.Length];
             for (int i = 0; i < labels.Length; i++)
             {

@@ -78,14 +78,9 @@ namespace CarAR
             Check(ui.ControlPanel.position == panelPosition, "panel followed head motion");
             Check(car.position == initialPosition, "parked car followed head motion");
             camera.SetPositionAndRotation(cameraPosition, cameraRotation);
-            yield return Click(27);
-            Check(car.position == initialPosition && Quaternion.Angle(car.rotation, initialRotation) < .001f,
-                "unavailable marker alignment moved the parked car");
-            Check(!showroom.GetComponent<Huijing.HuijingMRBridge>().HasMarkerRequest,
-                "unavailable marker alignment was reported as submitted");
-            yield return Click(28); yield return new WaitForSeconds(.7f);
+            yield return Click(27); yield return new WaitForSeconds(.7f);
             Check(showroom.hood.IsOpen, "native trigger ray did not open AMG hood");
-            yield return Click(28); yield return new WaitForSeconds(.7f);
+            yield return Click(27); yield return new WaitForSeconds(.7f);
             yield return Click(4); Check(showroom.gestures.ManipulationEnabled, "unlock failed");
             yield return Click(25);
             CapturePanel(ui, "controller-adjustments.png");

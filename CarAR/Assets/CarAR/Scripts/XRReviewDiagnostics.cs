@@ -25,7 +25,6 @@ namespace CarAR
         PoseSample previousInput, previousView;
         bool hasInput, hasView;
         float nextAnomaly;
-        float nextMarkerInputSample;
         string inputSource;
         bool subscribed;
         struct PoseSample
@@ -115,11 +114,6 @@ namespace CarAR
             bool trackingPosition = (sample.tracking & InputTrackingState.Position) != 0;
             bool driverMismatch = sample.rawAvailable && trackingPosition && Vector3.Distance(sample.local, sample.raw) > .02f;
             bool viewMismatch = sample.stereoAvailable && Vector3.Distance(sample.camera, sample.stereo) > .1f;
-            if (Huijing.HuijingMRBridge.Requested && sample.phase == "View" && Time.unscaledTime >= nextMarkerInputSample)
-            {
-                nextMarkerInputSample = Time.unscaledTime + 5;
-                Debug.Log($"[HJXR Marker Input] correctedLocations={Huijing.HjxrMarkerTrackingFeature.CorrectedLocationCount} inputSpaces={Huijing.HjxrMarkerTrackingFeature.InputSpaceCount}");
-            }
             if (!(cameraJump || rawJump || stereoJump || driverMismatch || viewMismatch) || Time.unscaledTime < nextAnomaly) return;
             nextAnomaly = Time.unscaledTime + .5f;
             Debug.LogWarning($"[CarAR Tracking Anomaly] cameraJump={cameraJump} rawJump={rawJump} stereoJump={stereoJump} driverMismatch={driverMismatch} viewMismatch={viewMismatch} dt={sample.time - previous.time:F4}s before=({previous}) after=({sample})");

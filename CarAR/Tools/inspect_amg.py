@@ -1,6 +1,7 @@
 """Read the supplied Blender source without modifying it."""
 import bpy
 import json
+import sys
 from pathlib import Path
 from mathutils import Vector
 
@@ -27,6 +28,8 @@ for img in bpy.data.images:
 target = Path(__file__).resolve().parents[1] / 'tmp' / 'amg-inspection.json'
 target.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
 print('AMG_REPORT', str(target), len(report['objects']), len(report['materials']))
+if '--inspect-only' in sys.argv:
+    sys.exit(0)
 
 # A solid inspection view makes the independent outer panels easy to audit.
 from math import radians

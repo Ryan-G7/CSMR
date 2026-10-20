@@ -45,16 +45,13 @@ namespace CarAR
         float placementStarted;
         bool triggerReleased;
         Hand placementHand;
-        InputAction calibrate;
-        float calibrationHeldSince = -1, nextDiagnostics;
-        bool calibrationSubmitted;
+        float nextDiagnostics;
         Vector3 candidate;
         readonly List<InputAction> ownedActions = new();
 
         void Awake()
         {
             left = CreateHand("LeftHand"); right = CreateHand("RightHand");
-            calibrate = Own(new InputAction("Marker calibration shortcut", InputActionType.Button, "<XRController>{LeftHand}/primaryButton"));
             foreach (var device in InputSystem.devices) LogDevice(device, "present");
         }
         void OnEnable()
@@ -69,9 +66,10 @@ namespace CarAR
             InputSystem.onDeviceChange -= OnDeviceChange;
             Application.onBeforeRender -= LogRayDiagnostics;
             CancelPlacement();
-            left.controller.gameObject.SetActive(false); right.controller.gameObject.SetActive(false);
+            // XR origin children can be destroyed before this component at scene teardown.
+            if (left?.controller != null) left.controller.gameObject.SetActive(false);
+            if (right?.controller != null) right.controller.gameObject.SetActive(false);
             foreach (var action in ownedActions) action.Disable();
-            calibrationHeldSince = -1; calibrationSubmitted = false;
         }
         Hand CreateHand(string hand)
         {
@@ -145,13 +143,6 @@ namespace CarAR
         {
             UpdateHand(left); UpdateHand(right);
             Status = left.tracked && right.tracked ? "双手柄已跟踪" : left.tracked ? "左手柄已跟踪" : right.tracked ? "右手柄已跟踪" : "未检测到已跟踪手柄";
-            if (left.tracked && calibrate.IsPressed())
-            {
-                if (calibrationHeldSince < 0) calibrationHeldSince = Time.unscaledTime;
-                if (!calibrationSubmitted && Time.unscaledTime - calibrationHeldSince >= 1.2f)
-                { calibrationSubmitted = true; ui.RequestMarkerAlignment(); }
-            }
-            else { calibrationHeldSince = -1; calibrationSubmitted = false; }
             if (IsPlacing) { UpdatePlacement(); return; }
             var car = ui.showroom;
             if (!car.placement.IsPlaced || !car.gestures.ManipulationEnabled || car.explode.IsBusy || car.gestures.manipulator.isSelected) return;
@@ -218,7 +209,6 @@ namespace CarAR
         }
         public void BeginPlacement()
         {
-            if (ui.showroom.IsCalibrating) { ui.Notice("定位板校准中，请等待结果后再选择停放位置"); return; }
             if (ui.showroom.explode.IsBusy) { ui.Notice("请先组装还原，再重新放置"); return; }
             ui.showroom.gestures.SetManipulation(false);
             IsPlacing = true; PlacementValid = false; triggerReleased = false; placementHand = null; placementStarted = Time.unscaledTime;

@@ -17,7 +17,6 @@ namespace CarAR
         public MRTKCarInteraction gestures;
         public ExplodeController explode;
         public CarPanel leftDoor, rightDoor, trunk, hood;
-        public bool IsCalibrating => GetComponent<Huijing.HuijingMRBridge>()?.AlignmentPending == true;
         public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 && !Huijing.HuijingMRBridge.Requested;
         float brightness = 1.2f, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
         GUIStyle title, text, button;
@@ -178,13 +177,18 @@ namespace CarAR
                 bool shell = false, glass = false, mirror = false;
                 foreach (var r in panel.GetComponentsInChildren<MeshRenderer>())
                 {
-                    shell |= r.name.StartsWith("Cube.002__");
+                    shell |= r.name.StartsWith("Cube.002__") || r.name.StartsWith("Cube.135__");
                     glass |= r.name.StartsWith("Cube.017__");
                     mirror |= r.name.StartsWith("Cube.139__");
                 }
                 if (!shell || !glass || !mirror) throw new System.InvalidOperationException("AMG door is missing original shell, glass or mirror: " + panel.name);
             }
             if (explode.assemblyRoots.Length != 4) throw new System.InvalidOperationException("AMG wheel assemblies are missing");
+            leftDoor.Toggle();
+            yield return new WaitForSeconds(1);
+            CaptureVehicle("left-door.png");
+            leftDoor.Close();
+            yield return new WaitForSeconds(1);
             var positions = new Vector3[parts.Length];
             var rotations = new Quaternion[parts.Length];
             var doorClosedPoints = new Vector3[4];
@@ -231,6 +235,11 @@ namespace CarAR
             var camera = go.AddComponent<Camera>(); camera.enabled = false;
             camera.CopyFrom(Camera.main);
             camera.transform.SetPositionAndRotation(Camera.main.transform.position, Camera.main.transform.rotation);
+            if (file == "left-door.png")
+            {
+                camera.transform.position = leftDoor.transform.position + car.rotation * new Vector3(-2.4f, 1.15f, -1.5f) * car.localScale.x;
+                camera.transform.LookAt(leftDoor.transform.position + Vector3.up * .05f * car.localScale.x);
+            }
             if (explode.Progress > .5f)
             {
                 var centre = car.position + Vector3.up * .8f;
@@ -238,7 +247,7 @@ namespace CarAR
                 camera.transform.LookAt(centre);
             }
             go.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>().allowXRRendering = false;
-            var target = RenderTexture.GetTemporary(1440, 900, 24);
+            var target = RenderTexture.GetTemporary(1440, 900, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 4);
             var previous = RenderTexture.active;
             camera.targetTexture = target; camera.Render(); RenderTexture.active = target;
             var image = new Texture2D(1440, 900, TextureFormat.RGBA32, false);
@@ -252,7 +261,7 @@ namespace CarAR
         {
             var ui = GetComponent<MRTKShowroomUI>();
             var manipulator = gestures.manipulator;
-            if (ui == null || ui.buttons.Length != 29 || manipulator == null || manipulator.enabled)
+            if (ui == null || ui.buttons.Length != 28 || manipulator == null || manipulator.enabled)
                 throw new System.InvalidOperationException("MRTK controls missing or car not locked initially");
             var originalPosition = car.position; var originalRotation = car.rotation; var originalScale = car.localScale;
             ui.buttons[4].OnClicked.Invoke();

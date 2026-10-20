@@ -15,12 +15,10 @@ namespace CarAR
         bool placed, estimated, stageFloor, manualFloor;
         float startTime;
         bool waitingForHeadset;
-        bool refreshPlacementPreview;
         CarShowroom showroom;
         public string Status => !placed ? waitingForHeadset ? "Waiting for worn, tracked headset" : "Scanning for floor..." : manualFloor ? "Manually aligned floor" : estimated ? "Estimated floor (no plane data)" : stageFloor ? "OpenXR stage floor" : "Tracked horizontal plane";
         public bool IsPlaced => placed;
-        public void RefreshPlacementPreviewAfterAlignment() => refreshPlacementPreview = true;
-        public float PlacementPreviewHeight => refreshPlacementPreview && Camera.main != null ? Camera.main.transform.position.y - fallbackEyeHeight : GroundHeight;
+        public float PlacementPreviewHeight => placed || Camera.main == null ? GroundHeight : Camera.main.transform.position.y - fallbackEyeHeight;
         void Start() => showroom = FindAnyObjectByType<CarShowroom>();
         void OnEnable()
         {
@@ -30,7 +28,7 @@ namespace CarAR
         void Update()
         {
             // Lock the first placement. Later plane refinements must not move a parked car.
-            if (placed || carRoot == null || showroom != null && showroom.IsCalibrating) return;
+            if (placed || carRoot == null) return;
             if (showroom != null && showroom.GetComponent<MRTKControllerInput>()?.IsPlacing == true) return;
             // A PC runtime can publish its last cached pose while the headset is unworn.
             // Start the initial floor timeout only after wearing and positional tracking recover.
@@ -72,7 +70,7 @@ namespace CarAR
         }
         public void Recenter()
         {
-            if (Camera.main == null || carRoot == null || showroom != null && showroom.IsCalibrating) return;
+            if (Camera.main == null || carRoot == null) return;
             if (showroom != null)
             {
                 showroom.GetComponent<MRTKControllerInput>()?.CancelPlacement();
@@ -88,7 +86,7 @@ namespace CarAR
             float eyeAboveFloor = origin != null ? cam.position.y - origin.transform.position.y : 0;
             if (floor && (eyeAboveFloor < .35f || eyeAboveFloor > 2.5f))
             {
-                Debug.LogWarning($"[CarAR] Invalid floor reference: eye height={eyeAboveFloor:F3}m. Using estimated {fallbackEyeHeight:F2}m eye height; calibrate the runtime floor or use marker alignment.");
+                Debug.LogWarning($"[CarAR] Invalid floor reference: eye height={eyeAboveFloor:F3}m. Using estimated {fallbackEyeHeight:F2}m eye height; calibrate the runtime floor or adjust the placement height.");
                 floor = false;
             }
             var ground = cam.position + fwd * fallbackDistance;
@@ -109,7 +107,7 @@ namespace CarAR
         }
         public void PlaceAt(Vector3 groundPos, bool isEstimated = false)
         {
-            if (carRoot == null || showroom != null && showroom.IsCalibrating) return;
+            if (carRoot == null) return;
             // Every subsequent placement preserves the established ground pivot,
             // including open panels, exploded parts and manually adjusted floors.
             float offset = carRoot.position.y - GroundHeight;
@@ -131,8 +129,6 @@ namespace CarAR
         public string DisplayStatus => !placed ? waitingForHeadset ? "请佩戴头显，等待空间定位恢复" : "正在寻找地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
         public void PlaceOnFloorPoint(Vector3 ground)
         {
-            if (showroom != null && showroom.IsCalibrating) return;
-            refreshPlacementPreview = false;
             PlaceAt(ground, true);
             manualFloor = true;
         }
@@ -140,7 +136,6 @@ namespace CarAR
         public void AdjustFloor(float delta)
         {
             if (!placed || carRoot == null) return;
-            if (showroom != null && showroom.IsCalibrating) return;
             carRoot.position += Vector3.up * delta; GroundHeight += delta; manualFloor = true;
         }
     }

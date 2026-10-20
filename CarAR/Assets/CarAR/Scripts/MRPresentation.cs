@@ -32,7 +32,7 @@ namespace CarAR
                 shadow = MakePlane("Transparent ground shadow receiver", shadowMaterial);
                 contact = MakePlane("Soft chassis contact shadow", contactMaterial);
             }
-            Debug.Log("[CarAR Quality] Native resolution, 4x MSAA, 4096 soft shadows, native 512px hall reflection probe. Hall reflection is a preset; live AR probes take priority if provided.");
+            Debug.Log("[CarAR Quality] Native resolution, 4x MSAA, 4096 soft shadows, native 1024px HDR hall reflection probe. Hall reflection is a preset; live AR probes take priority if provided.");
         }
         Material Unlit(Color color)
         {
@@ -54,7 +54,7 @@ namespace CarAR
             reflectionRoom = new GameObject("Neutral hall reflection environment (preset only)").transform;
             roomMaterial = Unlit(new Color(.29f, .31f, .34f));
             floorMaterial = Unlit(new Color(.09f, .10f, .12f));
-            lightMaterial = Unlit(new Color(1.15f, 1.18f, 1.2f));
+            lightMaterial = Unlit(new Color(4.2f, 4.4f, 4.6f));
             Surface("Floor", new Vector3(0, -1, 0), new Vector3(24, .1f, 32), floorMaterial);
             Surface("Ceiling", new Vector3(0, 7, 0), new Vector3(24, .1f, 32), roomMaterial);
             Surface("Left wall", new Vector3(-12, 3, 0), new Vector3(.1f, 8, 32), roomMaterial);
@@ -64,15 +64,16 @@ namespace CarAR
             for (int i = -1; i <= 1; i++)
                 Surface("Ceiling softbox", new Vector3(i * 5, 6.8f, 0), new Vector3(1.8f, .08f, 18), lightMaterial);
             Surface("Window bank", new Vector3(-11.9f, 3, 0), new Vector3(.06f, 3.5f, 12), lightMaterial);
+            Surface("Right softbox", new Vector3(11.9f, 2.5f, -2), new Vector3(.06f, 2, 8), lightMaterial);
             fallbackProbe = new GameObject("Hall fallback reflection probe (preset)").AddComponent<ReflectionProbe>();
             fallbackProbe.transform.position = Vector3.up * 1.2f;
             fallbackProbe.mode = ReflectionProbeMode.Realtime;
             fallbackProbe.refreshMode = ReflectionProbeRefreshMode.ViaScripting;
             fallbackProbe.timeSlicingMode = ReflectionProbeTimeSlicingMode.AllFacesAtOnce;
             fallbackProbe.cullingMask = 1 << ReflectionLayer;
-            fallbackProbe.resolution = 512; fallbackProbe.hdr = true;
+            fallbackProbe.resolution = 1024; fallbackProbe.hdr = true;
             fallbackProbe.size = Vector3.one * 1000; fallbackProbe.importance = 0;
-            fallbackProbe.boxProjection = false; fallbackProbe.intensity = .7f;
+            fallbackProbe.boxProjection = false; fallbackProbe.intensity = 1;
             fallbackProbe.clearFlags = ReflectionProbeClearFlags.SolidColor;
             fallbackProbe.backgroundColor = Color.gray * .3f;
             fallbackProbe.RenderProbe();

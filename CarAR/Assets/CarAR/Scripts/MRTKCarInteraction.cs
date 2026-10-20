@@ -28,7 +28,7 @@ namespace CarAR
         public void SetManipulation(bool value)
         {
             if (manipulator == null) return;
-            if (value && showroom != null && (!showroom.placement.IsPlaced || showroom.IsCalibrating || showroom.explode.IsBusy ||
+            if (value && showroom != null && (!showroom.placement.IsPlaced || showroom.explode.IsBusy ||
                 showroom.GetComponent<MRTKControllerInput>()?.IsPlacing == true)) return;
             if (manipulator.enabled == value) return;
             manipulator.enabled = value;

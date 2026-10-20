@@ -5,15 +5,23 @@ The supplied car uses Mirror/Subdivision modifiers. Separate the already-disjoin
 left/right islands of its door assemblies, without cutting any source triangles.
 """
 import bpy
-import bmesh
 import json
+import math
 from pathlib import Path
 from mathutils import Vector, Matrix
 
 PROJECT = Path(__file__).resolve().parents[1]
 OUTPUT = PROJECT / 'Assets/Models/AMG-interactive.glb'
-DOOR_SOURCES = {'Cube.002', 'Cube.017', 'Cube.083', 'Cube.106',
+DOOR_SOURCES = {'Cube.002', 'Cube.135', 'Cube.017', 'Cube.083', 'Cube.106',
                 'Cube.139', 'Cube.140', 'Cube.141', 'Cube.142'}
+# Audited against the current source's individual geometry: door cards, armrests,
+# speaker grilles, window switches and inner seals. Roof/jamb seals, seat rails,
+# seat controls and dashboard pieces are deliberately absent from this manifest.
+DOOR_INTERIORS = {
+    'DoorLeft': {f'Cube.{i:03d}' for i in [*range(129, 135), *range(325, 393), *range(427, 431)]},
+    'DoorRight': {f'Cube.{i:03d}' for i in [*range(124, 129), *range(298, 325), *range(416, 419)]},
+}
+DOOR_INTERIOR_SOURCES = set.union(*DOOR_INTERIORS.values())
 HATCH_SOURCES = {'Cube.007', 'Cube.009', 'Cube.010', 'Cube.011', 'Cube.029'}
 HOOD_SOURCES = {'Cube.074'}
 REPORT = {'source': 'AMG.blend', 'units': 'metres', 'assemblies': {}, 'meshes': []}
@@ -59,9 +67,19 @@ def principled(mat, color, metallic, roughness, alpha=1, emission=None):
 
 for mat in list(bpy.data.materials):
     if mat.name == 'Black Carpaint':
-        node = principled(mat, (.174346, .174346, .174346), .62, .22)
-        node.inputs['Coat Weight'].default_value = 1
-        node.inputs['Coat Roughness'].default_value = .12
+        group = mat.node_tree.nodes.get('Carpaint')
+        assert group is not None and group.type == 'GROUP', 'Expected authored Carpaint shader group'
+        color = tuple(group.inputs['Color'].default_value)
+        assert len(color) == 4 and all(math.isfinite(c) and 0 <= c <= 1 for c in color), color
+        matte = max(0, min(1, group.inputs['Mateness'].default_value))
+        # Blender's procedural layered shader cannot travel through glTF. Preserve
+        # its authored linear colour and describe one portable coated-metal finish.
+        REPORT['paint'] = {'color_linear': list(color), 'metallic': .9,
+                           'roughness': .2 + matte * .5, 'clearcoat': 1,
+                           'clearcoat_roughness': .06 + matte * .2}
+        node = principled(mat, color[:3], REPORT['paint']['metallic'], REPORT['paint']['roughness'], color[3])
+        node.inputs['Coat Weight'].default_value = REPORT['paint']['clearcoat']
+        node.inputs['Coat Roughness'].default_value = REPORT['paint']['clearcoat_roughness']
     elif mat.name in {'Leather Black', 'Leather Red'}:
         color = (.012, .012, .014) if mat.name == 'Leather Black' else (.025099, .304892, .327911)
         node = principled(mat, color, 0, .5)
@@ -137,22 +155,21 @@ def attach(obj, key, source):
     REPORT['meshes'].append({'name': obj.name, 'source': source, 'assembly': key,
                             'vertices': len(obj.data.vertices), 'polygons': len(obj.data.polygons)})
 
-# Dense interior objects group many independent parts by material. Move only the
-# complete side-door trim islands; dashboard, seats and headliner remain fixed.
-TRIM_SOURCES = {'Cube.063', 'Cube.076', 'Cube.077', 'Cube.080'}
+# Only verified door assemblies move. Mixed interior meshes also contain seats
+# and dashboard parts; position-based guesses incorrectly attach them to doors.
 for obj in objects:
     source = obj.name
-    if source in DOOR_SOURCES or source in TRIM_SOURCES:
+    interior = next((key for key, sources in DOOR_INTERIORS.items() if source in sources), None)
+    if interior is not None:
+        lo, hi = bounds(obj)
+        assert lo.x > .7 if interior == 'DoorLeft' else hi.x < -.7, (source, list(lo), list(hi))
+        attach(obj, interior, source)
+    elif source in DOOR_SOURCES:
         pieces = island_objects(obj)
         for piece in pieces:
             lo, hi = bounds(piece)
-            side_only = lo.x > .60 or hi.x < -.60
-            door_region = lo.y > -.44 and hi.y < .91 and lo.z > .30 and hi.z < 1.24
-            if source in DOOR_SOURCES or (side_only and door_region):
-                assert lo.x > .5 or hi.x < -.5, (source, list(lo), list(hi))
-                attach(piece, 'DoorLeft' if lo.x > .5 else 'DoorRight', source)
-            else:
-                attach(piece, 'Body', source)
+            assert lo.x > .5 or hi.x < -.5, (source, list(lo), list(hi))
+            attach(piece, 'DoorLeft' if lo.x > .5 else 'DoorRight', source)
     elif source in HATCH_SOURCES: attach(obj, 'RearHatch', source)
     elif source in HOOD_SOURCES: attach(obj, 'Hood', source)
     elif source.startswith(('mycar-wheel.', 'mycar-wheelbrake.')):
@@ -160,20 +177,31 @@ for obj in objects:
         attach(obj, 'Wheel' + tokens[1] + tokens[2], source)
     else: attach(obj, 'Body', source)
 
-# Consolidate material islands within an assembly, keeping separate source meshes
-# for meaningful exploded views and avoiding hundreds of tiny renderer calls.
+# The current authored file also contains the already-separated right shell
+# Cube.135 and hundreds of loose interior details. Batch those static details by
+# material; preserve panel/wheel assemblies and record all original source names.
 groups = {}
 for obj in list(bpy.data.objects):
     if obj.type == 'MESH':
         source = next(m['source'] for m in REPORT['meshes'] if m['name'] == obj.name)
-        groups.setdefault((source, obj.parent.name), []).append(obj)
+        suffix = source.removeprefix('Cube.')
+        detail = obj.parent.name == 'Body' and (source in {'Cube.063', 'Cube.076', 'Cube.077', 'Cube.080'} or
+                    source.startswith('Cube.') and suffix.isdigit() and int(suffix) >= 143)
+        materials = '_'.join(m.name if m else 'Default' for m in obj.data.materials)
+        key = 'DoorInterior_' + materials if source in DOOR_INTERIOR_SOURCES else 'InteriorDetail_' + materials if detail else source
+        groups.setdefault((key, obj.parent.name), []).append((obj, source))
+REPORT['meshes'] = []
 for (source, parent), pieces in groups.items():
-    if len(pieces) < 2: continue
-    bpy.ops.object.select_all(action='DESELECT')
-    for obj in pieces: obj.select_set(True)
-    bpy.context.view_layer.objects.active = pieces[0]
-    bpy.ops.object.join()
-    pieces[0].name = source + '__' + parent
+    sources = sorted({name for _, name in pieces})
+    if len(pieces) > 1:
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj, _ in pieces: obj.select_set(True)
+        bpy.context.view_layer.objects.active = pieces[0][0]
+        bpy.ops.object.join()
+    obj = pieces[0][0]
+    obj.name = source + '__' + parent
+    REPORT['meshes'].append({'name': obj.name, 'sources': sources, 'assembly': parent,
+                            'vertices': len(obj.data.vertices), 'polygons': len(obj.data.polygons)})
 
 meshes = [o for o in bpy.data.objects if o.type == 'MESH']
 lo = Vector([min(bounds(o)[0][i] for o in meshes) for i in range(3)])
@@ -186,10 +214,21 @@ REPORT['triangles'] = sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o 
 for value in REPORT['assemblies'].values(): value['sources'] = sorted(value['sources'])
 assert 4.4 < hi.y-lo.y < 5.0 and 1.8 < hi.x-lo.x < 2.3
 assert all(REPORT['assemblies'][key]['sources'] for key in roots)
+assert all(set(REPORT['assemblies'][key]['sources']) <= DOOR_SOURCES | DOOR_INTERIORS[key] for key in DOOR_INTERIORS)
+assert all(DOOR_INTERIORS[key] <= set(REPORT['assemblies'][key]['sources']) for key in DOOR_INTERIORS)
+assert set(REPORT['assemblies']['DoorLeft']['sources']) | set(REPORT['assemblies']['DoorRight']['sources']) == DOOR_SOURCES | DOOR_INTERIOR_SOURCES
+assert 'paint' in REPORT, 'Source car paint material is missing'
+
+# Blender cannot calculate tangent frames on every source n-gon. Triangulate
+# through its native modifier while retaining authored split normals and UVs.
+for obj in meshes:
+    triangulate = obj.modifiers.new('Portable tangent triangulation', 'TRIANGULATE')
+    triangulate.keep_custom_normals = True
 
 bpy.ops.object.select_all(action='SELECT')
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 bpy.ops.export_scene.gltf(filepath=str(OUTPUT), export_format='GLB', use_selection=True,
-    export_animations=False, export_yup=True, export_materials='EXPORT', export_extras=True)
+    export_animations=False, export_yup=True, export_materials='EXPORT', export_extras=True,
+    export_normals=True, export_tangents=True, export_apply=True)
 OUTPUT.with_suffix('.json').write_text(json.dumps(REPORT, ensure_ascii=False, indent=2), encoding='utf-8')
 print('AMG_EXPORT', REPORT['exported_mesh_count'], 'meshes', REPORT['triangles'], 'triangles', REPORT['size_blender_xyz_m'])

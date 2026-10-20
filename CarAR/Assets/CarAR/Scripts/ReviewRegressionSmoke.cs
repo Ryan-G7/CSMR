@@ -8,7 +8,7 @@ using UnityEngine.XR.ARFoundation;
 namespace CarAR
 {
     // Runs only through the explicit --carar-smoke entry point. Provider callbacks
-    // and pending calibration are simulated; vehicle/UI behaviour uses the scene.
+    // are simulated; vehicle/UI behaviour uses the scene.
     internal static class ReviewRegressionSmoke
     {
         static void Check(bool condition, string message)
@@ -21,8 +21,30 @@ namespace CarAR
             var position = car.position;
             float ground = placement.GroundHeight;
             float pivot = position.y - ground;
+            // A door may move only its verified assembly, never mixed seat/dashboard meshes.
+            var allowedDoorSources = new System.Collections.Generic.HashSet<string> {
+                "Cube.002", "Cube.135", "Cube.017", "Cube.083", "Cube.106", "Cube.139", "Cube.140", "Cube.141", "Cube.142",
+                "DoorInterior_plastic", "DoorInterior_Leather Black", "DoorInterior_gril" };
+            foreach (var panel in new[] { showroom.leftDoor, showroom.rightDoor })
+            {
+                var actual = new System.Collections.Generic.HashSet<string>();
+                foreach (var renderer in panel.GetComponentsInChildren<MeshRenderer>())
+                    actual.Add(renderer.name.Split(new[] { "__" }, StringSplitOptions.None)[0]);
+                Check(actual.IsSubsetOf(allowedDoorSources) && (actual.Contains("Cube.002") || actual.Contains("Cube.135")) && actual.Contains("Cube.017") && actual.Contains("Cube.139") &&
+                    actual.Contains("DoorInterior_plastic") && actual.Contains("DoorInterior_Leather Black") && actual.Contains("DoorInterior_gril"),
+                    "door contains unrelated parts or misses shell/glass/mirror/interior: " + panel.name);
+            }
+            var staticParts = Array.FindAll(car.GetComponentsInChildren<MeshRenderer>(),
+                r => !r.transform.IsChildOf(showroom.leftDoor.transform));
+            var worldBefore = Array.ConvertAll(staticParts, r => r.transform.localToWorldMatrix);
+            var doorPoint = showroom.leftDoor.GetComponentInChildren<MeshRenderer>().bounds.center;
             showroom.leftDoor.Toggle();
             yield return new WaitForSeconds(.8f);
+            Check(Vector3.Distance(doorPoint, showroom.leftDoor.GetComponentInChildren<MeshRenderer>().bounds.center) > .05f,
+                "left door geometry did not move");
+            for (int i = 0; i < staticParts.Length; i++)
+                Check(staticParts[i].transform.localToWorldMatrix == worldBefore[i],
+                    "opening left door moved a body/interior/opposite-door part: " + staticParts[i].name);
             placement.PlaceAt(new Vector3(2, ground + .3f, -3), true);
             Check(Vector3.Distance(car.position, new Vector3(2, ground + .3f + pivot, -3)) < .0001f,
                 "estimated placement lost horizontal coordinates or the ground pivot");
@@ -35,35 +57,24 @@ namespace CarAR
             showroom.leftDoor.Close();
             yield return new WaitForSeconds(.8f);
 
-            var ui = showroom.GetComponent<MRTKShowroomUI>();
             var input = showroom.GetComponent<MRTKControllerInput>();
-            var vendor = showroom.GetComponent<Huijing.HuijingMRBridge>();
-            showroom.gestures.SetManipulation(false);
-            bool panelVisible = ui.ControlPanel.gameObject.activeSelf;
-            typeof(Huijing.HuijingMRBridge).GetProperty(nameof(vendor.AlignmentPending)).SetValue(vendor, true);
-            try
-            {
-                ui.buttons[4].OnClicked.Invoke();
-                input.BeginPlacement();
-                ui.buttons[3].OnClicked.Invoke();
-                ui.buttons[14].OnClicked.Invoke();
-                placement.Recenter();
-                placement.PlaceOnFloorPoint(Vector3.one * 10);
-                placement.PlaceAt(Vector3.one * 20);
-                showroom.gestures.SetManipulation(true);
-                Check(!showroom.gestures.ManipulationEnabled && !input.IsPlacing && !showroom.explode.IsBusy,
-                    "calibration allowed unlock, placement or explosion");
-                Check(Vector3.Distance(position, car.position) < .0001f && Mathf.Abs(placement.GroundHeight - ground) < .0001f,
-                    "calibration allowed a parked transform/floor change");
-            }
-            finally { typeof(Huijing.HuijingMRBridge).GetProperty(nameof(vendor.AlignmentPending)).SetValue(vendor, false); }
-            ui.ControlPanel.gameObject.SetActive(panelVisible);
-
             input.BeginPlacement();
             input.enabled = false;
             Check(!input.IsPlacing && !input.LeftRay.gameObject.activeInHierarchy && !input.RightRay.gameObject.activeInHierarchy,
                 "disabling input left live interactions or a placement preview");
             input.enabled = true;
+
+            var teardownFixture = new GameObject("Input teardown order regression fixture");
+            teardownFixture.SetActive(false);
+            var teardownInput = teardownFixture.AddComponent<MRTKControllerInput>();
+            teardownInput.trackingOrigin = teardownFixture.transform;
+            teardownInput.ui = input.ui; teardownInput.rayMaterial = input.rayMaterial;
+            teardownFixture.SetActive(true);
+            // Reproduce shutdown ordering: the native Unity object is gone while
+            // the owning component still holds its managed controller reference.
+            UnityEngine.Object.DestroyImmediate(teardownInput.LeftRay.gameObject);
+            teardownFixture.SetActive(false);
+            UnityEngine.Object.Destroy(teardownFixture);
 
             // Inject provider frames into a separate light component so this suite
             // does not change the showroom's lighting or rely on a physical camera.
@@ -100,7 +111,7 @@ namespace CarAR
                 Check(!estimation.ManualLighting && !estimation.HasLiveData, "automatic mode reused old provider evidence");
             }
             finally { UnityEngine.Object.Destroy(go); }
-            Debug.Log("[CarAR Review Regression] PASS: repeated floor placement, ground pivot, calibration command exclusion, input disable/re-enable, stale/invalid light data and manual/auto transitions.");
+            Debug.Log("[CarAR Review Regression] PASS: verified door sources, independent door motion, repeated floor placement, ground pivot, input disable/re-enable and teardown order, stale/invalid light data and manual/auto transitions.");
         }
     }
 }

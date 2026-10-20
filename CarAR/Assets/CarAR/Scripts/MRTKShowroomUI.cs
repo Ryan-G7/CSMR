@@ -17,7 +17,7 @@ namespace CarAR
         float noticeUntil;
         string notice;
         bool settingsPage;
-        readonly int[] main = { 27, 5, 4, 0, 1, 2, 28, 3, 16, 17, 25, 24, 26 };
+        readonly int[] main = { 5, 4, 0, 1, 2, 27, 3, 16, 17, 25, 24, 26 };
         readonly int[] settings = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
 
         void Start()
@@ -25,7 +25,7 @@ namespace CarAR
             Bind(0, showroom.leftDoor.Toggle); Bind(1, showroom.rightDoor.Toggle); Bind(2, showroom.trunk.Toggle);
             Bind(3, () =>
             {
-                if (CalibrationBlocksCommand() || !showroom.placement.IsPlaced) return;
+                if (!showroom.placement.IsPlaced) return;
                 showroom.gestures.SetManipulation(false); showroom.explode.Toggle();
             });
             Bind(4, ToggleLock); Bind(5, controllers.BeginPlacement);
@@ -50,8 +50,7 @@ namespace CarAR
             Bind(24, () => GetComponent<MRPresentation>().ToggleQuality());
             Bind(25, () => { settingsPage = !settingsPage; SetPage(); });
             Bind(26, TogglePanel);
-            Bind(27, RequestMarkerAlignment);
-            Bind(28, showroom.hood.Toggle);
+            Bind(27, showroom.hood.Toggle);
             SetPage(); controlPanel.gameObject.SetActive(false);
         }
         void Bind(int index, UnityEngine.Events.UnityAction action)
@@ -61,20 +60,9 @@ namespace CarAR
         }
         void ToggleLock()
         {
-            if (CalibrationBlocksCommand()) return;
             if (!showroom.placement.IsPlaced) { Notice("正在放置汽车，请稍候"); return; }
             if (showroom.explode.IsBusy) { Notice("请先组装还原，再解锁车辆"); return; }
             showroom.gestures.SetManipulation(!showroom.gestures.ManipulationEnabled);
-        }
-        public void RequestMarkerAlignment()
-        {
-            var vendor = GetComponent<Huijing.HuijingMRBridge>();
-            if (!Huijing.HuijingMRBridge.Requested || vendor == null)
-            { Notice("定位板校准需要连接荟镜头显"); return; }
-            vendor.RequestAlignment();
-            Notice(vendor.AlignmentStatus);
-            // Keep the physical board visible instead of covering it with the menu.
-            if (vendor.AlignmentPending) controlPanel.gameObject.SetActive(false);
         }
         void SetPage()
         {
@@ -97,26 +85,12 @@ namespace CarAR
         static Vector3 ViewRight() => Vector3.Cross(Vector3.up, ViewForward());
         void TransformCommand(System.Action command)
         {
-            if (CalibrationBlocksCommand()) return;
             if (!showroom.placement.IsPlaced) { Notice("正在放置汽车，请稍候"); return; }
             if (showroom.explode.IsBusy) { Notice("请先组装还原，再移动汽车"); return; }
             if (!showroom.gestures.ManipulationEnabled) { Notice("请先按“解除锁定”"); return; }
             command();
         }
-        bool CalibrationBlocksCommand()
-        {
-            if (!showroom.IsCalibrating) return false;
-            Notice("定位板校准中，请等待结果后再操作车辆");
-            return true;
-        }
         public void Notice(string message) { notice = message; noticeUntil = Time.unscaledTime + 4; }
-        public void ShowAlignmentResult(string message)
-        {
-            settingsPage = false; SetPage();
-            notice = message; noticeUntil = Time.unscaledTime + 8;
-            controlPanel.gameObject.SetActive(true); PositionPanel();
-            Debug.Log("[CarAR UI] Marker result panel shown: " + message);
-        }
         public void TogglePanel()
         {
             if (controllers.IsPlacing) { controllers.CancelPlacement(); controlPanel.gameObject.SetActive(false); }
@@ -137,11 +111,9 @@ namespace CarAR
         {
             float scale = showroom.car.localScale.x;
             status.text = $"AMG GT 整车评审 · {scale:F2} 倍 · 长 {showroom.gestures.ModelSize.z * scale:F2} 米\n" +
-                "菜单 / Y / B：面板 · 扳机：点选 · 长按左 X：校准\n" +
+                "菜单 / Y / B：面板 · 扳机：点选 · 选择停放位置：对齐地面\n" +
                 (showroom.gestures.ManipulationEnabled ? "已解锁 · 左摇杆平移 / 右摇杆旋转缩放 / 双握键缩放" : "已停车锁定 · 绕车观察 / 点选车门与行李厢");
             if (settingsPage) status.text += "\n" + showroom.lighting.DisplayStatus + " · " + showroom.placement.DisplayStatus;
-            var vendor = GetComponent<Huijing.HuijingMRBridge>();
-            if (!settingsPage && vendor != null && vendor.HasMarkerRequest) status.text += "\n" + vendor.AlignmentStatus;
             if (Time.unscaledTime < noticeUntil) status.text += "\n" + notice;
             SetLabel(buttons[4], showroom.gestures.ManipulationEnabled ? "停车锁定" : "解除锁定");
             SetLabel(buttons[3], showroom.explode.IsExploded ? "组装还原" : "整车爆炸");
