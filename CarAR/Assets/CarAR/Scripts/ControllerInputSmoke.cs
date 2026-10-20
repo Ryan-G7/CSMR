@@ -53,6 +53,18 @@ namespace CarAR
             Pose(left, camera.position + Vector3.left * .2f, car.position);
             Pose(right, camera.position + Vector3.right * .2f, car.position);
             yield return new WaitForSeconds(.2f);
+            Check(input.LeftRayVisible && input.RightRayVisible, "native line visuals are not rendering for tracked controllers");
+            using (StateEvent.From(right, out var fallbackEvent))
+            {
+                // Reproduce a runtime that tracks grip while its aim pose is invalid.
+                ((QuaternionControl)right["pointerRotation"]).WriteValueIntoEvent(default, fallbackEvent);
+                InputSystem.QueueEvent(fallbackEvent);
+            }
+            yield return new WaitForSeconds(.2f);
+            Check(input.RightRayVisible, "grip fallback lost the visible ray when aim became invalid");
+            Pose(right, camera.position + Vector3.right * .2f, car.position);
+            yield return new WaitForSeconds(.2f);
+            Check(input.RightRayVisible, "native aim ray did not recover");
             Send(left, menu: 1); yield return new WaitForSeconds(.2f);
             Send(left, menu: 0); yield return new WaitForSeconds(.2f);
             Check(ui.ControlPanel.gameObject.activeSelf, $"controller menu did not open panel; enabled={left.enabled}, tracked={input.Status}, focus={Application.isFocused}");
@@ -66,6 +78,14 @@ namespace CarAR
             Check(ui.ControlPanel.position == panelPosition, "panel followed head motion");
             Check(car.position == initialPosition, "parked car followed head motion");
             camera.SetPositionAndRotation(cameraPosition, cameraRotation);
+            yield return Click(27);
+            Check(car.position == initialPosition && Quaternion.Angle(car.rotation, initialRotation) < .001f,
+                "unavailable marker alignment moved the parked car");
+            Check(!showroom.GetComponent<Huijing.HuijingMRBridge>().HasMarkerRequest,
+                "unavailable marker alignment was reported as submitted");
+            yield return Click(28); yield return new WaitForSeconds(.7f);
+            Check(showroom.hood.IsOpen, "native trigger ray did not open AMG hood");
+            yield return Click(28); yield return new WaitForSeconds(.7f);
             yield return Click(4); Check(showroom.gestures.ManipulationEnabled, "unlock failed");
             yield return Click(25);
             CapturePanel(ui, "controller-adjustments.png");
@@ -110,6 +130,7 @@ namespace CarAR
             Send(right, trigger: 1); yield return new WaitForSeconds(.2f);
             Send(right, trigger: 0); yield return new WaitForSeconds(.2f);
             Check(!input.IsPlacing && !showroom.gestures.ManipulationEnabled, "placement failed to confirm and park");
+            Check(input.RightRayVisible, "ray did not remain visible after floor placement");
             Check(showroom.placement.GroundHeight > initialGround + .04f, "placement stick height calibration failed");
             // The oblique aim ray moves its intersection horizontally when the floor height changes.
             var expectedPoint = ground + new Vector3(0, 1, -2) * (showroom.placement.GroundHeight - initialGround);
@@ -149,8 +170,16 @@ namespace CarAR
             {
                 ((ButtonControl)device["isTracked"]).WriteValueIntoEvent(1f, pointer);
                 ((IntegerControl)device["trackingState"]).WriteValueIntoEvent(3, pointer);
-                if (position.HasValue) ((Vector3Control)device["pointerPosition"]).WriteValueIntoEvent(position.Value, pointer);
-                if (rotation.HasValue) ((QuaternionControl)device["pointerRotation"]).WriteValueIntoEvent(rotation.Value, pointer);
+                if (position.HasValue)
+                {
+                    ((Vector3Control)device["pointerPosition"]).WriteValueIntoEvent(position.Value, pointer);
+                    ((Vector3Control)device["devicePosition"]).WriteValueIntoEvent(position.Value, pointer);
+                }
+                if (rotation.HasValue)
+                {
+                    ((QuaternionControl)device["pointerRotation"]).WriteValueIntoEvent(rotation.Value, pointer);
+                    ((QuaternionControl)device["deviceRotation"]).WriteValueIntoEvent(rotation.Value, pointer);
+                }
                 if (trigger.HasValue) ((ButtonControl)device["triggerPressed"]).WriteValueIntoEvent(trigger.Value, pointer);
                 if (grip.HasValue) ((ButtonControl)device["gripPressed"]).WriteValueIntoEvent(grip.Value, pointer);
                 if (menu.HasValue) ((ButtonControl)device["menuButton"]).WriteValueIntoEvent(menu.Value, pointer);

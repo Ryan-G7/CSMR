@@ -6,7 +6,7 @@ using UnityEngine;
 namespace CarAR.Huijing
 {
     public enum HjxrResult { Success = 0, Failed = -1, DllFailed = -2, DllWrong = -3, InterfaceNotFound = -4, InvalidParam = -5, RpcFailed = -6, ShareMemFailed = -7, UnsupportedRender = -8, NoDisplay = -9, NoRenderDevice = -10, AppNotVisible = -11, ServerNotReady = -12, VersionMismatch = -13, AdapterMismatch = -14, NotSupported = -15 }
-    public enum HjxrCommand { SetLayerZOrder = 0, SetLayerEnable = 2, GetLayerEnable = 3, WorldSync = 16, GetLayerPoseTimeOffset = 22, GetVstVsyncOffset = 27, SetHeadLock = 60, WorldSetMarkerPose = 63 }
+    public enum HjxrCommand { SetLayerZOrder = 0, SetLayerEnable = 2, GetLayerEnable = 3, WorldSync = 16, SetLayerPoseTimeOffset = 21, GetLayerPoseTimeOffset = 22, GetVstVsyncOffset = 27, SetTrackLocateSpace = 41, SetLayerPoseDefer = 43, SetHeadLock = 60, SetUseCubeMarker = 61, WorldSetMarkerPose = 63 }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct HjxrPose
     {

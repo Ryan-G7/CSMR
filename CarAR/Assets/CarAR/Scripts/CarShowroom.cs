@@ -16,7 +16,7 @@ namespace CarAR
         public ARLightEstimation lighting;
         public MRTKCarInteraction gestures;
         public ExplodeController explode;
-        public CarPanel leftDoor, rightDoor, trunk;
+        public CarPanel leftDoor, rightDoor, trunk, hood;
         public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 && !Huijing.HuijingMRBridge.Requested;
         float brightness = 1.2f, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
         GUIStyle title, text, button;
@@ -53,13 +53,19 @@ namespace CarAR
             {
                 if (Application.platform != RuntimePlatform.Android)
                 {
+                    var vendor = GetComponent<Huijing.HuijingMRBridge>();
+                    if (vendor != null) vendor.ConfigureTrackingReference();
                     var manager = XRGeneralSettings.Instance.Manager;
                     yield return manager.InitializeLoader();
                     if (manager.activeLoader == null) { Debug.LogError("[CarAR] OpenXR initialization failed. Check the connected headset and runtime."); yield break; }
                     manager.StartSubsystems();
-                    Debug.Log("[CarAR] PC OpenXR started: " + UnityEngine.XR.OpenXR.OpenXRRuntime.name);
-                    var vendor = GetComponent<Huijing.HuijingMRBridge>();
-                    if (vendor != null) yield return vendor.InitializeAfterOpenXR();
+                    Debug.Log("[CarAR] PC OpenXR started: " + UnityEngine.XR.OpenXR.OpenXRRuntime.name + "; loader=" + manager.activeLoader.GetType().Name);
+                    if (vendor != null)
+                    {
+                        yield return null;
+                        vendor.ApplyTrackingReference(manager.activeLoader.GetLoadedSubsystem<UnityEngine.XR.XRInputSubsystem>());
+                        yield return vendor.InitializeAfterOpenXR();
+                    }
                     yield return new WaitForSeconds(3);
                     Debug.Log("[CarAR] Hand state: " + gestures.Status);
                 }
@@ -97,6 +103,7 @@ namespace CarAR
             if (k.digit1Key.wasPressedThisFrame) leftDoor.Toggle();
             if (k.digit2Key.wasPressedThisFrame) rightDoor.Toggle();
             if (k.digit3Key.wasPressedThisFrame) trunk.Toggle();
+            if (k.digit4Key.wasPressedThisFrame) hood.Toggle();
             if (k.spaceKey.wasPressedThisFrame) explode.Toggle();
             if (k.escapeKey.wasPressedThisFrame) Application.Quit();
         }
@@ -109,14 +116,15 @@ namespace CarAR
             float scale = Mathf.Max(.65f, Mathf.Min(Screen.width / 1280f, Screen.height / 800f));
             GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
             GUILayout.BeginArea(new Rect(22, 20, 340, 720), GUI.skin.box);
-            GUILayout.Space(10); GUILayout.Label("911 / AR SHOWROOM", title);
+            GUILayout.Space(10); GUILayout.Label("AMG GT / AR SHOWROOM", title);
             GUILayout.Label("DESKTOP PREVIEW", text); GUILayout.Space(12);
             GUILayout.Label("Drag right mouse to orbit. Scroll to zoom.", text);
             GUILayout.Space(14);
             GUI.enabled = car.gameObject.activeInHierarchy && !explode.IsBusy;
             if (GUILayout.Button("[1]  " + (leftDoor.IsOpen ? "Close left door" : "Open left door"), button)) leftDoor.Toggle();
             if (GUILayout.Button("[2]  " + (rightDoor.IsOpen ? "Close right door" : "Open right door"), button)) rightDoor.Toggle();
-            if (GUILayout.Button("[3]  " + (trunk.IsOpen ? "Close front trunk" : "Open front trunk"), button)) trunk.Toggle();
+            if (GUILayout.Button("[3]  " + (trunk.IsOpen ? "Close rear hatch" : "Open rear hatch"), button)) trunk.Toggle();
+            if (GUILayout.Button("[4]  " + (hood.IsOpen ? "Close hood" : "Open hood"), button)) hood.Toggle();
             GUI.enabled = car.gameObject.activeInHierarchy;
             if (GUILayout.Button("[Space]  " + (explode.IsExploded ? "Assemble vehicle" : "Explode vehicle"), button)) explode.Toggle();
             GUI.enabled = true; GUILayout.Space(16);
@@ -130,7 +138,7 @@ namespace CarAR
             GUILayout.Label("Light: " + lighting.Status, text);
             GUILayout.Label("Hands: " + gestures.Status, text);
             GUILayout.Space(16);
-            GUILayout.Label("911 mesh panels use an approximate spatial split. Front trunk = luggage compartment; rear lid = engine cover.", text);
+            GUILayout.Label("AMG.blend: original independent door, window, mirror, hood and hatch meshes. Default scale = 1:1.", text);
             GUILayout.Space(8);
             GUILayout.Label("Real AR requires the headset's plane / camera / light providers. Desktop lighting is simulated.", text);
             GUILayout.EndArea();
@@ -160,37 +168,89 @@ namespace CarAR
             var parts = car.GetComponentsInChildren<MeshRenderer>();
             foreach (var r in parts) Debug.Log($"[CarAR Render] {r.name} active={r.gameObject.activeInHierarchy} enabled={r.enabled} bounds={r.bounds} shader={r.sharedMaterial.shader.name}");
             if (parts.Length == 0) { Debug.LogError("[CarAR Smoke] No renderers"); Application.Quit(1); yield break; }
+            var modelSize = gestures.ModelSize;
+            if (modelSize.z < 4.5f || modelSize.z > 4.9f || modelSize.y < 1.2f || modelSize.y > 1.5f)
+                throw new System.InvalidOperationException("AMG physical scale / axis conversion is incorrect: " + modelSize);
+            foreach (var panel in new[] { leftDoor, rightDoor })
+            {
+                bool shell = false, glass = false, mirror = false;
+                foreach (var r in panel.GetComponentsInChildren<MeshRenderer>())
+                {
+                    shell |= r.name.StartsWith("Cube.002__");
+                    glass |= r.name.StartsWith("Cube.017__");
+                    mirror |= r.name.StartsWith("Cube.139__");
+                }
+                if (!shell || !glass || !mirror) throw new System.InvalidOperationException("AMG door is missing original shell, glass or mirror: " + panel.name);
+            }
+            if (explode.assemblyRoots.Length != 4) throw new System.InvalidOperationException("AMG wheel assemblies are missing");
             var positions = new Vector3[parts.Length];
+            var rotations = new Quaternion[parts.Length];
+            var doorClosedPoints = new Vector3[4];
+            var panels = new[] { leftDoor, rightDoor, trunk, hood };
             for (int i = 0; i < parts.Length; i++) positions[i] = parts[i].transform.localPosition;
-            leftDoor.Toggle(); rightDoor.Toggle(); trunk.Toggle();
+            for (int i = 0; i < parts.Length; i++) rotations[i] = parts[i].transform.localRotation;
+            for (int i = 0; i < panels.Length; i++) doorClosedPoints[i] = panels[i].GetComponentInChildren<MeshRenderer>().bounds.center;
+            leftDoor.Toggle(); rightDoor.Toggle(); trunk.Toggle(); hood.Toggle();
             yield return new WaitForSeconds(1);
-            if (!leftDoor.IsOpen || !rightDoor.IsOpen || !trunk.IsOpen) { Debug.LogError("[CarAR Smoke] Panel open failed"); Application.Quit(1); yield break; }
-            ScreenCapture.CaptureScreenshot(Path.Combine(Application.dataPath, "../panels.png"));
+            if (!leftDoor.IsOpen || !rightDoor.IsOpen || !trunk.IsOpen || !hood.IsOpen) { Debug.LogError("[CarAR Smoke] Panel open failed"); Application.Quit(1); yield break; }
+            for (int i = 0; i < panels.Length; i++)
+                if (Vector3.Distance(doorClosedPoints[i], panels[i].GetComponentInChildren<MeshRenderer>().bounds.center) < .05f)
+                    throw new System.InvalidOperationException("AMG animation did not move real panel geometry: " + panels[i].name);
+            CaptureVehicle("panels.png");
             yield return new WaitForSeconds(.2f);
             explode.SetTarget(1);
             yield return new WaitForSeconds(2.8f);
-            if (explode.Progress < .999f || !leftDoor.IsClosed || !rightDoor.IsClosed || !trunk.IsClosed) { Debug.LogError("[CarAR Smoke] Explode failed"); Application.Quit(1); yield break; }
-            ScreenCapture.CaptureScreenshot(Path.Combine(Application.dataPath, "../exploded.png"));
+            if (explode.Progress < .999f || !leftDoor.IsClosed || !rightDoor.IsClosed || !trunk.IsClosed || !hood.IsClosed) { Debug.LogError("[CarAR Smoke] Explode failed"); Application.Quit(1); yield break; }
+            foreach (var r in parts)
+                if (r.bounds.min.y < placement.GroundHeight - .01f)
+                    throw new System.InvalidOperationException("AMG exploded part went below the review floor: " + r.name);
+            CaptureVehicle("exploded.png");
             yield return new WaitForSeconds(.2f);
             explode.SetTarget(0);
             yield return new WaitForSeconds(2);
             for (int i = 0; i < parts.Length; i++)
-                if (Vector3.Distance(positions[i], parts[i].transform.localPosition) > .0001f) { Debug.LogError("[CarAR Smoke] Assembly did not restore transforms"); Application.Quit(1); yield break; }
-            ScreenCapture.CaptureScreenshot(Path.Combine(Application.dataPath, "../assembled.png"));
+                if (Vector3.Distance(positions[i], parts[i].transform.localPosition) > .0001f || Quaternion.Angle(rotations[i], parts[i].transform.localRotation) > .001f)
+                { Debug.LogError("[CarAR Smoke] Assembly did not restore transforms"); Application.Quit(1); yield break; }
+            CaptureVehicle("assembled.png");
             yield return new WaitForSeconds(.2f);
             lighting.SetPreviewLight(.08f, 2800);
             yield return new WaitForSeconds(2);
             if (RenderSettings.sun.intensity > .12f || RenderSettings.sun.color.b > .6f) { Debug.LogError("[CarAR Smoke] Light response failed"); Application.Quit(1); yield break; }
-            ScreenCapture.CaptureScreenshot(Path.Combine(Application.dataPath, "../warm-dim.png"));
-            Debug.Log($"[CarAR Smoke] PASS: parked root stable, locked transforms rejected, explicit scaling preserves ground pivot, {parts.Length} renderers, 3 panel animations, explode/assemble restores original positions, light intensity and color response.");
+            CaptureVehicle("warm-dim.png");
+            Debug.Log($"[CarAR Smoke] PASS: parked root stable, locked transforms rejected, explicit scaling preserves ground pivot, {parts.Length} renderers, 4 panel animations, explode/assemble restores original positions, light intensity and color response.");
             yield return new WaitForSeconds(.5f); Application.Quit(0);
+        }
+
+        void CaptureVehicle(string file)
+        {
+            // A minimized Windows player can have a black presentation surface.
+            // Explicitly render the native URP scene to inspect the real materials.
+            var go = new GameObject("Vehicle validation camera");
+            var camera = go.AddComponent<Camera>(); camera.enabled = false;
+            camera.CopyFrom(Camera.main);
+            camera.transform.SetPositionAndRotation(Camera.main.transform.position, Camera.main.transform.rotation);
+            if (explode.Progress > .5f)
+            {
+                var centre = car.position + Vector3.up * .8f;
+                camera.transform.position = centre + (camera.transform.position - centre) * 1.4f;
+                camera.transform.LookAt(centre);
+            }
+            go.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>().allowXRRendering = false;
+            var target = RenderTexture.GetTemporary(1440, 900, 24);
+            var previous = RenderTexture.active;
+            camera.targetTexture = target; camera.Render(); RenderTexture.active = target;
+            var image = new Texture2D(1440, 900, TextureFormat.RGBA32, false);
+            image.ReadPixels(new Rect(0, 0, 1440, 900), 0, 0); image.Apply();
+            File.WriteAllBytes(Path.Combine(Application.dataPath, "../" + file), image.EncodeToPNG());
+            camera.targetTexture = null; RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(target); Destroy(image); Destroy(go);
         }
 
         IEnumerator MRTKInteractionSmoke()
         {
             var ui = GetComponent<MRTKShowroomUI>();
             var manipulator = gestures.manipulator;
-            if (ui == null || ui.buttons.Length != 27 || manipulator == null || manipulator.enabled)
+            if (ui == null || ui.buttons.Length != 29 || manipulator == null || manipulator.enabled)
                 throw new System.InvalidOperationException("MRTK controls missing or car not locked initially");
             var originalPosition = car.position; var originalRotation = car.rotation; var originalScale = car.localScale;
             ui.buttons[4].OnClicked.Invoke();

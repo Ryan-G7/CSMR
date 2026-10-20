@@ -20,6 +20,8 @@ namespace CarAR
         public XRRayInteractor RightRay => right.ray;
         public XRRayInteractor LeftGrabRay => left.grab;
         public XRRayInteractor RightGrabRay => right.grab;
+        public bool LeftRayVisible => RayVisible(left);
+        public bool RightRayVisible => RayVisible(right);
         public string Status { get; private set; } = "等待手柄连接";
         public bool IsPlacing { get; private set; }
         public bool PlacementValid { get; private set; }
@@ -30,6 +32,9 @@ namespace CarAR
             public XRRayInteractor ray, grab;
             public XRInteractorLineVisual line;
             public InputAction menu, stick;
+            public InputActionProperty aimPosition, aimRotation, gripPosition, gripRotation, aimTracked, aimState, gripTracked, gripState;
+            public LineRenderer renderer;
+            public string poseSource;
             public bool tracked;
         }
         Hand left, right;
@@ -39,14 +44,20 @@ namespace CarAR
         float placementHeight;
         float placementStarted;
         bool triggerReleased;
+        InputAction calibrate;
+        float calibrationHeldSince = -1, nextDiagnostics;
+        bool calibrationSubmitted;
         Vector3 candidate;
         readonly List<InputAction> ownedActions = new();
 
         void Awake()
         {
             left = CreateHand("LeftHand"); right = CreateHand("RightHand");
+            calibrate = Own(new InputAction("Marker calibration shortcut", InputActionType.Button, "<XRController>{LeftHand}/primaryButton"));
+            calibrate.Enable();
             InputSystem.onDeviceChange += OnDeviceChange;
             foreach (var device in InputSystem.devices) LogDevice(device, "present");
+            Application.onBeforeRender += LogRayDiagnostics;
         }
         Hand CreateHand(string hand)
         {
@@ -54,18 +65,28 @@ namespace CarAR
             root.transform.SetParent(trackingOrigin, false);
             var h = new Hand { controller = root.AddComponent<ActionBasedController>() };
             string path = "<XRController>{" + hand + "}/";
-            h.controller.positionAction = Property("Aim position", path + "pointerPosition", "Vector3");
-            h.controller.rotationAction = Property("Aim rotation", path + "pointerRotation", "Quaternion");
-            h.controller.isTrackedAction = Property("Tracked", path + "isTracked", "Button");
-            h.controller.trackingStateAction = Property("Tracking state", path + "trackingState", "Integer");
+            h.aimPosition = Property("Aim position", path + "pointerPosition", "Vector3");
+            h.aimRotation = Property("Aim rotation", path + "pointerRotation", "Quaternion");
+            h.gripPosition = Property("Grip position", path + "devicePosition", "Vector3");
+            h.gripRotation = Property("Grip rotation", path + "deviceRotation", "Quaternion");
+            h.aimTracked = Property("Aim tracked", path + "pointer/isTracked", "Button");
+            h.aimState = Property("Aim tracking state", path + "pointer/trackingState", "Integer");
+            h.gripTracked = Property("Tracked", path + "isTracked", "Button");
+            h.gripState = Property("Tracking state", path + "trackingState", "Integer");
+            SetPoseSource(h, true);
             h.controller.selectAction = Property("Trigger", path + "triggerPressed", "Button");
             h.controller.selectAction.action.AddBinding(path + "select");
             h.ray = CreateRay(root, 1);
             h.line = root.AddComponent<XRInteractorLineVisual>();
-            root.GetComponent<LineRenderer>().sharedMaterial = rayMaterial;
-            h.line.lineWidth = .003f; h.line.lineLength = 8;
+            h.renderer = root.GetComponent<LineRenderer>();
+            h.renderer.sharedMaterial = rayMaterial;
+            h.renderer.numCapVertices = 4;
+            h.renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            h.line.lineWidth = .005f; h.line.lineLength = 8;
+            h.line.overrideInteractorLineLength = true;
+            h.line.autoAdjustLineLength = false;
             h.line.smoothMovement = false;
-            h.line.invalidColorGradient = LineColor(new Color(.35f, .7f, 1f, .5f));
+            h.line.invalidColorGradient = LineColor(new Color(.35f, .7f, 1f, 1));
             h.line.validColorGradient = LineColor(new Color(.1f, 1f, .7f));
             h.line.blockedColorGradient = LineColor(Color.white);
 
@@ -96,6 +117,7 @@ namespace CarAR
         {
             var action = Own(new InputAction(name, type == "Button" ? InputActionType.Button : InputActionType.Value,
                 binding, expectedControlType: type));
+            action.wantsInitialStateCheck = true;
             return new InputActionProperty(action);
         }
         static Gradient LineColor(Color color)
@@ -109,6 +131,13 @@ namespace CarAR
         {
             UpdateHand(left); UpdateHand(right);
             Status = left.tracked && right.tracked ? "双手柄已跟踪" : left.tracked ? "左手柄已跟踪" : right.tracked ? "右手柄已跟踪" : "未检测到已跟踪手柄";
+            if (left.tracked && calibrate.IsPressed())
+            {
+                if (calibrationHeldSince < 0) calibrationHeldSince = Time.unscaledTime;
+                if (!calibrationSubmitted && Time.unscaledTime - calibrationHeldSince >= 1.2f)
+                { calibrationSubmitted = true; ui.RequestMarkerAlignment(); }
+            }
+            else { calibrationHeldSince = -1; calibrationSubmitted = false; }
             if (IsPlacing) { UpdatePlacement(); return; }
             var car = ui.showroom;
             if (!car.placement.IsPlaced || !car.gestures.ManipulationEnabled || car.explode.IsBusy || car.gestures.manipulator.isSelected) return;
@@ -122,20 +151,63 @@ namespace CarAR
         static Vector2 DeadZone(Vector2 value) => value.magnitude > .2f ? value.normalized * ((Mathf.Min(1, value.magnitude) - .2f) / .8f) : Vector2.zero;
         void UpdateHand(Hand h)
         {
-            bool tracked = h.controller.isTrackedAction.action.IsPressed();
-            var state = (InputTrackingState)h.controller.trackingStateAction.action.ReadValue<int>();
-            tracked &= (state & (InputTrackingState.Position | InputTrackingState.Rotation)) == (InputTrackingState.Position | InputTrackingState.Rotation);
+            bool aim = PoseValid(h.aimPosition, h.aimRotation,
+                h.aimTracked.action.controls.Count > 0 ? h.aimTracked : h.gripTracked,
+                h.aimState.action.controls.Count > 0 ? h.aimState : h.gripState);
+            bool grip = PoseValid(h.gripPosition, h.gripRotation, h.gripTracked, h.gripState);
+            bool tracked = aim || grip;
+            if (tracked && h.poseSource != (aim ? "aim" : "grip")) SetPoseSource(h, aim);
             h.tracked = tracked;
-            h.ray.enabled = tracked && !IsPlacing;
+            // Keep the native pointing line visible during floor placement too.
+            h.ray.interactionLayers = IsPlacing ? 0 : 1;
+            h.ray.enabled = tracked;
             h.grab.enabled = tracked && !IsPlacing;
-            h.line.enabled = tracked && !IsPlacing;
+            h.line.enabled = tracked;
+        }
+        static bool PoseValid(InputActionProperty position, InputActionProperty rotation, InputActionProperty tracked, InputActionProperty state)
+        {
+            const InputTrackingState poseFlags = InputTrackingState.Position | InputTrackingState.Rotation;
+            if (position.action.controls.Count == 0 || rotation.action.controls.Count == 0 || !tracked.action.IsPressed() ||
+                ((InputTrackingState)state.action.ReadValue<int>() & poseFlags) != poseFlags) return false;
+            var p = position.action.ReadValue<Vector3>(); var q = rotation.action.ReadValue<Quaternion>();
+            float norm = Quaternion.Dot(q, q);
+            return float.IsFinite(p.x) && float.IsFinite(p.y) && float.IsFinite(p.z) && float.IsFinite(norm) && norm > .8f && norm < 1.2f;
+        }
+        static void SetPoseSource(Hand h, bool aim)
+        {
+            var position = aim ? h.aimPosition : h.gripPosition;
+            var rotation = aim ? h.aimRotation : h.gripRotation;
+            var tracked = aim && h.aimTracked.action.controls.Count > 0 ? h.aimTracked : h.gripTracked;
+            var state = aim && h.aimState.action.controls.Count > 0 ? h.aimState : h.gripState;
+            if (h.controller.positionAction.action != position.action) h.controller.positionAction = position;
+            if (h.controller.rotationAction.action != rotation.action) h.controller.rotationAction = rotation;
+            if (h.controller.isTrackedAction.action != tracked.action) h.controller.isTrackedAction = tracked;
+            if (h.controller.trackingStateAction.action != state.action) h.controller.trackingStateAction = state;
+            // Controller setters disable their old direct actions. Keep both sources
+            // available to detect recovery of the OpenXR aim pose after tracking loss.
+            foreach (var action in new[] { h.aimPosition, h.aimRotation, h.gripPosition, h.gripRotation, h.aimTracked, h.aimState, h.gripTracked, h.gripState }) action.action.Enable();
+            h.poseSource = aim ? "aim" : "grip";
+        }
+        static bool RayVisible(Hand h) => h != null && h.line.enabled && h.renderer.enabled && h.renderer.positionCount >= 2;
+        [BeforeRenderOrder(20000)]
+        void LogRayDiagnostics()
+        {
+            if (Time.unscaledTime < nextDiagnostics) return;
+            nextDiagnostics = Time.unscaledTime + 5;
+            foreach (var h in new[] { left, right })
+            {
+                if (h == null) continue;
+                var p = h.controller.transform.position;
+                string endpoints = h.renderer.positionCount >= 2 ? $"{h.renderer.GetPosition(0):F3}->{h.renderer.GetPosition(h.renderer.positionCount - 1):F3}" : "none";
+                Debug.Log($"[CarAR Ray] {h.controller.name} tracked={h.tracked} source={h.poseSource} position={p:F3} forward={h.controller.transform.forward:F3} headDistance={(Camera.main != null ? Vector3.Distance(p, Camera.main.transform.position) : -1):F3} ray={h.ray.enabled} visual={h.line.enabled} rendered={RayVisible(h)} points={h.renderer.positionCount} endpoints={endpoints} posControl={h.controller.positionAction.action.activeControl?.path} aimState={h.aimState.action.ReadValue<int>()} gripState={h.gripState.action.ReadValue<int>()} placing={IsPlacing}");
+            }
         }
         public void BeginPlacement()
         {
             if (ui.showroom.explode.IsBusy) { ui.Notice("请先组装还原，再重新放置"); return; }
             ui.showroom.gestures.SetManipulation(false);
             IsPlacing = true; PlacementValid = false; triggerReleased = false; placementStarted = Time.unscaledTime;
-            placementHeight = ui.showroom.placement.GroundHeight;
+            placementHeight = ui.showroom.placement.PlacementPreviewHeight;
             ui.controlPanel.gameObject.SetActive(false);
             if (footprint == null)
             {
@@ -205,6 +277,7 @@ namespace CarAR
         void OnDestroy()
         {
             InputSystem.onDeviceChange -= OnDeviceChange;
+            Application.onBeforeRender -= LogRayDiagnostics;
             foreach (var action in ownedActions) action.Dispose();
             if (footprint != null) Destroy(footprint.gameObject);
             if (placementHint != null) Destroy(placementHint.gameObject);

@@ -15,9 +15,12 @@ namespace CarAR
         bool placed, estimated, referenceFloor, stageFloor, manualFloor;
         float startTime;
         bool waitingForHeadset;
+        bool refreshPlacementPreview;
         CarShowroom showroom;
         public string Status => referenceFloor ? "Configured marker floor (verify alignment)" : !placed ? waitingForHeadset ? "Waiting for worn, tracked headset" : "Scanning for floor..." : estimated ? "Estimated floor (no plane data)" : stageFloor ? "OpenXR stage floor" : "Tracked horizontal plane";
         public bool IsPlaced => placed;
+        public void RefreshPlacementPreviewAfterAlignment() => refreshPlacementPreview = true;
+        public float PlacementPreviewHeight => refreshPlacementPreview && Camera.main != null ? Camera.main.transform.position.y - fallbackEyeHeight : GroundHeight;
         void Start() => showroom = FindAnyObjectByType<CarShowroom>();
         void OnEnable()
         {
@@ -127,6 +130,7 @@ namespace CarAR
         public string DisplayStatus => !placed ? waitingForHeadset ? "请佩戴头显，等待空间定位恢复" : "正在寻找地面" : referenceFloor ? "使用标记参考地面" : manualFloor ? "地面高度已手动对齐" : estimated ? "地面高度为估计，可用 ±1cm 校准" : "使用跟踪地面高度";
         public void PlaceOnFloorPoint(Vector3 ground)
         {
+            refreshPlacementPreview = false;
             // Preserve the ground pivot even when panels are open or exploded.
             if (placed) { carRoot.position = ground + Vector3.up * (carRoot.position.y - GroundHeight); GroundHeight = ground.y; }
             else PlaceAt(ground, true);

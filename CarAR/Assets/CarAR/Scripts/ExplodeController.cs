@@ -7,6 +7,7 @@ namespace CarAR
     {
         [SerializeField] float duration = 1.6f;
         [SerializeField] float baseDistance = 1.4f;
+        public Transform[] assemblyRoots = System.Array.Empty<Transform>();
         struct Part { public Transform t; public Vector3 home, offset; }
         readonly List<Part> parts = new();
         CarPanel[] panels;
@@ -25,7 +26,11 @@ namespace CarAR
             {
                 var panel = r.GetComponentInParent<CarPanel>();
                 // Treat each hinged panel as one assembly; never animate both it and its children.
-                roots.Add(panel != null ? panel.transform : r.transform);
+                Transform assembly = panel != null ? panel.transform : r.transform;
+                if (panel == null)
+                    foreach (var root in assemblyRoots)
+                        if (root != null && r.transform.IsChildOf(root)) { assembly = root; break; }
+                roots.Add(assembly);
             }
             var bounds = new Bounds(transform.position, Vector3.zero);
             foreach (var r in GetComponentsInChildren<MeshRenderer>(true)) bounds.Encapsulate(r.bounds);
@@ -37,6 +42,9 @@ namespace CarAR
                 foreach (var r in rs) b.Encapsulate(r.bounds);
                 var dir = transform.InverseTransformPoint(b.center) - transform.InverseTransformPoint(bounds.center);
                 if (dir.sqrMagnitude < .02f) dir = new Vector3(Mathf.Sin(index * 2.4f), 1, Mathf.Cos(index * 2.4f));
+                // Floor review keeps all components above the real ground.
+                // A purely radial displacement otherwise buries wheels and sills.
+                dir.y = Mathf.Max(.15f, dir.y);
                 dir.Normalize();
                 // Convert the car-space displacement to the actual parent's space.
                 var offset = part.parent.InverseTransformVector(transform.TransformVector(dir * baseDistance));

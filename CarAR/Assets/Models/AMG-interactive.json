@@ -1,0 +1,7692 @@
+{
+  "source": "AMG.blend",
+  "units": "metres",
+  "assemblies": {
+    "DoorLeft": {
+      "blender_pivot": [
+        0.84,
+        -0.39,
+        0.8
+      ],
+      "sources": [
+        "Cube.002",
+        "Cube.017",
+        "Cube.063",
+        "Cube.076",
+        "Cube.077",
+        "Cube.080",
+        "Cube.083",
+        "Cube.106",
+        "Cube.139",
+        "Cube.140",
+        "Cube.141",
+        "Cube.142"
+      ]
+    },
+    "DoorRight": {
+      "blender_pivot": [
+        -0.846,
+        -0.39,
+        0.8
+      ],
+      "sources": [
+        "Cube.002",
+        "Cube.017",
+        "Cube.063",
+        "Cube.076",
+        "Cube.077",
+        "Cube.080",
+        "Cube.083",
+        "Cube.106",
+        "Cube.139",
+        "Cube.140",
+        "Cube.141",
+        "Cube.142"
+      ]
+    },
+    "RearHatch": {
+      "blender_pivot": [
+        -0.003,
+        1.01,
+        1.28
+      ],
+      "sources": [
+        "Cube.007",
+        "Cube.009",
+        "Cube.010",
+        "Cube.011",
+        "Cube.029"
+      ]
+    },
+    "Hood": {
+      "blender_pivot": [
+        -0.003,
+        -0.435,
+        0.92
+      ],
+      "sources": [
+        "Cube.074"
+      ]
+    },
+    "Body": {
+      "blender_pivot": [
+        0,
+        0,
+        0
+      ],
+      "sources": [
+        "Cube",
+        "Cube.001",
+        "Cube.003",
+        "Cube.004",
+        "Cube.005",
+        "Cube.006",
+        "Cube.008",
+        "Cube.012",
+        "Cube.013",
+        "Cube.014",
+        "Cube.015",
+        "Cube.016",
+        "Cube.018",
+        "Cube.019",
+        "Cube.020",
+        "Cube.021",
+        "Cube.022",
+        "Cube.023",
+        "Cube.024",
+        "Cube.025",
+        "Cube.026",
+        "Cube.027",
+        "Cube.028",
+        "Cube.030",
+        "Cube.031",
+        "Cube.032",
+        "Cube.033",
+        "Cube.034",
+        "Cube.035",
+        "Cube.036",
+        "Cube.038",
+        "Cube.039",
+        "Cube.040",
+        "Cube.041",
+        "Cube.042",
+        "Cube.043",
+        "Cube.044",
+        "Cube.045",
+        "Cube.046",
+        "Cube.047",
+        "Cube.048",
+        "Cube.049",
+        "Cube.050",
+        "Cube.051",
+        "Cube.052",
+        "Cube.053",
+        "Cube.054",
+        "Cube.055",
+        "Cube.056",
+        "Cube.057",
+        "Cube.059",
+        "Cube.060",
+        "Cube.061",
+        "Cube.062",
+        "Cube.063",
+        "Cube.064",
+        "Cube.066",
+        "Cube.067",
+        "Cube.068",
+        "Cube.069",
+        "Cube.070",
+        "Cube.071",
+        "Cube.072",
+        "Cube.073",
+        "Cube.075",
+        "Cube.076",
+        "Cube.077",
+        "Cube.078",
+        "Cube.079",
+        "Cube.080",
+        "Cube.081",
+        "Cube.082",
+        "Cube.085",
+        "Cube.086",
+        "Cube.087",
+        "Cube.088",
+        "Cube.089",
+        "Cube.090",
+        "Cube.091",
+        "Cube.092",
+        "Cube.094",
+        "Cube.097",
+        "Cube.098",
+        "Cube.099",
+        "Cube.102",
+        "Cube.103",
+        "Cube.105",
+        "Cube.107",
+        "Cube.108",
+        "Cube.110",
+        "Cube.112",
+        "Cube.114",
+        "Cube.122",
+        "Cube.138",
+        "mycar-body"
+      ]
+    },
+    "WheelFtL": {
+      "blender_pivot": [
+        0,
+        0,
+        0
+      ],
+      "sources": [
+        "mycar-wheel.Ft.L",
+        "mycar-wheel.Ft.L.002",
+        "mycar-wheel.Ft.L.003",
+        "mycar-wheel.Ft.L.004",
+        "mycar-wheelbrake.Ft.L"
+      ]
+    },
+    "WheelFtR": {
+      "blender_pivot": [
+        0,
+        0,
+        0
+      ],
+      "sources": [
+        "mycar-wheel.Ft.R",
+        "mycar-wheel.Ft.R.002",
+        "mycar-wheel.Ft.R.003",
+        "mycar-wheel.Ft.R.004",
+        "mycar-wheelbrake.Ft.R"
+      ]
+    },
+    "WheelBkL": {
+      "blender_pivot": [
+        0,
+        0,
+        0
+      ],
+      "sources": [
+        "mycar-wheel.Bk.L",
+        "mycar-wheel.Bk.L.002",
+        "mycar-wheel.Bk.L.003",
+        "mycar-wheel.Bk.L.004",
+        "mycar-wheelbrake.Bk.L"
+      ]
+    },
+    "WheelBkR": {
+      "blender_pivot": [
+        0,
+        0,
+        0
+      ],
+      "sources": [
+        "mycar-wheel.Bk.R",
+        "mycar-wheel.Bk.R.002",
+        "mycar-wheel.Bk.R.003",
+        "mycar-wheel.Bk.R.004",
+        "mycar-wheelbrake.Bk.R"
+      ]
+    }
+  },
+  "meshes": [
+    {
+      "name": "Cube__Body",
+      "source": "Cube",
+      "assembly": "Body",
+      "vertices": 1504,
+      "polygons": 1190
+    },
+    {
+      "name": "Cube.001__Body",
+      "source": "Cube.001",
+      "assembly": "Body",
+      "vertices": 5310,
+      "polygons": 5104
+    },
+    {
+      "name": "Cube.002__DoorLeft",
+      "source": "Cube.002",
+      "assembly": "DoorLeft",
+      "vertices": 1395,
+      "polygons": 1330
+    },
+    {
+      "name": "Cube.002__DoorRight",
+      "source": "Cube.002",
+      "assembly": "DoorRight",
+      "vertices": 1395,
+      "polygons": 1330
+    },
+    {
+      "name": "Cube.003__Body",
+      "source": "Cube.003",
+      "assembly": "Body",
+      "vertices": 770,
+      "polygons": 712
+    },
+    {
+      "name": "Cube.004__Body",
+      "source": "Cube.004",
+      "assembly": "Body",
+      "vertices": 6566,
+      "polygons": 6300
+    },
+    {
+      "name": "Cube.005__Body",
+      "source": "Cube.005",
+      "assembly": "Body",
+      "vertices": 819,
+      "polygons": 776
+    },
+    {
+      "name": "Cube.006__Body",
+      "source": "Cube.006",
+      "assembly": "Body",
+      "vertices": 723,
+      "polygons": 680
+    },
+    {
+      "name": "Cube.007__RearHatch",
+      "source": "Cube.007",
+      "assembly": "RearHatch",
+      "vertices": 1071,
+      "polygons": 1000
+    },
+    {
+      "name": "Cube.008__Body",
+      "source": "Cube.008",
+      "assembly": "Body",
+      "vertices": 671,
+      "polygons": 624
+    },
+    {
+      "name": "Cube.009__RearHatch",
+      "source": "Cube.009",
+      "assembly": "RearHatch",
+      "vertices": 811,
+      "polygons": 768
+    },
+    {
+      "name": "Cube.010__RearHatch",
+      "source": "Cube.010",
+      "assembly": "RearHatch",
+      "vertices": 593,
+      "polygons": 552
+    },
+    {
+      "name": "Cube.011__RearHatch",
+      "source": "Cube.011",
+      "assembly": "RearHatch",
+      "vertices": 481,
+      "polygons": 448
+    },
+    {
+      "name": "Cube.012__Body",
+      "source": "Cube.012",
+      "assembly": "Body",
+      "vertices": 3810,
+      "polygons": 3632
+    },
+    {
+      "name": "Cube.013__Body",
+      "source": "Cube.013",
+      "assembly": "Body",
+      "vertices": 590,
+      "polygons": 544
+    },
+    {
+      "name": "Cube.014__Body",
+      "source": "Cube.014",
+      "assembly": "Body",
+      "vertices": 1730,
+      "polygons": 1608
+    },
+    {
+      "name": "Cube.015__Body",
+      "source": "Cube.015",
+      "assembly": "Body",
+      "vertices": 822,
+      "polygons": 768
+    },
+    {
+      "name": "Cube.016__Body",
+      "source": "Cube.016",
+      "assembly": "Body",
+      "vertices": 410,
+      "polygons": 376
+    },
+    {
+      "name": "Cube.017__DoorLeft",
+      "source": "Cube.017",
+      "assembly": "DoorLeft",
+      "vertices": 601,
+      "polygons": 564
+    },
+    {
+      "name": "Cube.017__DoorRight",
+      "source": "Cube.017",
+      "assembly": "DoorRight",
+      "vertices": 601,
+      "polygons": 564
+    },
+    {
+      "name": "Cube.018__Body",
+      "source": "Cube.018",
+      "assembly": "Body",
+      "vertices": 8154,
+      "polygons": 7862
+    },
+    {
+      "name": "Cube.019__Body",
+      "source": "Cube.019",
+      "assembly": "Body",
+      "vertices": 6661,
+      "polygons": 6492
+    },
+    {
+      "name": "Cube.020__Body",
+      "source": "Cube.020",
+      "assembly": "Body",
+      "vertices": 134,
+      "polygons": 114
+    },
+    {
+      "name": "Cube.021__Body",
+      "source": "Cube.021",
+      "assembly": "Body",
+      "vertices": 1214,
+      "polygons": 1090
+    },
+    {
+      "name": "Cube.022__Body",
+      "source": "Cube.022",
+      "assembly": "Body",
+      "vertices": 300,
+      "polygons": 202
+    },
+    {
+      "name": "Cube.023__Body",
+      "source": "Cube.023",
+      "assembly": "Body",
+      "vertices": 692,
+      "polygons": 590
+    },
+    {
+      "name": "Cube.024__Body",
+      "source": "Cube.024",
+      "assembly": "Body",
+      "vertices": 112,
+      "polygons": 58
+    },
+    {
+      "name": "Cube.025__Body",
+      "source": "Cube.025",
+      "assembly": "Body",
+      "vertices": 1672,
+      "polygons": 1148
+    },
+    {
+      "name": "Cube.026__Body",
+      "source": "Cube.026",
+      "assembly": "Body",
+      "vertices": 1756,
+      "polygons": 878
+    },
+    {
+      "name": "Cube.027__Body",
+      "source": "Cube.027",
+      "assembly": "Body",
+      "vertices": 792,
+      "polygons": 288
+    },
+    {
+      "name": "Cube.028__Body",
+      "source": "Cube.028",
+      "assembly": "Body",
+      "vertices": 10906,
+      "polygons": 10656
+    },
+    {
+      "name": "Cube.029__RearHatch",
+      "source": "Cube.029",
+      "assembly": "RearHatch",
+      "vertices": 1115,
+      "polygons": 934
+    },
+    {
+      "name": "Cube.030__Body",
+      "source": "Cube.030",
+      "assembly": "Body",
+      "vertices": 754,
+      "polygons": 372
+    },
+    {
+      "name": "Cube.031__Body",
+      "source": "Cube.031",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.032__Body",
+      "source": "Cube.032",
+      "assembly": "Body",
+      "vertices": 430,
+      "polygons": 200
+    },
+    {
+      "name": "Cube.033__Body",
+      "source": "Cube.033",
+      "assembly": "Body",
+      "vertices": 296,
+      "polygons": 236
+    },
+    {
+      "name": "Cube.034__Body",
+      "source": "Cube.034",
+      "assembly": "Body",
+      "vertices": 516,
+      "polygons": 556
+    },
+    {
+      "name": "Cube.035__Body",
+      "source": "Cube.035",
+      "assembly": "Body",
+      "vertices": 240,
+      "polygons": 124
+    },
+    {
+      "name": "Cube.036__Body",
+      "source": "Cube.036",
+      "assembly": "Body",
+      "vertices": 1918,
+      "polygons": 1046
+    },
+    {
+      "name": "Cube.038__Body",
+      "source": "Cube.038",
+      "assembly": "Body",
+      "vertices": 2592,
+      "polygons": 2406
+    },
+    {
+      "name": "Cube.039__Body",
+      "source": "Cube.039",
+      "assembly": "Body",
+      "vertices": 788,
+      "polygons": 714
+    },
+    {
+      "name": "Cube.040__Body",
+      "source": "Cube.040",
+      "assembly": "Body",
+      "vertices": 920,
+      "polygons": 824
+    },
+    {
+      "name": "Cube.041__Body",
+      "source": "Cube.041",
+      "assembly": "Body",
+      "vertices": 3038,
+      "polygons": 1422
+    },
+    {
+      "name": "Cube.042__Body",
+      "source": "Cube.042",
+      "assembly": "Body",
+      "vertices": 528,
+      "polygons": 460
+    },
+    {
+      "name": "Cube.043__Body",
+      "source": "Cube.043",
+      "assembly": "Body",
+      "vertices": 254,
+      "polygons": 232
+    },
+    {
+      "name": "Cube.044__Body",
+      "source": "Cube.044",
+      "assembly": "Body",
+      "vertices": 2730,
+      "polygons": 1136
+    },
+    {
+      "name": "Cube.045__Body",
+      "source": "Cube.045",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.046__Body",
+      "source": "Cube.046",
+      "assembly": "Body",
+      "vertices": 332,
+      "polygons": 162
+    },
+    {
+      "name": "Cube.047__Body",
+      "source": "Cube.047",
+      "assembly": "Body",
+      "vertices": 794,
+      "polygons": 404
+    },
+    {
+      "name": "Cube.048__Body",
+      "source": "Cube.048",
+      "assembly": "Body",
+      "vertices": 420,
+      "polygons": 194
+    },
+    {
+      "name": "Cube.049__Body",
+      "source": "Cube.049",
+      "assembly": "Body",
+      "vertices": 256,
+      "polygons": 194
+    },
+    {
+      "name": "Cube.050__Body",
+      "source": "Cube.050",
+      "assembly": "Body",
+      "vertices": 440,
+      "polygons": 230
+    },
+    {
+      "name": "Cube.051__Body",
+      "source": "Cube.051",
+      "assembly": "Body",
+      "vertices": 68,
+      "polygons": 36
+    },
+    {
+      "name": "Cube.052__Body",
+      "source": "Cube.052",
+      "assembly": "Body",
+      "vertices": 828,
+      "polygons": 490
+    },
+    {
+      "name": "Cube.053__Body",
+      "source": "Cube.053",
+      "assembly": "Body",
+      "vertices": 926,
+      "polygons": 566
+    },
+    {
+      "name": "Cube.054__Body",
+      "source": "Cube.054",
+      "assembly": "Body",
+      "vertices": 5437,
+      "polygons": 2556
+    },
+    {
+      "name": "Cube.055__Body",
+      "source": "Cube.055",
+      "assembly": "Body",
+      "vertices": 8222,
+      "polygons": 7236
+    },
+    {
+      "name": "Cube.056__Body",
+      "source": "Cube.056",
+      "assembly": "Body",
+      "vertices": 162,
+      "polygons": 126
+    },
+    {
+      "name": "Cube.057__Body",
+      "source": "Cube.057",
+      "assembly": "Body",
+      "vertices": 64,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.059__Body",
+      "source": "Cube.059",
+      "assembly": "Body",
+      "vertices": 13181,
+      "polygons": 4831
+    },
+    {
+      "name": "Cube.060__Body",
+      "source": "Cube.060",
+      "assembly": "Body",
+      "vertices": 1596,
+      "polygons": 798
+    },
+    {
+      "name": "Cube.061__Body",
+      "source": "Cube.061",
+      "assembly": "Body",
+      "vertices": 24,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.062__Body",
+      "source": "Cube.062",
+      "assembly": "Body",
+      "vertices": 192,
+      "polygons": 160
+    },
+    {
+      "name": "Cube.063__Body",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1266,
+      "polygons": 1154
+    },
+    {
+      "name": "Cube.063__Body.001",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1129,
+      "polygons": 1043
+    },
+    {
+      "name": "Cube.063__DoorLeft",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 75,
+      "polygons": 58
+    },
+    {
+      "name": "Cube.063__DoorLeft.001",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 55,
+      "polygons": 46
+    },
+    {
+      "name": "Cube.063__DoorRight",
+      "source": "Cube.063",
+      "assembly": "DoorRight",
+      "vertices": 67,
+      "polygons": 56
+    },
+    {
+      "name": "Cube.063__DoorLeft.002",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 109,
+      "polygons": 92
+    },
+    {
+      "name": "Cube.063__Body.002",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 91,
+      "polygons": 73
+    },
+    {
+      "name": "Cube.063__DoorLeft.003",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 23,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.063__Body.003",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 451,
+      "polygons": 414
+    },
+    {
+      "name": "Cube.063__Body.004",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 33,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.063__Body.005",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 39,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.063__Body.006",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1550,
+      "polygons": 1440
+    },
+    {
+      "name": "Cube.063__Body.007",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 779,
+      "polygons": 650
+    },
+    {
+      "name": "Cube.063__Body.008",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 653,
+      "polygons": 596
+    },
+    {
+      "name": "Cube.063__Body.009",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 12462,
+      "polygons": 12006
+    },
+    {
+      "name": "Cube.063__Body.010",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 5369,
+      "polygons": 5174
+    },
+    {
+      "name": "Cube.063__Body.011",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 5297,
+      "polygons": 5102
+    },
+    {
+      "name": "Cube.063__Body.012",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1243,
+      "polygons": 1166
+    },
+    {
+      "name": "Cube.063__Body.013",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1257,
+      "polygons": 1180
+    },
+    {
+      "name": "Cube.063__Body.014",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 12424,
+      "polygons": 11968
+    },
+    {
+      "name": "Cube.063__Body.015",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 5365,
+      "polygons": 5170
+    },
+    {
+      "name": "Cube.063__Body.016",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 5303,
+      "polygons": 5108
+    },
+    {
+      "name": "Cube.063__Body.017",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1257,
+      "polygons": 1180
+    },
+    {
+      "name": "Cube.063__Body.018",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1245,
+      "polygons": 1168
+    },
+    {
+      "name": "Cube.063__DoorRight.001",
+      "source": "Cube.063",
+      "assembly": "DoorRight",
+      "vertices": 767,
+      "polygons": 732
+    },
+    {
+      "name": "Cube.063__DoorRight.002",
+      "source": "Cube.063",
+      "assembly": "DoorRight",
+      "vertices": 447,
+      "polygons": 400
+    },
+    {
+      "name": "Cube.063__DoorRight.003",
+      "source": "Cube.063",
+      "assembly": "DoorRight",
+      "vertices": 402,
+      "polygons": 363
+    },
+    {
+      "name": "Cube.063__Body.019",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 1300,
+      "polygons": 1278
+    },
+    {
+      "name": "Cube.063__Body.020",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 119,
+      "polygons": 96
+    },
+    {
+      "name": "Cube.063__Body.021",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 93,
+      "polygons": 73
+    },
+    {
+      "name": "Cube.063__Body.022",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.063__Body.023",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.063__Body.024",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 456,
+      "polygons": 432
+    },
+    {
+      "name": "Cube.063__Body.025",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 456,
+      "polygons": 432
+    },
+    {
+      "name": "Cube.063__Body.026",
+      "source": "Cube.063",
+      "assembly": "Body",
+      "vertices": 65,
+      "polygons": 48
+    },
+    {
+      "name": "Cube.063__DoorLeft.004",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 445,
+      "polygons": 398
+    },
+    {
+      "name": "Cube.063__DoorLeft.005",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 767,
+      "polygons": 732
+    },
+    {
+      "name": "Cube.063__DoorLeft.006",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 402,
+      "polygons": 363
+    },
+    {
+      "name": "Cube.063__DoorLeft.007",
+      "source": "Cube.063",
+      "assembly": "DoorLeft",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.064__Body",
+      "source": "Cube.064",
+      "assembly": "Body",
+      "vertices": 576,
+      "polygons": 576
+    },
+    {
+      "name": "Cube.066__Body",
+      "source": "Cube.066",
+      "assembly": "Body",
+      "vertices": 1656,
+      "polygons": 1980
+    },
+    {
+      "name": "Cube.067__Body",
+      "source": "Cube.067",
+      "assembly": "Body",
+      "vertices": 1324,
+      "polygons": 1150
+    },
+    {
+      "name": "Cube.068__Body",
+      "source": "Cube.068",
+      "assembly": "Body",
+      "vertices": 139,
+      "polygons": 90
+    },
+    {
+      "name": "Cube.069__Body",
+      "source": "Cube.069",
+      "assembly": "Body",
+      "vertices": 112,
+      "polygons": 84
+    },
+    {
+      "name": "Cube.070__Body",
+      "source": "Cube.070",
+      "assembly": "Body",
+      "vertices": 15030,
+      "polygons": 14142
+    },
+    {
+      "name": "Cube.071__Body",
+      "source": "Cube.071",
+      "assembly": "Body",
+      "vertices": 94,
+      "polygons": 46
+    },
+    {
+      "name": "Cube.072__Body",
+      "source": "Cube.072",
+      "assembly": "Body",
+      "vertices": 336,
+      "polygons": 302
+    },
+    {
+      "name": "Cube.073__Body",
+      "source": "Cube.073",
+      "assembly": "Body",
+      "vertices": 332,
+      "polygons": 162
+    },
+    {
+      "name": "Cube.074__Hood",
+      "source": "Cube.074",
+      "assembly": "Hood",
+      "vertices": 2383,
+      "polygons": 2300
+    },
+    {
+      "name": "Cube.075__Body",
+      "source": "Cube.075",
+      "assembly": "Body",
+      "vertices": 7348,
+      "polygons": 7204
+    },
+    {
+      "name": "Cube.076__Body",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.001",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.001",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.001",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.002",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.003",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.002",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.002",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.003",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.004",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.003",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.005",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.006",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.007",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.008",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.009",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.010",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.011",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.012",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.013",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.014",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.015",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.016",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.017",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.004",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.018",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.019",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.020",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.021",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.022",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.023",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.024",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.025",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.004",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.026",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.027",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.028",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.029",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.030",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.005",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.006",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.007",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.008",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.005",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.006",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.009",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.031",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.007",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.010",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 38,
+      "polygons": 23
+    },
+    {
+      "name": "Cube.076__DoorLeft.008",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 50,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.076__DoorLeft.009",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 72,
+      "polygons": 55
+    },
+    {
+      "name": "Cube.076__Body.032",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 52,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.033",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 52,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.034",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorLeft.010",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorRight.011",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorLeft.011",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorRight.012",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.035",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.036",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.037",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 62,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.038",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 52,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.039",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 52,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.040",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 62,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.041",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.042",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorRight.013",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 50,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.076__Body.043",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.044",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.045",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.046",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 62,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.047",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 62,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.048",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 103,
+      "polygons": 71
+    },
+    {
+      "name": "Cube.076__Body.049",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 103,
+      "polygons": 70
+    },
+    {
+      "name": "Cube.076__Body.050",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 103,
+      "polygons": 70
+    },
+    {
+      "name": "Cube.076__Body.051",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 103,
+      "polygons": 70
+    },
+    {
+      "name": "Cube.076__Body.052",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.053",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.054",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.055",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__DoorRight.014",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 64,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.076__DoorLeft.012",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 64,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.076__Body.056",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 60,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.057",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 60,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__DoorLeft.013",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 64,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.076__DoorRight.015",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 64,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.076__Body.058",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 60,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.059",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 60,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__DoorLeft.014",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 57,
+      "polygons": 51
+    },
+    {
+      "name": "Cube.076__DoorRight.016",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 57,
+      "polygons": 50
+    },
+    {
+      "name": "Cube.076__Body.060",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 90,
+      "polygons": 60
+    },
+    {
+      "name": "Cube.076__Body.061",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 90,
+      "polygons": 60
+    },
+    {
+      "name": "Cube.076__Body.062",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 90,
+      "polygons": 60
+    },
+    {
+      "name": "Cube.076__Body.063",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 90,
+      "polygons": 60
+    },
+    {
+      "name": "Cube.076__Body.064",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 218,
+      "polygons": 203
+    },
+    {
+      "name": "Cube.076__Body.065",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 218,
+      "polygons": 203
+    },
+    {
+      "name": "Cube.076__Body.066",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.067",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.068",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.069",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.070",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.071",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 11,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.072",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.073",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 11,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.074",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 13,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.076__Body.075",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 13,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.076__Body.076",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 31,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__Body.077",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 47,
+      "polygons": 23
+    },
+    {
+      "name": "Cube.076__Body.078",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 80,
+      "polygons": 46
+    },
+    {
+      "name": "Cube.076__Body.079",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 150,
+      "polygons": 110
+    },
+    {
+      "name": "Cube.076__Body.080",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 31,
+      "polygons": 23
+    },
+    {
+      "name": "Cube.076__Body.081",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 31,
+      "polygons": 23
+    },
+    {
+      "name": "Cube.076__Body.082",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.083",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.084",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.085",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.086",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.087",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.088",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.089",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.090",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.091",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.076__Body.092",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.093",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.076__Body.094",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.076__Body.095",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.076__Body.096",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 25,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.076__Body.097",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.098",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.099",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.100",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.101",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 32,
+      "polygons": 15
+    },
+    {
+      "name": "Cube.076__Body.102",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 34,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__Body.103",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 77,
+      "polygons": 55
+    },
+    {
+      "name": "Cube.076__Body.104",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 102,
+      "polygons": 91
+    },
+    {
+      "name": "Cube.076__Body.105",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 64,
+      "polygons": 31
+    },
+    {
+      "name": "Cube.076__Body.106",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 64,
+      "polygons": 31
+    },
+    {
+      "name": "Cube.076__Body.107",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 66,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.076__DoorLeft.015",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.016",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.017",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.018",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.019",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.020",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.021",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.022",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.023",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.024",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.025",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.026",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.027",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.028",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.029",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.030",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.031",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.032",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.033",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.034",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.035",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.017",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.018",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.019",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.020",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.021",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.022",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.023",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.024",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.025",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.026",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.027",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.028",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.029",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.030",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.031",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.032",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.033",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.034",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.035",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.036",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.037",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.038",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 38,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__DoorLeft.036",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 42,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__DoorLeft.037",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 44,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__DoorRight.039",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 39,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__Body.108",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 24,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.076__Body.109",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.110",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.111",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.112",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.113",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.114",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.115",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.116",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.117",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.076__Body.118",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.119",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.120",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.121",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.122",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.123",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.124",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.076__DoorLeft.038",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__DoorRight.040",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__DoorLeft.039",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__DoorRight.041",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__DoorRight.042",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 26,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__DoorLeft.040",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 26,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__Body.125",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.126",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.127",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 121,
+      "polygons": 106
+    },
+    {
+      "name": "Cube.076__Body.128",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 102,
+      "polygons": 54
+    },
+    {
+      "name": "Cube.076__Body.129",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 35,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__Body.130",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 22,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.131",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.132",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.133",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.134",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.135",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 68,
+      "polygons": 48
+    },
+    {
+      "name": "Cube.076__Body.136",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__Body.137",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__Body.138",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.139",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 33,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__Body.140",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 33,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__Body.141",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 25,
+      "polygons": 19
+    },
+    {
+      "name": "Cube.076__Body.142",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 25,
+      "polygons": 19
+    },
+    {
+      "name": "Cube.076__Body.143",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.144",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.145",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.146",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.147",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 114,
+      "polygons": 56
+    },
+    {
+      "name": "Cube.076__Body.148",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.149",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.150",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.151",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.152",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.153",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.154",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.155",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.156",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.157",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.158",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.159",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.160",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.161",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.162",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.163",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.164",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.165",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.166",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.167",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.168",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.169",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__DoorLeft.041",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 12,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.076__DoorLeft.042",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 29,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__Body.170",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 21,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.076__Body.171",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 33,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__DoorRight.043",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 27,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__DoorRight.044",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 62,
+      "polygons": 54
+    },
+    {
+      "name": "Cube.076__DoorRight.045",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 40,
+      "polygons": 33
+    },
+    {
+      "name": "Cube.076__DoorRight.046",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 40,
+      "polygons": 33
+    },
+    {
+      "name": "Cube.076__DoorRight.047",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 27,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__Body.172",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 173,
+      "polygons": 155
+    },
+    {
+      "name": "Cube.076__Body.173",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 3375,
+      "polygons": 3324
+    },
+    {
+      "name": "Cube.076__Body.174",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 473,
+      "polygons": 479
+    },
+    {
+      "name": "Cube.076__Body.175",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.176",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.177",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.178",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.179",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 272,
+      "polygons": 246
+    },
+    {
+      "name": "Cube.076__Body.180",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 1154,
+      "polygons": 1121
+    },
+    {
+      "name": "Cube.076__Body.181",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.182",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 433,
+      "polygons": 421
+    },
+    {
+      "name": "Cube.076__Body.183",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 39,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__Body.184",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.185",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__DoorRight.048",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.186",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 592,
+      "polygons": 577
+    },
+    {
+      "name": "Cube.076__DoorRight.049",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__DoorRight.050",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 39,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__DoorRight.051",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorRight.052",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 679,
+      "polygons": 703
+    },
+    {
+      "name": "Cube.076__DoorRight.053",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorRight.054",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorRight.055",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorRight.056",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorRight.057",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 21,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.076__Body.187",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 459,
+      "polygons": 452
+    },
+    {
+      "name": "Cube.076__DoorRight.058",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 92,
+      "polygons": 82
+    },
+    {
+      "name": "Cube.076__DoorRight.059",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 28,
+      "polygons": 22
+    },
+    {
+      "name": "Cube.076__Body.188",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 188,
+      "polygons": 169
+    },
+    {
+      "name": "Cube.076__Body.189",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 188,
+      "polygons": 167
+    },
+    {
+      "name": "Cube.076__DoorRight.060",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 25,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.076__DoorRight.061",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 16,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__DoorRight.062",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 24,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__DoorRight.063",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.064",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.065",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.066",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.067",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.068",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorRight.069",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__DoorRight.070",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorRight.071",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__DoorRight.072",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.073",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.074",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 74,
+      "polygons": 57
+    },
+    {
+      "name": "Cube.076__DoorRight.075",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.076",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.077",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 54,
+      "polygons": 38
+    },
+    {
+      "name": "Cube.076__Body.190",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 170,
+      "polygons": 138
+    },
+    {
+      "name": "Cube.076__DoorRight.078",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 34,
+      "polygons": 27
+    },
+    {
+      "name": "Cube.076__DoorRight.079",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 33,
+      "polygons": 28
+    },
+    {
+      "name": "Cube.076__DoorRight.080",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__DoorRight.081",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.082",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.083",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__DoorRight.084",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.085",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.086",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 24,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.076__Body.191",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.192",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.193",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.194",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.195",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.196",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.197",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.198",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.199",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorRight.087",
+      "source": "Cube.076",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.200",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.201",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.202",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.203",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.204",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.205",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.206",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.207",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.208",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.209",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.210",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.211",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.212",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.213",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.214",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.215",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.216",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__DoorLeft.043",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 27,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__DoorLeft.044",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 27,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__DoorLeft.045",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 62,
+      "polygons": 54
+    },
+    {
+      "name": "Cube.076__DoorLeft.046",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 40,
+      "polygons": 33
+    },
+    {
+      "name": "Cube.076__DoorLeft.047",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 40,
+      "polygons": 33
+    },
+    {
+      "name": "Cube.076__Body.217",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 159,
+      "polygons": 138
+    },
+    {
+      "name": "Cube.076__Body.218",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 122,
+      "polygons": 104
+    },
+    {
+      "name": "Cube.076__Body.219",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 3287,
+      "polygons": 3241
+    },
+    {
+      "name": "Cube.076__DoorLeft.048",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.220",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 39,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__DoorLeft.049",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 529,
+      "polygons": 516
+    },
+    {
+      "name": "Cube.076__Body.221",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.222",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 171,
+      "polygons": 155
+    },
+    {
+      "name": "Cube.076__Body.223",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorLeft.050",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 348,
+      "polygons": 327
+    },
+    {
+      "name": "Cube.076__Body.224",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 62,
+      "polygons": 57
+    },
+    {
+      "name": "Cube.076__DoorLeft.051",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 39,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__Body.225",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 852,
+      "polygons": 805
+    },
+    {
+      "name": "Cube.076__Body.226",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.227",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 421,
+      "polygons": 400
+    },
+    {
+      "name": "Cube.076__DoorLeft.052",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__DoorLeft.053",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.228",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 272,
+      "polygons": 246
+    },
+    {
+      "name": "Cube.076__Body.229",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorLeft.054",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorLeft.055",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__DoorLeft.056",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 299,
+      "polygons": 280
+    },
+    {
+      "name": "Cube.076__Body.230",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 55,
+      "polygons": 48
+    },
+    {
+      "name": "Cube.076__Body.231",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.232",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.233",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 390,
+      "polygons": 370
+    },
+    {
+      "name": "Cube.076__Body.234",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 78,
+      "polygons": 70
+    },
+    {
+      "name": "Cube.076__Body.235",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 349,
+      "polygons": 328
+    },
+    {
+      "name": "Cube.076__Body.236",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 260,
+      "polygons": 233
+    },
+    {
+      "name": "Cube.076__DoorLeft.057",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.237",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.238",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 280,
+      "polygons": 259
+    },
+    {
+      "name": "Cube.076__DoorLeft.058",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.239",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 72,
+      "polygons": 66
+    },
+    {
+      "name": "Cube.076__Body.240",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 188,
+      "polygons": 169
+    },
+    {
+      "name": "Cube.076__DoorLeft.059",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 16,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.241",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 188,
+      "polygons": 167
+    },
+    {
+      "name": "Cube.076__DoorLeft.060",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 25,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.076__DoorLeft.061",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 34,
+      "polygons": 27
+    },
+    {
+      "name": "Cube.076__DoorLeft.062",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 24,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__DoorLeft.063",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorLeft.064",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.065",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.066",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__DoorLeft.067",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__DoorLeft.068",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.069",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 74,
+      "polygons": 57
+    },
+    {
+      "name": "Cube.076__DoorLeft.070",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.071",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.072",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.073",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.074",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__DoorLeft.075",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.076",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.077",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 54,
+      "polygons": 38
+    },
+    {
+      "name": "Cube.076__Body.242",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 170,
+      "polygons": 138
+    },
+    {
+      "name": "Cube.076__DoorLeft.078",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 34,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__DoorLeft.079",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__DoorLeft.080",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.081",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.082",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 24,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.076__DoorLeft.083",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.084",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__DoorLeft.085",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.243",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.244",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.245",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.246",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.247",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.248",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.249",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.250",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.251",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.252",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.253",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.254",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.255",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.256",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.257",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.258",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.259",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.260",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.261",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.262",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.263",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.264",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.265",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__DoorLeft.086",
+      "source": "Cube.076",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.266",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.267",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.268",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.269",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.270",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.271",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.272",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.273",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.274",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.275",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.276",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.277",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.278",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.279",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.280",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.281",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.282",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.283",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.284",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.285",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.286",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.287",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.288",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.289",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.290",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.291",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.292",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.293",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.294",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__Body.295",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 48,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.076__Body.296",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.297",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.298",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.299",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.300",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.301",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.302",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.303",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.304",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.305",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.306",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.307",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 22,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.076__Body.308",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.309",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 30,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.076__Body.310",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.311",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 35,
+      "polygons": 17
+    },
+    {
+      "name": "Cube.076__Body.312",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.313",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.314",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.315",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.316",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 47,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.317",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 45,
+      "polygons": 28
+    },
+    {
+      "name": "Cube.076__Body.318",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 24,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__Body.319",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 23,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.076__Body.320",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.321",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.322",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.323",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.324",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.325",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.326",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.327",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.328",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.076__Body.329",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.330",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.331",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.332",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.333",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.334",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.335",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.076__Body.336",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.337",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 17,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.338",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.339",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.340",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 3,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.341",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.342",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.343",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.344",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.345",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.346",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.347",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.348",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.349",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.350",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.351",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.352",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.353",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.354",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.355",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.356",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.357",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.358",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.359",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.360",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.361",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.362",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.363",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.364",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.076__Body.365",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.366",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 47,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.367",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.368",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.369",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.370",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.371",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.372",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 47,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.373",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 11,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.374",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.375",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.376",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.377",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 16,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.378",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.076__Body.379",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 30,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.076__Body.380",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 11,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.381",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.382",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.383",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 19
+    },
+    {
+      "name": "Cube.076__Body.384",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 11,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.385",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 17,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.386",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.076__Body.387",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.388",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 17,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.389",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 29,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__Body.390",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 30,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.076__Body.391",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.392",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.076__Body.393",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.394",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 54,
+      "polygons": 26
+    },
+    {
+      "name": "Cube.076__Body.395",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.076__Body.396",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 24,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.076__Body.397",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.398",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.076__Body.399",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 29,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__Body.400",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.076__Body.401",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 19
+    },
+    {
+      "name": "Cube.076__Body.402",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.403",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 55,
+      "polygons": 30
+    },
+    {
+      "name": "Cube.076__Body.404",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.405",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.076__Body.406",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.076__Body.407",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.076__Body.408",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.409",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.410",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.076__Body.411",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.412",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.076__Body.413",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 29,
+      "polygons": 21
+    },
+    {
+      "name": "Cube.076__Body.414",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 34,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__Body.415",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 48,
+      "polygons": 36
+    },
+    {
+      "name": "Cube.076__Body.416",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 54,
+      "polygons": 40
+    },
+    {
+      "name": "Cube.076__Body.417",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 29,
+      "polygons": 21
+    },
+    {
+      "name": "Cube.076__Body.418",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 54,
+      "polygons": 40
+    },
+    {
+      "name": "Cube.076__Body.419",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 34,
+      "polygons": 20
+    },
+    {
+      "name": "Cube.076__Body.420",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 48,
+      "polygons": 36
+    },
+    {
+      "name": "Cube.076__Body.421",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 19,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.076__Body.422",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__Body.423",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__Body.424",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__Body.425",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.076__Body.426",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 112,
+      "polygons": 85
+    },
+    {
+      "name": "Cube.076__Body.427",
+      "source": "Cube.076",
+      "assembly": "Body",
+      "vertices": 112,
+      "polygons": 85
+    },
+    {
+      "name": "Cube.077__DoorRight",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorRight.001",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 26,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__DoorLeft.001",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 26,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__DoorLeft.002",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 19,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.077__DoorRight.002",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 19,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.077__DoorRight.003",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.077__DoorLeft.003",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.077__DoorLeft.004",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.077__DoorRight.004",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 32,
+      "polygons": 16
+    },
+    {
+      "name": "Cube.077__Body",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.001",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.002",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 11,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__Body.003",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__Body.004",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 61,
+      "polygons": 37
+    },
+    {
+      "name": "Cube.077__Body.005",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__Body.006",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 166,
+      "polygons": 122
+    },
+    {
+      "name": "Cube.077__Body.007",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 60,
+      "polygons": 37
+    },
+    {
+      "name": "Cube.077__Body.008",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 9,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__Body.009",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__Body.010",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 22,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.077__Body.011",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__Body.012",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__Body.013",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__Body.014",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__Body.015",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__Body.016",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__Body.017",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.077__Body.018",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 136,
+      "polygons": 110
+    },
+    {
+      "name": "Cube.077__Body.019",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 15,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.077__Body.020",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 17,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.021",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__Body.022",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 66,
+      "polygons": 48
+    },
+    {
+      "name": "Cube.077__Body.023",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 60,
+      "polygons": 42
+    },
+    {
+      "name": "Cube.077__Body.024",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 82,
+      "polygons": 61
+    },
+    {
+      "name": "Cube.077__Body.025",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 44,
+      "polygons": 31
+    },
+    {
+      "name": "Cube.077__Body.026",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 28,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.077__Body.027",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 28,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.077__Body.028",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 28,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.077__Body.029",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 27,
+      "polygons": 21
+    },
+    {
+      "name": "Cube.077__Body.030",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 27,
+      "polygons": 22
+    },
+    {
+      "name": "Cube.077__Body.031",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 27,
+      "polygons": 21
+    },
+    {
+      "name": "Cube.077__Body.032",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.033",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.034",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.035",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.036",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.037",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.038",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.039",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__Body.040",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__Body.041",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.077__Body.042",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__Body.043",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 6
+    },
+    {
+      "name": "Cube.077__Body.044",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__Body.045",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__Body.046",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 26,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__Body.047",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 28,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.077__Body.048",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__Body.049",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__Body.050",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__Body.051",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__Body.052",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__Body.053",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.054",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.077__Body.055",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 14,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.056",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 22,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.077__Body.057",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__Body.058",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 28,
+      "polygons": 14
+    },
+    {
+      "name": "Cube.077__Body.059",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 20,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__Body.060",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 34,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.077__Body.061",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.077__Body.062",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__Body.063",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.005",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__Body.064",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 56,
+      "polygons": 28
+    },
+    {
+      "name": "Cube.077__Body.065",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 74,
+      "polygons": 43
+    },
+    {
+      "name": "Cube.077__DoorLeft.006",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 24,
+      "polygons": 12
+    },
+    {
+      "name": "Cube.077__DoorRight.005",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 20,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__DoorLeft.007",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 20,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__DoorLeft.008",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 28,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.077__DoorRight.006",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 28,
+      "polygons": 18
+    },
+    {
+      "name": "Cube.077__DoorRight.007",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.009",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.010",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.011",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorRight.008",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorRight.009",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorRight.010",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 71,
+      "polygons": 35
+    },
+    {
+      "name": "Cube.077__DoorLeft.012",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorLeft.013",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorRight.011",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorRight.012",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 70,
+      "polygons": 34
+    },
+    {
+      "name": "Cube.077__DoorLeft.014",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorRight.013",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorRight.014",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorLeft.015",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 50,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__DoorRight.015",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorLeft.016",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 71,
+      "polygons": 35
+    },
+    {
+      "name": "Cube.077__DoorLeft.017",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 70,
+      "polygons": 34
+    },
+    {
+      "name": "Cube.077__DoorRight.016",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.018",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorRight.017",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 106,
+      "polygons": 82
+    },
+    {
+      "name": "Cube.077__DoorLeft.019",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 139,
+      "polygons": 103
+    },
+    {
+      "name": "Cube.077__DoorRight.018",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 139,
+      "polygons": 103
+    },
+    {
+      "name": "Cube.077__DoorLeft.020",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 106,
+      "polygons": 81
+    },
+    {
+      "name": "Cube.077__DoorLeft.021",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 104,
+      "polygons": 82
+    },
+    {
+      "name": "Cube.077__DoorRight.019",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 104,
+      "polygons": 82
+    },
+    {
+      "name": "Cube.077__Body.066",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.067",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.068",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.069",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.070",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.071",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.072",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.073",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.074",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.075",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.076",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.077",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.078",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.079",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.080",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.081",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.082",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.083",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.084",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.085",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.086",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.087",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.088",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.089",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 40,
+      "polygons": 19
+    },
+    {
+      "name": "Cube.077__Body.090",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 38,
+      "polygons": 29
+    },
+    {
+      "name": "Cube.077__Body.091",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.092",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.093",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.094",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.095",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.096",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.097",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.098",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.099",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.100",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.101",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.102",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.103",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.104",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.105",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.106",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.107",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.108",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.109",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.110",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 18,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__Body.111",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.112",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.113",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 36,
+      "polygons": 24
+    },
+    {
+      "name": "Cube.077__Body.114",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 40,
+      "polygons": 19
+    },
+    {
+      "name": "Cube.077__Body.115",
+      "source": "Cube.077",
+      "assembly": "Body",
+      "vertices": 38,
+      "polygons": 29
+    },
+    {
+      "name": "Cube.077__DoorRight.020",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorRight.021",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorRight.022",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 22,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.077__DoorRight.023",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 16,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__DoorRight.024",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.077__DoorRight.025",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorRight.026",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorRight.027",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorRight.028",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 15,
+      "polygons": 7
+    },
+    {
+      "name": "Cube.077__DoorRight.029",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.077__DoorRight.030",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 16,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__DoorRight.031",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 54,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.077__DoorRight.032",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 14,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__DoorRight.033",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 46,
+      "polygons": 23
+    },
+    {
+      "name": "Cube.077__DoorRight.034",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 3,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorRight.035",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 3,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorRight.036",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorRight.037",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorRight.038",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 69,
+      "polygons": 48
+    },
+    {
+      "name": "Cube.077__DoorRight.039",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorRight.040",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 67,
+      "polygons": 45
+    },
+    {
+      "name": "Cube.077__DoorRight.041",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorRight.042",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.077__DoorRight.043",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 10,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__DoorRight.044",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 118,
+      "polygons": 77
+    },
+    {
+      "name": "Cube.077__DoorRight.045",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 17,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__DoorRight.046",
+      "source": "Cube.077",
+      "assembly": "DoorRight",
+      "vertices": 62,
+      "polygons": 43
+    },
+    {
+      "name": "Cube.077__DoorLeft.022",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 8,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorLeft.023",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 15,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__DoorLeft.024",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 18,
+      "polygons": 11
+    },
+    {
+      "name": "Cube.077__DoorLeft.025",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 53,
+      "polygons": 31
+    },
+    {
+      "name": "Cube.077__DoorLeft.026",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 43,
+      "polygons": 22
+    },
+    {
+      "name": "Cube.077__DoorLeft.027",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 16,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__DoorLeft.028",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.029",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 7,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.030",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.031",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.032",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.033",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.034",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.035",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.036",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.037",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.038",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 7,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.039",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.040",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 7,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.041",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.042",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.043",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.044",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.045",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.046",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.047",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.048",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.049",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.050",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 7,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.051",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.052",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.053",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.054",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.055",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.056",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.057",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.058",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 21,
+      "polygons": 13
+    },
+    {
+      "name": "Cube.077__DoorLeft.059",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.060",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.061",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 18,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.077__DoorLeft.062",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.063",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.064",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorLeft.065",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.066",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 16,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__DoorLeft.067",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 12,
+      "polygons": 5
+    },
+    {
+      "name": "Cube.077__DoorLeft.068",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.069",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 6,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.070",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 48,
+      "polygons": 31
+    },
+    {
+      "name": "Cube.077__DoorLeft.071",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 14,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__DoorLeft.072",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 14,
+      "polygons": 8
+    },
+    {
+      "name": "Cube.077__DoorLeft.073",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 22,
+      "polygons": 15
+    },
+    {
+      "name": "Cube.077__DoorLeft.074",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 22,
+      "polygons": 15
+    },
+    {
+      "name": "Cube.077__DoorLeft.075",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 31,
+      "polygons": 15
+    },
+    {
+      "name": "Cube.077__DoorLeft.076",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 47,
+      "polygons": 36
+    },
+    {
+      "name": "Cube.077__DoorLeft.077",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 17,
+      "polygons": 9
+    },
+    {
+      "name": "Cube.077__DoorLeft.078",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 62,
+      "polygons": 43
+    },
+    {
+      "name": "Cube.077__DoorLeft.079",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 3,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.080",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 3,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.081",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 70,
+      "polygons": 49
+    },
+    {
+      "name": "Cube.077__DoorLeft.082",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.083",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.077__DoorLeft.084",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 7,
+      "polygons": 3
+    },
+    {
+      "name": "Cube.077__DoorLeft.085",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.086",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 5,
+      "polygons": 2
+    },
+    {
+      "name": "Cube.077__DoorLeft.087",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 118,
+      "polygons": 77
+    },
+    {
+      "name": "Cube.077__DoorLeft.088",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 62,
+      "polygons": 43
+    },
+    {
+      "name": "Cube.077__DoorLeft.089",
+      "source": "Cube.077",
+      "assembly": "DoorLeft",
+      "vertices": 10,
+      "polygons": 4
+    },
+    {
+      "name": "Cube.078__Body",
+      "source": "Cube.078",
+      "assembly": "Body",
+      "vertices": 3032,
+      "polygons": 1754
+    },
+    {
+      "name": "Cube.079__Body",
+      "source": "Cube.079",
+      "assembly": "Body",
+      "vertices": 10420,
+      "polygons": 10008
+    },
+    {
+      "name": "Cube.080__Body",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 108,
+      "polygons": 72
+    },
+    {
+      "name": "Cube.080__Body.001",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 96,
+      "polygons": 64
+    },
+    {
+      "name": "Cube.080__Body.002",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 151,
+      "polygons": 136
+    },
+    {
+      "name": "Cube.080__Body.003",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 151,
+      "polygons": 136
+    },
+    {
+      "name": "Cube.080__DoorLeft",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 131,
+      "polygons": 112
+    },
+    {
+      "name": "Cube.080__DoorRight",
+      "source": "Cube.080",
+      "assembly": "DoorRight",
+      "vertices": 131,
+      "polygons": 112
+    },
+    {
+      "name": "Cube.080__DoorLeft.001",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 236,
+      "polygons": 194
+    },
+    {
+      "name": "Cube.080__DoorLeft.002",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 124,
+      "polygons": 85
+    },
+    {
+      "name": "Cube.080__DoorLeft.003",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 296,
+      "polygons": 236
+    },
+    {
+      "name": "Cube.080__DoorLeft.004",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 131,
+      "polygons": 92
+    },
+    {
+      "name": "Cube.080__Body.004",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 141,
+      "polygons": 125
+    },
+    {
+      "name": "Cube.080__Body.005",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 420,
+      "polygons": 360
+    },
+    {
+      "name": "Cube.080__Body.006",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 420,
+      "polygons": 360
+    },
+    {
+      "name": "Cube.080__Body.007",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 420,
+      "polygons": 360
+    },
+    {
+      "name": "Cube.080__Body.008",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 420,
+      "polygons": 360
+    },
+    {
+      "name": "Cube.080__DoorRight.001",
+      "source": "Cube.080",
+      "assembly": "DoorRight",
+      "vertices": 320,
+      "polygons": 256
+    },
+    {
+      "name": "Cube.080__DoorLeft.005",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 320,
+      "polygons": 256
+    },
+    {
+      "name": "Cube.080__Body.009",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 101,
+      "polygons": 86
+    },
+    {
+      "name": "Cube.080__Body.010",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 101,
+      "polygons": 86
+    },
+    {
+      "name": "Cube.080__Body.011",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 120,
+      "polygons": 96
+    },
+    {
+      "name": "Cube.080__Body.012",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 1866,
+      "polygons": 1806
+    },
+    {
+      "name": "Cube.080__Body.013",
+      "source": "Cube.080",
+      "assembly": "Body",
+      "vertices": 180,
+      "polygons": 144
+    },
+    {
+      "name": "Cube.080__DoorRight.002",
+      "source": "Cube.080",
+      "assembly": "DoorRight",
+      "vertices": 97,
+      "polygons": 82
+    },
+    {
+      "name": "Cube.080__DoorRight.003",
+      "source": "Cube.080",
+      "assembly": "DoorRight",
+      "vertices": 113,
+      "polygons": 102
+    },
+    {
+      "name": "Cube.080__DoorRight.004",
+      "source": "Cube.080",
+      "assembly": "DoorRight",
+      "vertices": 43,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.080__DoorRight.005",
+      "source": "Cube.080",
+      "assembly": "DoorRight",
+      "vertices": 43,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.080__DoorRight.006",
+      "source": "Cube.080",
+      "assembly": "DoorRight",
+      "vertices": 300,
+      "polygons": 270
+    },
+    {
+      "name": "Cube.080__DoorLeft.006",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 113,
+      "polygons": 102
+    },
+    {
+      "name": "Cube.080__DoorLeft.007",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 95,
+      "polygons": 80
+    },
+    {
+      "name": "Cube.080__DoorLeft.008",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 306,
+      "polygons": 276
+    },
+    {
+      "name": "Cube.080__DoorLeft.009",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 43,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.080__DoorLeft.010",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 43,
+      "polygons": 32
+    },
+    {
+      "name": "Cube.080__DoorLeft.011",
+      "source": "Cube.080",
+      "assembly": "DoorLeft",
+      "vertices": 120,
+      "polygons": 80
+    },
+    {
+      "name": "Cube.081__Body",
+      "source": "Cube.081",
+      "assembly": "Body",
+      "vertices": 812,
+      "polygons": 320
+    },
+    {
+      "name": "Cube.082__Body",
+      "source": "Cube.082",
+      "assembly": "Body",
+      "vertices": 105,
+      "polygons": 70
+    },
+    {
+      "name": "Cube.083__DoorRight",
+      "source": "Cube.083",
+      "assembly": "DoorRight",
+      "vertices": 733,
+      "polygons": 648
+    },
+    {
+      "name": "Cube.083__DoorLeft",
+      "source": "Cube.083",
+      "assembly": "DoorLeft",
+      "vertices": 728,
+      "polygons": 646
+    },
+    {
+      "name": "Cube.085__Body",
+      "source": "Cube.085",
+      "assembly": "Body",
+      "vertices": 19,
+      "polygons": 10
+    },
+    {
+      "name": "Cube.086__Body",
+      "source": "Cube.086",
+      "assembly": "Body",
+      "vertices": 382,
+      "polygons": 262
+    },
+    {
+      "name": "Cube.087__Body",
+      "source": "Cube.087",
+      "assembly": "Body",
+      "vertices": 268,
+      "polygons": 87
+    },
+    {
+      "name": "Cube.088__Body",
+      "source": "Cube.088",
+      "assembly": "Body",
+      "vertices": 4463,
+      "polygons": 3996
+    },
+    {
+      "name": "Cube.089__Body",
+      "source": "Cube.089",
+      "assembly": "Body",
+      "vertices": 104,
+      "polygons": 62
+    },
+    {
+      "name": "Cube.090__Body",
+      "source": "Cube.090",
+      "assembly": "Body",
+      "vertices": 7198,
+      "polygons": 6830
+    },
+    {
+      "name": "Cube.091__Body",
+      "source": "Cube.091",
+      "assembly": "Body",
+      "vertices": 1268,
+      "polygons": 1062
+    },
+    {
+      "name": "Cube.092__Body",
+      "source": "Cube.092",
+      "assembly": "Body",
+      "vertices": 4222,
+      "polygons": 3844
+    },
+    {
+      "name": "Cube.094__Body",
+      "source": "Cube.094",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.097__Body",
+      "source": "Cube.097",
+      "assembly": "Body",
+      "vertices": 815,
+      "polygons": 718
+    },
+    {
+      "name": "Cube.098__Body",
+      "source": "Cube.098",
+      "assembly": "Body",
+      "vertices": 4,
+      "polygons": 1
+    },
+    {
+      "name": "Cube.099__Body",
+      "source": "Cube.099",
+      "assembly": "Body",
+      "vertices": 2096,
+      "polygons": 2056
+    },
+    {
+      "name": "Cube.102__Body",
+      "source": "Cube.102",
+      "assembly": "Body",
+      "vertices": 73,
+      "polygons": 54
+    },
+    {
+      "name": "Cube.103__Body",
+      "source": "Cube.103",
+      "assembly": "Body",
+      "vertices": 1262,
+      "polygons": 688
+    },
+    {
+      "name": "Cube.105__Body",
+      "source": "Cube.105",
+      "assembly": "Body",
+      "vertices": 318,
+      "polygons": 195
+    },
+    {
+      "name": "Cube.106__DoorLeft",
+      "source": "Cube.106",
+      "assembly": "DoorLeft",
+      "vertices": 1085,
+      "polygons": 1107
+    },
+    {
+      "name": "Cube.106__DoorLeft.001",
+      "source": "Cube.106",
+      "assembly": "DoorLeft",
+      "vertices": 50,
+      "polygons": 46
+    },
+    {
+      "name": "Cube.106__DoorRight",
+      "source": "Cube.106",
+      "assembly": "DoorRight",
+      "vertices": 1085,
+      "polygons": 1107
+    },
+    {
+      "name": "Cube.106__DoorRight.001",
+      "source": "Cube.106",
+      "assembly": "DoorRight",
+      "vertices": 50,
+      "polygons": 46
+    },
+    {
+      "name": "Cube.107__Body",
+      "source": "Cube.107",
+      "assembly": "Body",
+      "vertices": 105,
+      "polygons": 68
+    },
+    {
+      "name": "Cube.108__Body",
+      "source": "Cube.108",
+      "assembly": "Body",
+      "vertices": 107,
+      "polygons": 60
+    },
+    {
+      "name": "Cube.110__Body",
+      "source": "Cube.110",
+      "assembly": "Body",
+      "vertices": 238,
+      "polygons": 416
+    },
+    {
+      "name": "Cube.112__Body",
+      "source": "Cube.112",
+      "assembly": "Body",
+      "vertices": 188,
+      "polygons": 76
+    },
+    {
+      "name": "Cube.114__Body",
+      "source": "Cube.114",
+      "assembly": "Body",
+      "vertices": 50,
+      "polygons": 26
+    },
+    {
+      "name": "Cube.122__Body",
+      "source": "Cube.122",
+      "assembly": "Body",
+      "vertices": 87,
+      "polygons": 64
+    },
+    {
+      "name": "Cube.138__Body",
+      "source": "Cube.138",
+      "assembly": "Body",
+      "vertices": 2632,
+      "polygons": 2865
+    },
+    {
+      "name": "Cube.139__DoorLeft",
+      "source": "Cube.139",
+      "assembly": "DoorLeft",
+      "vertices": 657,
+      "polygons": 638
+    },
+    {
+      "name": "Cube.139__DoorRight",
+      "source": "Cube.139",
+      "assembly": "DoorRight",
+      "vertices": 657,
+      "polygons": 638
+    },
+    {
+      "name": "Cube.140__DoorLeft",
+      "source": "Cube.140",
+      "assembly": "DoorLeft",
+      "vertices": 95,
+      "polygons": 81
+    },
+    {
+      "name": "Cube.140__DoorRight",
+      "source": "Cube.140",
+      "assembly": "DoorRight",
+      "vertices": 95,
+      "polygons": 81
+    },
+    {
+      "name": "Cube.141__DoorLeft",
+      "source": "Cube.141",
+      "assembly": "DoorLeft",
+      "vertices": 1473,
+      "polygons": 1483
+    },
+    {
+      "name": "Cube.141__DoorRight",
+      "source": "Cube.141",
+      "assembly": "DoorRight",
+      "vertices": 1473,
+      "polygons": 1483
+    },
+    {
+      "name": "Cube.142__DoorLeft",
+      "source": "Cube.142",
+      "assembly": "DoorLeft",
+      "vertices": 70,
+      "polygons": 54
+    },
+    {
+      "name": "Cube.142__DoorRight",
+      "source": "Cube.142",
+      "assembly": "DoorRight",
+      "vertices": 70,
+      "polygons": 54
+    },
+    {
+      "name": "mycar-body__Body",
+      "source": "mycar-body",
+      "assembly": "Body",
+      "vertices": 5869,
+      "polygons": 5618
+    },
+    {
+      "name": "mycar-wheel.Bk.L__WheelBkL",
+      "source": "mycar-wheel.Bk.L",
+      "assembly": "WheelBkL",
+      "vertices": 9216,
+      "polygons": 8704
+    },
+    {
+      "name": "mycar-wheel.Bk.L.002__WheelBkL",
+      "source": "mycar-wheel.Bk.L.002",
+      "assembly": "WheelBkL",
+      "vertices": 45063,
+      "polygons": 44394
+    },
+    {
+      "name": "mycar-wheel.Bk.L.003__WheelBkL",
+      "source": "mycar-wheel.Bk.L.003",
+      "assembly": "WheelBkL",
+      "vertices": 24824,
+      "polygons": 24262
+    },
+    {
+      "name": "mycar-wheel.Bk.L.004__WheelBkL",
+      "source": "mycar-wheel.Bk.L.004",
+      "assembly": "WheelBkL",
+      "vertices": 10496,
+      "polygons": 10240
+    },
+    {
+      "name": "mycar-wheel.Bk.R__WheelBkR",
+      "source": "mycar-wheel.Bk.R",
+      "assembly": "WheelBkR",
+      "vertices": 9216,
+      "polygons": 8704
+    },
+    {
+      "name": "mycar-wheel.Bk.R.002__WheelBkR",
+      "source": "mycar-wheel.Bk.R.002",
+      "assembly": "WheelBkR",
+      "vertices": 45063,
+      "polygons": 44394
+    },
+    {
+      "name": "mycar-wheel.Bk.R.003__WheelBkR",
+      "source": "mycar-wheel.Bk.R.003",
+      "assembly": "WheelBkR",
+      "vertices": 24824,
+      "polygons": 24262
+    },
+    {
+      "name": "mycar-wheel.Bk.R.004__WheelBkR",
+      "source": "mycar-wheel.Bk.R.004",
+      "assembly": "WheelBkR",
+      "vertices": 10496,
+      "polygons": 10240
+    },
+    {
+      "name": "mycar-wheel.Ft.L__WheelFtL",
+      "source": "mycar-wheel.Ft.L",
+      "assembly": "WheelFtL",
+      "vertices": 9216,
+      "polygons": 8704
+    },
+    {
+      "name": "mycar-wheel.Ft.L.002__WheelFtL",
+      "source": "mycar-wheel.Ft.L.002",
+      "assembly": "WheelFtL",
+      "vertices": 45063,
+      "polygons": 44394
+    },
+    {
+      "name": "mycar-wheel.Ft.L.003__WheelFtL",
+      "source": "mycar-wheel.Ft.L.003",
+      "assembly": "WheelFtL",
+      "vertices": 24824,
+      "polygons": 24262
+    },
+    {
+      "name": "mycar-wheel.Ft.L.004__WheelFtL",
+      "source": "mycar-wheel.Ft.L.004",
+      "assembly": "WheelFtL",
+      "vertices": 10496,
+      "polygons": 10240
+    },
+    {
+      "name": "mycar-wheel.Ft.R__WheelFtR",
+      "source": "mycar-wheel.Ft.R",
+      "assembly": "WheelFtR",
+      "vertices": 9216,
+      "polygons": 8704
+    },
+    {
+      "name": "mycar-wheel.Ft.R.002__WheelFtR",
+      "source": "mycar-wheel.Ft.R.002",
+      "assembly": "WheelFtR",
+      "vertices": 45063,
+      "polygons": 44394
+    },
+    {
+      "name": "mycar-wheel.Ft.R.003__WheelFtR",
+      "source": "mycar-wheel.Ft.R.003",
+      "assembly": "WheelFtR",
+      "vertices": 24824,
+      "polygons": 24262
+    },
+    {
+      "name": "mycar-wheel.Ft.R.004__WheelFtR",
+      "source": "mycar-wheel.Ft.R.004",
+      "assembly": "WheelFtR",
+      "vertices": 10496,
+      "polygons": 10240
+    },
+    {
+      "name": "mycar-wheelbrake.Bk.L__WheelBkL",
+      "source": "mycar-wheelbrake.Bk.L",
+      "assembly": "WheelBkL",
+      "vertices": 13997,
+      "polygons": 13592
+    },
+    {
+      "name": "mycar-wheelbrake.Bk.R__WheelBkR",
+      "source": "mycar-wheelbrake.Bk.R",
+      "assembly": "WheelBkR",
+      "vertices": 13997,
+      "polygons": 13592
+    },
+    {
+      "name": "mycar-wheelbrake.Ft.L__WheelFtL",
+      "source": "mycar-wheelbrake.Ft.L",
+      "assembly": "WheelFtL",
+      "vertices": 13997,
+      "polygons": 13592
+    },
+    {
+      "name": "mycar-wheelbrake.Ft.R__WheelFtR",
+      "source": "mycar-wheelbrake.Ft.R",
+      "assembly": "WheelFtR",
+      "vertices": 13997,
+      "polygons": 13592
+    }
+  ],
+  "size_blender_xyz_m": [
+    2.082115411758423,
+    4.676258563995361,
+    1.3488428592681885
+  ],
+  "exported_mesh_count": 145,
+  "bounds_blender_min": [
+    -1.0440645217895508,
+    -2.3293771743774414,
+    -0.0033248066902160645
+  ],
+  "bounds_blender_max": [
+    1.038050889968872,
+    2.34688138961792,
+    1.3455181121826172
+  ],
+  "triangles": 1306154
+}

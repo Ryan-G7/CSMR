@@ -55,7 +55,7 @@ namespace CarAR.EditorTools
         static void ConfigurePlayer()
         {
             PlayerSettings.companyName = "CarAR";
-            PlayerSettings.productName = "CarAR 911";
+            PlayerSettings.productName = "CarAR AMG GT";
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.preserveFramebufferAlpha = true;
             if (BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, BuildTarget.Android))
@@ -179,9 +179,24 @@ namespace CarAR.EditorTools
                 desktop.AssignedSettings = dm;
             }
             desktop.InitManagerOnStart = false; // Explicit --xr launches the headset; ordinary launches remain a preview.
-            XRPackageMetadataStore.AssignLoader(desktop.AssignedSettings, "UnityEngine.XR.OpenXR.OpenXRLoader", BuildTargetGroup.Standalone);
+            // HJXR retains its marker singleton after Unity destroys the temporary PreInit
+            // instance, leaving it with a freed camera configuration (zero image dimensions).
+            // Unity supplies this loader for runtimes that cannot survive PreInit teardown.
+            EnsureFolder("Assets/XR/Loaders");
+            const string desktopLoaderPath = "Assets/XR/Loaders/OpenXRLoaderNoPreInit.asset";
+            var desktopLoader = AssetDatabase.LoadAssetAtPath<OpenXRLoaderNoPreInit>(desktopLoaderPath);
+            if (desktopLoader == null)
+            {
+                desktopLoader = ScriptableObject.CreateInstance<OpenXRLoaderNoPreInit>();
+                AssetDatabase.CreateAsset(desktopLoader, desktopLoaderPath);
+            }
+            if (!desktop.AssignedSettings.TrySetLoaders(new System.Collections.Generic.List<XRLoader> { desktopLoader }))
+                throw new Exception("Cannot assign Unity OpenXR loader without PreInit");
             UnityEditor.XR.OpenXR.Features.FeatureHelpers.RefreshFeatures(BuildTargetGroup.Standalone);
             var ds = OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Standalone);
+            var markerInput = ds != null ? ds.GetFeature<Huijing.HjxrMarkerTrackingFeature>() : null;
+            if (markerInput == null) throw new Exception("HJXR marker input feature was not discovered");
+            markerInput.enabled = true;
             var dh = ds != null ? ds.GetFeature<UnityEngine.XR.Hands.OpenXR.HandTracking>() : null;
             if (dh != null) dh.enabled = true;
             // Pimax normally exposes its controllers through Touch, Index or Vive compatibility.
@@ -280,23 +295,36 @@ namespace CarAR.EditorTools
             var carRoot = new GameObject("CarRoot");
             carRoot.transform.localScale = Vector3.one;
 
-            AssetDatabase.ImportAsset("Assets/Models/911-interactive.glb", ImportAssetOptions.ForceUpdate);
-            var glb = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Models/911-interactive.glb");
-            if (glb == null) throw new Exception("Assets/Models/911-interactive.glb not found or not imported yet. Re-run setup after import finishes.");
+            const string modelPath = "Assets/Models/AMG-interactive.glb";
+            AssetDatabase.ImportAsset(modelPath, ImportAssetOptions.ForceUpdate);
+            var glb = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
+            if (glb == null) throw new Exception(modelPath + " not found. Export AMG.blend with Tools/prepare_amg.py first.");
             var car = (GameObject)PrefabUtility.InstantiatePrefab(glb);
-            car.name = "911";
+            car.name = "AMG GT";
             car.transform.SetParent(carRoot.transform, false);
 
             // Put the root pivot on the wheel contact plane so scaling preserves floor contact.
             var modelRenderers = car.GetComponentsInChildren<Renderer>();
-            const string paintPath = SettingsDir + "/OpaqueCarPaint.mat";
+            const string paintPath = SettingsDir + "/AMGCarPaint.mat";
             var paint = AssetDatabase.LoadAssetAtPath<Material>(paintPath);
             if (paint == null) { paint = new Material(Shader.Find("Universal Render Pipeline/Complex Lit")); AssetDatabase.CreateAsset(paint, paintPath); }
-            paint.SetColor("_BaseColor", new Color(.62f,.64f,.66f,1));
-            paint.SetFloat("_Metallic", .58f); paint.SetFloat("_Smoothness", .72f);
+            paint.SetColor("_BaseColor", new Color(.174346f,.174346f,.174346f,1));
+            paint.SetFloat("_Metallic", .62f); paint.SetFloat("_Smoothness", .78f);
             paint.SetFloat("_ClearCoat", 1); paint.SetFloat("_ClearCoatMask", .8f); paint.SetFloat("_ClearCoatSmoothness", .85f);
+            // The supplied hood/door skins have no inner thickness. Keep their
+            // back faces visible when the original independent panels open.
+            paint.SetFloat("_Cull", (float)CullMode.Off);
             paint.EnableKeyword("_CLEARCOAT");
             EditorUtility.SetDirty(paint);
+            const string trimPath = SettingsDir + "/AMGDefaultTrim.mat";
+            var defaultTrim = AssetDatabase.LoadAssetAtPath<Material>(trimPath);
+            if (defaultTrim == null)
+            {
+                defaultTrim = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                defaultTrim.color = new Color(.025f,.025f,.025f,1);
+                defaultTrim.SetFloat("_Smoothness", .45f);
+                AssetDatabase.CreateAsset(defaultTrim, trimPath);
+            }
             int corrected = 0;
             foreach (var r in modelRenderers)
             {
@@ -304,22 +332,24 @@ namespace CarAR.EditorTools
                 bool opaque = false;
                 for (int i=0;i<materials.Length;i++)
                 {
-                    // The source's coat is the visible body shell with alpha .4577, not just glass.
-                    if (materials[i].name == "coat") { materials[i] = paint; corrected++; }
+                    if (materials[i] == null) materials[i] = defaultTrim;
+                    if (materials[i].name.StartsWith("Black Carpaint", StringComparison.Ordinal)) { materials[i] = paint; corrected++; }
                     opaque |= materials[i].renderQueue < 3000;
                 }
                 r.sharedMaterials = materials;
                 r.shadowCastingMode = opaque ? ShadowCastingMode.On : ShadowCastingMode.Off;
                 r.receiveShadows = true;
             }
-            if (corrected == 0) throw new Exception("Expected 911 coat body shell was not found; verify material mapping before building.");
-            Debug.Log($"[CarAR Quality] Replaced {corrected} semitransparent body shells with opaque metallic clearcoat; retained window/lens transparency.");
+            if (corrected == 0) throw new Exception("AMG body paint material was not found; verify the exported material names.");
+            Debug.Log($"[CarAR Quality] AMG: {corrected} native Complex Lit paint surfaces, original independent meshes, glass/lens transparency and packed source textures.");
             var bounds = modelRenderers[0].bounds;
             foreach (var r in modelRenderers) bounds.Encapsulate(r.bounds);
             car.transform.position += Vector3.up * (carRoot.transform.position.y - bounds.min.y);
-            var leftDoor = SetupPanel(car.transform, "DoorLeft", Vector3.up, -65f);
-            var rightDoor = SetupPanel(car.transform, "DoorRight", Vector3.up, 65f);
-            var trunk = SetupPanel(car.transform, "FrontTrunk", Vector3.right, -55f);
+            var leftDoor = SetupPanel(car.transform, "DoorLeft", Vector3.up, 65f);
+            var rightDoor = SetupPanel(car.transform, "DoorRight", Vector3.up, -65f);
+            var trunk = SetupPanel(car.transform, "RearHatch", Vector3.right, 65f);
+            var hood = SetupPanel(car.transform, "Hood", Vector3.right, -55f);
+            Debug.Log($"[CarAR Model] AMG size={bounds.size:F3}m; panels: {leftDoor.transform.localPosition:F3}, {rightDoor.transform.localPosition:F3}, hatch={trunk.transform.localPosition:F3}, hood={hood.transform.localPosition:F3}");
             foreach (var filter in car.GetComponentsInChildren<MeshFilter>())
             {
                 if (filter.sharedMesh == null) continue;
@@ -327,6 +357,10 @@ namespace CarAR.EditorTools
                 collider.sharedMesh = filter.sharedMesh;
             }
             var explode = carRoot.AddComponent<ExplodeController>();
+            var wheelAssemblies = new System.Collections.Generic.List<Transform>();
+            foreach (var t in car.GetComponentsInChildren<Transform>())
+                if (t.name.StartsWith("Wheel", StringComparison.Ordinal)) wheelAssemblies.Add(t);
+            explode.assemblyRoots = wheelAssemblies.ToArray();
             var manipulator = carRoot.AddComponent<ObjectManipulator>();
             manipulator.colliders.Clear();
             foreach (var collider in car.GetComponentsInChildren<Collider>())
@@ -346,7 +380,7 @@ namespace CarAR.EditorTools
             manipulator.enabled = false;
             var gesture = carRoot.AddComponent<MRTKCarInteraction>();
             gesture.manipulator = manipulator;
-            foreach (var panel in new[] { leftDoor, rightDoor, trunk })
+            foreach (var panel in new[] { leftDoor, rightDoor, trunk, hood })
             {
                 var target = panel.gameObject.AddComponent<StatefulInteractable>();
                 UnityEditor.Events.UnityEventTools.AddPersistentListener(target.OnClicked, panel.Toggle);
@@ -363,7 +397,7 @@ namespace CarAR.EditorTools
             var showroom = new GameObject("Showroom").AddComponent<CarShowroom>();
             showroom.car = carRoot.transform; showroom.placement = placement; showroom.lighting = lightEst;
             showroom.gestures = gesture; showroom.explode = explode;
-            showroom.leftDoor = leftDoor; showroom.rightDoor = rightDoor; showroom.trunk = trunk;
+            showroom.leftDoor = leftDoor; showroom.rightDoor = rightDoor; showroom.trunk = trunk; showroom.hood = hood;
             var presentation = showroom.gameObject.AddComponent<MRPresentation>();
             presentation.showroom = showroom;
             presentation.ambientOcclusion = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(SettingsDir + "/URP_Renderer.asset").rendererFeatures.Find(feature => feature is ScreenSpaceAmbientOcclusion);
@@ -384,6 +418,11 @@ namespace CarAR.EditorTools
                 rayMaterial.SetColor("_BaseColor", Color.white);
                 AssetDatabase.CreateAsset(rayMaterial, rayPath);
             }
+            rayMaterial.SetColor("_BaseColor", Color.white);
+            rayMaterial.SetFloat("_Cull", (float)CullMode.Off);
+            rayMaterial.SetFloat("_CameraFadingEnabled", 0);
+            rayMaterial.SetFloat("_SoftParticlesEnabled", 0);
+            EditorUtility.SetDirty(rayMaterial);
             controllerInput.rayMaterial = rayMaterial;
             var diagnostics = showroom.gameObject.AddComponent<XRReviewDiagnostics>();
             diagnostics.showroom = showroom; diagnostics.origin = origin;
@@ -443,7 +482,7 @@ namespace CarAR.EditorTools
             rect.localScale = Vector3.one * .001f;
             controls.controlPanel = rect;
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/org.mixedrealitytoolkit.uxcomponents/Button/Prefabs/Action Button.prefab");
-            string[] labels = { "左车门", "右车门", "前行李厢", "整车爆炸", "解除锁定", "选择停放位置", "向左 10cm", "向右 10cm", "远离 10cm", "靠近 10cm", "缩小 10%", "放大 10%", "左转 5°", "右转 5°", "地面 +1cm", "地面 -1cm", "1:1 尺寸", "1:4 展示", "灯光调亮", "灯光调暗", "色温调暖", "色温调冷", "光线方向", "自动光照", "切换流畅画质", "精细调整", "收起面板" };
+            string[] labels = { "左车门", "右车门", "后备厢尾门", "整车爆炸", "解除锁定", "选择停放位置", "向左 10cm", "向右 10cm", "远离 10cm", "靠近 10cm", "缩小 10%", "放大 10%", "左转 5°", "右转 5°", "地面 +1cm", "地面 -1cm", "1:1 尺寸", "1:4 展示", "灯光调亮", "灯光调暗", "色温调暖", "色温调冷", "光线方向", "自动光照", "切换流畅画质", "精细调整", "收起面板", "定位板校准", "发动机盖" };
             controls.buttons = new StatefulInteractable[labels.Length];
             for (int i = 0; i < labels.Length; i++)
             {
@@ -506,7 +545,7 @@ namespace CarAR.EditorTools
             try
             {
                 PlayerSettings.companyName = "CarAR";
-                PlayerSettings.productName = "CarAR 911";
+                PlayerSettings.productName = "CarAR AMG GT";
                 PlayerSettings.colorSpace = ColorSpace.Linear;
                 PlayerSettings.preserveFramebufferAlpha = true;
                 PlayerSettings.runInBackground = true;
@@ -526,6 +565,10 @@ namespace CarAR.EditorTools
                 });
                 if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
                     throw new Exception("Preview build failed: " + report.summary.result);
+                string boot = System.IO.File.ReadAllText("Build/Windows/CarAR_Data/boot.config");
+                if (boot.Contains("xrsdk-pre-init-library=UnityOpenXR"))
+                    throw new Exception("HJXR build must use Unity's OpenXR loader without PreInit");
+                Debug.Log("[HJXR Validation] PASS: built player does not bootstrap a temporary OpenXR instance");
                 Debug.Log("[CarAR] PREVIEW BUILD PASSED");
                 EditorApplication.Exit(0);
             }
