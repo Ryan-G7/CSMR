@@ -1,0 +1,323 @@
+{
+  "materials": [
+    {
+      "name": "floor.001",
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "base_map": "floor_001_Base_Color.png",
+      "normal_map": "floor_001_Normal_Color.png",
+      "normal_scale": 0.36000001430511475,
+      "metallic": 0,
+      "smoothness": 0,
+      "metal_smooth_map": "floor_001_MetalSmooth.png",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        2.8499999046325684,
+        2.8499999046325684
+      ],
+      "offset": [
+        0,
+        -1.8499999046325684
+      ]
+    },
+    {
+      "name": "floor_plaster",
+      "base_color": [
+        0.3185468018054962,
+        0.3185468018054962,
+        0.3185468018054962,
+        1
+      ],
+      "base_map": "",
+      "normal_map": "",
+      "normal_scale": 1,
+      "metallic": 0,
+      "smoothness": 0,
+      "metal_smooth_map": "floor_plaster_MetalSmooth.png",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "emission.white",
+      "base_color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1
+      ],
+      "base_map": "",
+      "normal_map": "",
+      "normal_scale": 1,
+      "metallic": 0,
+      "smoothness": 0.5,
+      "metal_smooth_map": "",
+      "emission": [
+        108,
+        108,
+        108
+      ],
+      "emission_map": "",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "chrome",
+      "base_color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1
+      ],
+      "base_map": "",
+      "normal_map": "",
+      "normal_scale": 1,
+      "metallic": 1,
+      "smoothness": 0.550000011920929,
+      "metal_smooth_map": "",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "floorlight",
+      "base_color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1
+      ],
+      "base_map": "",
+      "normal_map": "",
+      "normal_scale": 1,
+      "metallic": 0,
+      "smoothness": 0.5,
+      "metal_smooth_map": "",
+      "emission": [
+        472.44733572006226,
+        472.44733572006226,
+        472.44733572006226
+      ],
+      "emission_map": "",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "metal_lights",
+      "base_color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1
+      ],
+      "base_map": "",
+      "normal_map": "",
+      "normal_scale": 1,
+      "metallic": 1,
+      "smoothness": 0.699999988079071,
+      "metal_smooth_map": "",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "metal_lights.dark",
+      "base_color": [
+        0.17064493894577026,
+        0.17064493894577026,
+        0.17064493894577026,
+        1
+      ],
+      "base_map": "",
+      "normal_map": "",
+      "normal_scale": 1,
+      "metallic": 1,
+      "smoothness": 0.8199999928474426,
+      "metal_smooth_map": "",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "stone",
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "base_map": "stone_Base_Color.png",
+      "normal_map": "stone_Normal_Color.png",
+      "normal_scale": 1,
+      "metallic": 0,
+      "smoothness": 0,
+      "metal_smooth_map": "stone_MetalSmooth.png",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "wall.001",
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "base_map": "wall_001_Base_Color.png",
+      "normal_map": "wall_001_Normal_Color.png",
+      "normal_scale": 0.36000001430511475,
+      "metallic": 0,
+      "smoothness": 0,
+      "metal_smooth_map": "wall_001_MetalSmooth.png",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        2.4000000953674316,
+        2.4000000953674316
+      ],
+      "offset": [
+        0,
+        -1.4000000953674316
+      ]
+    },
+    {
+      "name": "emission.warm",
+      "base_color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1
+      ],
+      "base_map": "",
+      "normal_map": "",
+      "normal_scale": 1,
+      "metallic": 0,
+      "smoothness": 0.5,
+      "metal_smooth_map": "",
+      "emission": [
+        54,
+        54,
+        54
+      ],
+      "emission_map": "emission_warm_Emission_Color.png",
+      "scale": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "wall.side",
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "base_map": "wall_side_Base_Color.png",
+      "normal_map": "wall_side_Normal_Color.png",
+      "normal_scale": 0.36000001430511475,
+      "metallic": 0,
+      "smoothness": 0,
+      "metal_smooth_map": "wall_side_MetalSmooth.png",
+      "emission": [
+        0,
+        0,
+        0
+      ],
+      "emission_map": "",
+      "scale": [
+        2.4000000953674316,
+        2.4000000953674316
+      ],
+      "offset": [
+        0,
+        -1.4000000953674316
+      ]
+    }
+  ]
+}

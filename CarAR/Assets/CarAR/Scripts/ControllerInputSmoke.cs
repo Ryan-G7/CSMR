@@ -52,7 +52,11 @@ namespace CarAR
             Check(!ui.ControlPanel.gameObject.activeSelf, "panel must start hidden");
             Pose(left, camera.position + Vector3.left * .2f, car.position);
             Pose(right, camera.position + Vector3.right * .2f, car.position);
-            yield return new WaitForSeconds(.2f);
+            // XRI builds its line points during OnBeforeRender. On a cold GPU
+            // startup that can occur later than the first input update.
+            float rayDeadline = Time.realtimeSinceStartup + 3;
+            do { yield return new WaitForEndOfFrame(); }
+            while (!(input.LeftRayVisible && input.RightRayVisible) && Time.realtimeSinceStartup < rayDeadline);
             Check(input.LeftRayVisible && input.RightRayVisible, "native line visuals are not rendering for tracked controllers");
             Check(input.HasCoherentController(camera.position, out bool anyHand) && anyHand,
                 "native grip samples did not establish a coherent head/controller space");

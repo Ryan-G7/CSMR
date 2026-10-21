@@ -16,6 +16,34 @@ MonoBehaviour:
   Values: []
   m_SettingsPerBuildTarget:
   - buildTarget: 7
-    settings: {fileID: 11400000, guid: 9d3984cf6643b184da4f3186ed249ed4, type: 2}
+    settings: {fileID: 11400001}
   - buildTarget: 1
-    settings: {fileID: 11400000, guid: 18885c2b3d932f143b5343c1a4e6046f, type: 2}
+    settings: {fileID: 11400002}
+--- !u!114 &11400001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
+  m_Name: XRGeneralSettings_Android
+  m_EditorClassIdentifier: Unity.XR.Management::UnityEngine.XR.Management.XRGeneralSettings
+  m_Manager: {fileID: 11400000, guid: ea24a570fcf4dc649a1ce1c3974973c0, type: 2}
+  m_InitManagerOnStart: 1
+--- !u!114 &11400002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
+  m_Name: XRGeneralSettings_Standalone
+  m_EditorClassIdentifier: Unity.XR.Management::UnityEngine.XR.Management.XRGeneralSettings
+  m_Manager: {fileID: 11400000, guid: eba8ef8f5e1ebff498bf79e31f125d67, type: 2}
+  m_InitManagerOnStart: 0

@@ -111,7 +111,8 @@ class Baker:
 
     def bake(self, material, value, channel, normal=False, external=False):
         name=material.name.replace(' ','_').replace('.','_')+'_'+channel
-        image=bpy.data.images.new(name,width=1024,height=1024,alpha=False)
+        resolution=getattr(self,'resolution',1024)
+        image=bpy.data.images.new(name,width=resolution,height=resolution,alpha=False)
         image.colorspace_settings.name='Non-Color' if channel!='Base_Color' else 'sRGB'
         tree=material.node_tree
         end=next(n for n in tree.nodes if n.type=='OUTPUT_MATERIAL' and n.is_active_output)

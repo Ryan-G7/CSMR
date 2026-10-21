@@ -123,6 +123,7 @@ namespace CarAR
             GUILayout.BeginArea(new Rect(22, 20, 340, 720), GUI.skin.box);
             GUILayout.Space(10); GUILayout.Label("AMG GT / AR SHOWROOM", title);
             GUILayout.Label("DESKTOP PREVIEW", text); GUILayout.Space(12);
+            if (GUILayout.Button("VR CAR ROOM / WALKTHROUGH", button)) XRLaunch.OpenVRPreview();
             GUILayout.Label("Drag right mouse to orbit. Scroll to zoom.", text);
             GUILayout.Space(14);
             GUI.enabled = car.gameObject.activeInHierarchy && !explode.IsBusy;

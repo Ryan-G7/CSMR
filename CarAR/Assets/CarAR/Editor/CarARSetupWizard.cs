@@ -155,7 +155,8 @@ namespace CarAR.EditorTools
             if (androidSettings == null)
             {
                 androidSettings = ScriptableObject.CreateInstance<XRGeneralSettings>();
-                AssetDatabase.CreateAsset(androidSettings, "Assets/XR/XRGeneralSettings_Android.asset");
+                androidSettings.name = "Android Settings";
+                AssetDatabase.AddObjectToAsset(androidSettings, perBuildTarget);
                 perBuildTarget.SetSettingsForBuildTarget(BuildTargetGroup.Android, androidSettings);
             }
 
@@ -171,7 +172,8 @@ namespace CarAR.EditorTools
             if (desktop == null)
             {
                 desktop = ScriptableObject.CreateInstance<XRGeneralSettings>();
-                AssetDatabase.CreateAsset(desktop, "Assets/XR/XRGeneralSettings_Standalone.asset");
+                desktop.name = "Standalone Settings";
+                AssetDatabase.AddObjectToAsset(desktop, perBuildTarget);
                 perBuildTarget.SetSettingsForBuildTarget(BuildTargetGroup.Standalone, desktop);
             }
             if (desktop.AssignedSettings == null)
@@ -194,6 +196,11 @@ namespace CarAR.EditorTools
             }
             if (!desktop.AssignedSettings.TrySetLoaders(new System.Collections.Generic.List<XRLoader> { desktopLoader }))
                 throw new Exception("Cannot assign Unity OpenXR loader without PreInit");
+            // General settings belong inside the per-target container. Separate
+            // main assets trigger XR Management's legacy upgrader on reimport.
+            EditorUtility.SetDirty(desktop); EditorUtility.SetDirty(desktop.AssignedSettings);
+            EditorUtility.SetDirty(androidSettings); EditorUtility.SetDirty(manager);
+            EditorUtility.SetDirty(perBuildTarget); AssetDatabase.SaveAssets();
             UnityEditor.XR.OpenXR.Features.FeatureHelpers.RefreshFeatures(BuildTargetGroup.Standalone);
             var ds = OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Standalone);
             var dh = ds != null ? ds.GetFeature<UnityEngine.XR.Hands.OpenXR.HandTracking>() : null;
@@ -240,6 +247,7 @@ namespace CarAR.EditorTools
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
+            new GameObject("MR XRI interaction manager", typeof(XRInteractionManager));
             new GameObject("AR Session", typeof(ARSession), typeof(ARInputManager));
 
             ConfigureMRTKProfile();
@@ -503,6 +511,12 @@ namespace CarAR.EditorTools
         }
 
         // Headless entry point: generate a reproducible scene, validate it and build a runnable desktop preview.
+        public static void PrepareVRLighting()
+        {
+            ConfigurePlayer();ConfigureUrp();AssignOpenXRLoader();EnableHandTrackingFeatures();BuildScene();
+            VRSceneBuilder.BuildScene(true);AssetDatabase.SaveAssets();
+        }
+
         public static void BuildPreview()
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
@@ -511,9 +525,10 @@ namespace CarAR.EditorTools
                 ConfigurePlayer();
                 HuijingInteropValidation.Validate();
                 ConfigureUrp(); AssignOpenXRLoader(); EnableHandTrackingFeatures(); BuildScene();
+                VRSceneBuilder.BuildScene();
                 AssetDatabase.SaveAssets();
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
-                    scenes = new[] { "Assets/CarAR/Scenes/CarAR.unity" },
+                    scenes = System.Array.ConvertAll(EditorBuildSettings.scenes, scene => scene.path),
                     locationPathName = "Build/Windows/CarAR.exe",
                     target = BuildTarget.StandaloneWindows64, options = BuildOptions.Development
                 });
@@ -524,6 +539,7 @@ namespace CarAR.EditorTools
                     throw new Exception("HJXR build must use Unity's OpenXR loader without PreInit");
                 Debug.Log("[HJXR Validation] PASS: built player does not bootstrap a temporary OpenXR instance");
                 Debug.Log("[CarAR] PREVIEW BUILD PASSED");
+                System.IO.File.WriteAllText("Build/Windows/carar-capabilities.json", "{\"vr\":true,\"mr\":true,\"scene\":\"CarVR\",\"version\":1}");
                 EditorApplication.Exit(0);
             }
             catch (Exception e) { Debug.LogException(e); EditorApplication.Exit(1); }
