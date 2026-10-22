@@ -89,7 +89,7 @@ namespace CarAR.EditorTools
                     var leftover=review.car.GetComponent<ConstraintManager>();
                     if(leftover!=null){UnityEngine.Object.DestroyImmediate(leftover);EditorSceneManager.SaveScene(cached,ScenePath);}
                     review.origin.Camera.nearClipPlane=.02f;
-                    if(review.buttons.Length!=15)
+                    if(review.buttons.Length!=16)
                     {
                         UnityEngine.Object.DestroyImmediate(review.menu.gameObject);CreateMenu(review);
                     }
@@ -520,7 +520,7 @@ namespace CarAR.EditorTools
             var text=new GameObject("VR instructions",typeof(RectTransform),typeof(TextMeshProUGUI));text.transform.SetParent(rect,false);
             text.GetComponent<RectTransform>().sizeDelta=new Vector2(670,180);text.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,235);
             app.status=text.GetComponent<TMP_Text>();app.status.font=font;app.status.fontSize=24;app.status.alignment=TextAlignmentOptions.Center;app.status.raycastTarget=false;
-            string[] labels={"移动：连续 + 传送","步速：正常","返回入口","车头视角","右侧视角","右后视角","车尾视角","左车门","右车门","后备厢尾门","发动机盖","整车爆炸","画质：精细","收起面板","进入驾驶位"};
+            string[] labels={"移动：连续 + 传送","步速：正常","返回入口","车头视角","右侧视角","右后视角","车尾视角","左车门","右车门","后备厢尾门","发动机盖","整车爆炸","画质：精细","收起面板","进入驾驶位","录屏优化：关闭"};
             app.buttons=new StatefulInteractable[labels.Length];
             var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Packages/org.mixedrealitytoolkit.uxcomponents/Button/Prefabs/Action Button.prefab");
             for(int i=0;i<labels.Length;i++)

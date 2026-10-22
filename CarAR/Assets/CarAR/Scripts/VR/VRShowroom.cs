@@ -40,6 +40,8 @@ namespace CarAR
         public bool Ready { get; private set; }
         public bool Continuous { get; private set; } = true;
         public bool HighQuality { get; private set; } = true;
+        public bool RecordingMode { get; private set; }
+        const float RecordingScale = .65f;
         public bool CabinView { get; private set; }
         public bool TeleportValid { get; private set; }
         public Vector3 TeleportPoint { get; private set; }
@@ -85,6 +87,10 @@ namespace CarAR
             QualitySettings.vSyncCount = 0;
             previousPipeline = QualitySettings.renderPipeline as UniversalRenderPipelineAsset;
             pipeline = Instantiate(pipeline); QualitySettings.renderPipeline = pipeline;
+            // None of the showroom shaders samples the opaque scene color.
+            // Avoid copying both high-resolution eyes into an unused texture.
+            pipeline.supportsCameraOpaqueTexture=false;
+            RecordingMode=XRLaunch.HasArgument("--vr-recording");
             ApplyQuality(true);
             RenderSettings.ambientMode = AmbientMode.Custom;
             var sh = new SphericalHarmonicsL2();
@@ -223,6 +229,7 @@ namespace CarAR
             if(!TickTracking(Desktop || HeadTracked(),Time.unscaledDeltaTime))return;
             if (keyboard?.escapeKey.wasPressedThisFrame==true || keyboard?.tabKey.wasPressedThisFrame==true) ToggleMenu();
             if (keyboard?.fKey.wasPressedThisFrame==true) GoTo(0);
+            if (keyboard?.f8Key.wasPressedThisFrame==true) ToggleRecordingMode();
             for(int i=0;i<4;i++) if (keyboard!=null && keyboard[(Key)((int)Key.Digit1+i)].wasPressedThisFrame) panels[i].Toggle();
             if (keyboard?.spaceKey.wasPressedThisFrame==true) explode.Toggle();
             if (teleporting) return;
@@ -237,7 +244,7 @@ namespace CarAR
             if (Time.unscaledTime>nextStats)
             {
                 nextStats=Time.unscaledTime+10;
-                Debug.Log($"[CarAR VR] fps={1/Mathf.Max(.0001f,Time.unscaledDeltaTime):F0}; head={origin.Camera.transform.position:F2}; teleport={teleportCount}; mode={(Continuous?"smooth":"teleport")}; quality={HighQuality}");
+                Debug.Log($"[CarAR VR] fps={1/Mathf.Max(.0001f,Time.unscaledDeltaTime):F0}; head={origin.Camera.transform.position:F2}; teleport={teleportCount}; mode={(Continuous?"smooth":"teleport")}; quality={HighQuality}; recording={RecordingMode}; renderScale={pipeline.renderScale:F2}; eye={XRSettings.eyeTextureWidth}x{XRSettings.eyeTextureHeight}");
             }
         }
         // Stop controls immediately, but do not flash black for a single bad
@@ -498,6 +505,7 @@ namespace CarAR
             buttons[12].OnClicked.AddListener(ToggleQuality);
             buttons[13].OnClicked.AddListener(ToggleMenu);
             if(buttons.Length>14)buttons[14].OnClicked.AddListener(ToggleCabinView);
+            if(buttons.Length>15)buttons[15].OnClicked.AddListener(ToggleRecordingMode);
         }
         // Local metres in the imported vehicle: left seat, behind the wheel,
         // below the 1.35m roof. Lower only the viewing rig, never the model.
@@ -549,8 +557,13 @@ namespace CarAR
         }
         void ApplyQuality(bool high)
         {
-            HighQuality=high;pipeline.renderScale=HighQuality?1:.8f;
+            HighQuality=high;pipeline.renderScale=(HighQuality?1:.8f)*(RecordingMode?RecordingScale:1);
             pipeline.mainLightShadowmapResolution=HighQuality?4096:2048;
+        }
+        public void ToggleRecordingMode()
+        {
+            RecordingMode=!RecordingMode;ApplyQuality(HighQuality);
+            Debug.Log($"[CarAR VR Recording] enabled={RecordingMode}; renderScale={pipeline.renderScale:F2}; highMaterialsAndLighting={HighQuality}; headset cadence remains XR-controlled");
         }
         public void ToggleMenu()
         {
@@ -575,6 +588,7 @@ namespace CarAR
             SetLabel(5,"右后视角");
             SetLabel(4,"右侧视角");
             if(buttons.Length>14)SetLabel(14,CabinView?"下车 / 恢复站立":"进入驾驶位");
+            if(buttons.Length>15)SetLabel(15,RecordingMode?"录屏优化：开启":"录屏优化：关闭");
         }
         void SetLabel(int index,string value)
         {
@@ -594,7 +608,7 @@ namespace CarAR
             }
             GUI.Box(new Rect(18,18,480,70),"AMG GT · 场景漫游\nWASD 移动 / 右键环视 / Tab 面板 / T 传送");
             if(!menuOpen)return;
-            string[] labels={Continuous?"移动：连续 + 传送":"移动：舒适传送",speed<1.3f?"步速：缓慢":"步速：正常","返回入口 [F]","车头视角","右侧视角","右后视角","车尾视角","左车门 [1]","右车门 [2]","尾门 [3]","发动机盖 [4]","爆炸 / 还原 [空格]",HighQuality?"画质：精细":"画质：流畅","收起面板 [Tab]",CabinView?"下车 / 恢复站立":"进入驾驶位"};
+            string[] labels={Continuous?"移动：连续 + 传送":"移动：舒适传送",speed<1.3f?"步速：缓慢":"步速：正常","返回入口 [F]","车头视角","右侧视角","右后视角","车尾视角","左车门 [1]","右车门 [2]","尾门 [3]","发动机盖 [4]","爆炸 / 还原 [空格]",HighQuality?"画质：精细":"画质：流畅","收起面板 [Tab]",CabinView?"下车 / 恢复站立":"进入驾驶位",RecordingMode?"录屏优化：开启 [F8]":"录屏优化：关闭 [F8]"};
             for(int i=0;i<labels.Length;i++)if(GUI.Button(new Rect(18+(i%2)*200,100+(i/2)*43,194,38),labels[i],style))buttons[i].OnClicked.Invoke();
         }
         void EnterDesktopFallback()
@@ -639,7 +653,17 @@ namespace CarAR
                 foreach(var probe in FindObjectsByType<ReflectionProbe>(FindObjectsSortMode.None))
                     if(probe.texture==null)throw new Exception("Missing packaged local reflection: "+probe.name);
                 if(!pipeline.supportsHDR || !origin.Camera.allowHDR || !pipeline.supportsSoftShadows)throw new Exception("VR HDR / soft shadows are disabled");
-                if(!HighQuality || pipeline.renderScale!=1 || pipeline.mainLightShadowmapResolution!=4096)throw new Exception("VR did not start at the high quality preset");
+                float startupScale=XRLaunch.HasArgument("--vr-recording")?RecordingScale:1;
+                if(!HighQuality || !Mathf.Approximately(pipeline.renderScale,startupScale) || pipeline.mainLightShadowmapResolution!=4096)throw new Exception("VR did not start at the requested high quality / recording preset");
+                bool wasRecording=RecordingMode;
+                if(buttons.Length!=16)throw new Exception("VR recording button is missing");
+                buttons[15].OnClicked.Invoke();
+                if(RecordingMode==wasRecording || !HighQuality || !Mathf.Approximately(pipeline.renderScale,wasRecording?1:RecordingScale))throw new Exception("Recording button did not switch render resolution independently of high quality");
+                ToggleQuality();
+                if(HighQuality || !Mathf.Approximately(pipeline.renderScale,.8f*(RecordingMode?RecordingScale:1)))throw new Exception("Quality toggle ignored recording resolution");
+                ToggleQuality();buttons[15].OnClicked.Invoke();
+                if(!HighQuality || RecordingMode!=wasRecording || !Mathf.Approximately(pipeline.renderScale,startupScale) || pipeline.supportsCameraOpaqueTexture)throw new Exception("Recording preset did not restore the requested state or retained unused opaque copy");
+                Debug.Log($"[CarAR VR Recording Smoke] PASS: startup recording={RecordingMode}; button and quality combination restore requested resolution; unused opaque copy disabled");
                 VerifyVehicleShadows();
                 var world=environment.localToWorldMatrix;var carPose=car.localToWorldMatrix;
                 if(ValidateDestination(new Vector3(float.NaN,0,0),out _) || ValidateDestination(Feet+Vector3.up*8,out _))throw new Exception("Unsafe teleport accepted");
@@ -668,8 +692,8 @@ namespace CarAR
                 if(teleportCount!=previous+1)throw new Exception("VR viewpoint "+i+" has no reachable landing");
                 Capture("vr-view-"+i+".png");
             }
-            ToggleQuality();if(pipeline.renderScale!=.8f){Application.Quit(1);yield break;}ToggleQuality();
-            if(!HighQuality || pipeline.renderScale!=1 || pipeline.mainLightShadowmapResolution!=4096)throw new Exception("High quality preset was not restored");
+            ToggleQuality();if(!Mathf.Approximately(pipeline.renderScale,.8f*(RecordingMode?RecordingScale:1))){Application.Quit(1);yield break;}ToggleQuality();
+            if(!HighQuality || !Mathf.Approximately(pipeline.renderScale,RecordingMode?RecordingScale:1) || pipeline.mainLightShadowmapResolution!=4096)throw new Exception("High quality preset was not restored");
             GoTo(0);yield return new WaitForSeconds(.5f);
             yield return VRControllerSmoke.Run(this);
             Debug.Log("[CarAR VR Smoke] PASS: CarRoom-2, source color transform, HDR, baked GI, reflections, valid/invalid teleport, fixed world/car, articulated panels, explode/assemble and quality presets.");

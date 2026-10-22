@@ -32,11 +32,14 @@ if ($Smoke) {
     if ((Select-String -LiteralPath $smokeLog -Pattern '\[CarAR (MRTK Smoke|Controller Smoke|Review Regression|Smoke)\] PASS').Count -ne 4) {
         throw "Player exited without four PASS results. See $smokeLog"
     }
-    $vrLog = Join-Path $projectDir 'smoke-vr.log'
-    $vrArgs = @('--vr-smoke', '-force-d3d11', '-screen-fullscreen', '0', '-screen-width', '1440', '-screen-height', '900', '-logFile', ('"' + $vrLog + '"'))
-    $process = Start-Process -FilePath $application -ArgumentList $vrArgs -WorkingDirectory (Split-Path $application) -PassThru -Wait
-    if ($process.ExitCode -ne 0 -or -not (Select-String -LiteralPath $vrLog -Pattern '\[CarAR VR Smoke\] PASS')) {
-        throw "VR regression failed. See $vrLog"
+    foreach ($recording in @($false, $true)) {
+        $vrLog = Join-Path $projectDir $(if ($recording) { 'smoke-vr-recording.log' } else { 'smoke-vr.log' })
+        $vrArgs = @('--vr-smoke', '-force-d3d11', '-screen-fullscreen', '0', '-screen-width', '1440', '-screen-height', '900', '-logFile', ('"' + $vrLog + '"'))
+        if ($recording) { $vrArgs += '--vr-recording' }
+        $process = Start-Process -FilePath $application -ArgumentList $vrArgs -WorkingDirectory (Split-Path $application) -PassThru -Wait
+        if ($process.ExitCode -ne 0 -or -not (Select-String -LiteralPath $vrLog -Pattern '\[CarAR VR Smoke\] PASS') -or -not (Select-String -LiteralPath $vrLog -Pattern '\[CarAR VR Recording Smoke\] PASS')) {
+            throw "VR regression failed. See $vrLog"
+        }
     }
 }
 Write-Host "Windows player ready: $application"
