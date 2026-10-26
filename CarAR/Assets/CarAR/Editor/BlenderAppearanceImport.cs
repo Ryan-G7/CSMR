@@ -58,7 +58,8 @@ namespace CarAR.EditorTools
             importer.sRGBTexture = false; // These custom shader inputs contain linear data.
             importer.mipmapEnabled = !response;
             importer.wrapMode = response ? TextureWrapMode.Clamp : TextureWrapMode.Repeat;
-            importer.filterMode = FilterMode.Bilinear;
+            importer.filterMode = response ? FilterMode.Bilinear : FilterMode.Trilinear;
+            importer.anisoLevel = response ? 1 : 16;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.alphaSource = TextureImporterAlphaSource.FromInput;
             importer.alphaIsTransparency = false;

@@ -1,6 +1,6 @@
 # CSMR / AMG GT XR 整车评审
 
-Windows 上展示 AMG 汽车，支持独立门盖、整车爆炸 / 组装、MR 手柄交互和室内 VR 漫游。实际 Unity 工程是 **CarAR**。模型以根目录 `AMG.blend` 为源，默认按源模型米制单位 1:1 展示。
+Windows 上展示 AMG 汽车，支持独立门盖、整车爆炸 / 组装、MR 手柄交互和室内 VR 漫游。唯一 Unity 工程是 **CarAR**。仓库包含已导出的 AMG 模型、材质和展厅光照，可直接构建，默认按源模型米制单位 1:1 展示。
 
 ## VR 场景漫游
 
@@ -55,7 +55,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\CarAR\Launch\Start-Huijing
 
 ## 打开源码 / 构建
 
-1. 安装 **Unity 6000.6.3f1**（Windows Build Support），在 Unity Hub 中打开仓库下的 **CarAR 文件夹**，等待首次依赖下载和导入。不要打开仓库根目录的历史工程设置。
+1. 安装 **Unity 6000.6.3f1**（Windows Build Support），在 Unity Hub 中打开仓库下的 **CarAR 文件夹**，等待首次依赖下载和导入。
 2. 打开 `Assets/CarAR/Scenes/CarAR.unity`，播放可查看桌面预览。六个 MRTK 包已经固定在 `Vendor/MRTK`，XRI / Graphics Tools 固定在 `CarAR/Packages`，无需初始化子模块。
 3. 也可在仓库根目录构建并运行原有四组回归及 VR 回归：
 
@@ -66,6 +66,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\CarAR\Tools\Build-Windows.
 
 构建产物为 `CarAR/Build/Windows/CarAR.exe`；日志为 `CarAR/build-windows.log`、`CarAR/smoke-windows.log` 和 `CarAR/smoke-vr.log`。首次源码导入需要访问 Unity 包注册表，编辑器需要有效的 Unity 许可。已有导出模型和材质可以直接构建；仅在修改 `.blend` 后重导出时才需要 Blender。
 
-大模型、Blender 源文件与 HDR / EXR 通过 **Git LFS** 保存。GitHub 的“Download ZIP”通常不能替代完整 LFS 克隆；如果模型是以 `version https://git-lfs.github.com/spec/v1` 开头的文本，请安装 Git LFS 后执行 `git lfs pull`。
+大模型与 HDR / EXR 通过 **Git LFS** 保存。GitHub 的“Download ZIP”通常不能替代完整 LFS 克隆；如果模型是以 `version https://git-lfs.github.com/spec/v1` 开头的文本，请安装 Git LFS 后执行 `git lfs pull`。原始 `.blend` 属于可选制作输入；修改模型时需另行提供源文件并重新导出。
+
+发布会第一人称评审包含连续绕车、开门坐入驾驶位、仪表与中控观察、下车及爆炸还原。构建和原生 4K60 导出步骤见 [发布会录制说明](CarAR/发布会录制说明.md)。
 
 依赖来源与许可证见 [Vendor](Vendor/README.md)，设备与渲染细节见 [CarAR](CarAR/README.md)，已知缺口与验证边界见 [代码审查](CarAR/CODE-REVIEW.md)。

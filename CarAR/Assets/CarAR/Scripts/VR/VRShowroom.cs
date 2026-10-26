@@ -41,7 +41,9 @@ namespace CarAR
         public bool Continuous { get; private set; } = true;
         public bool HighQuality { get; private set; } = true;
         public bool RecordingMode { get; private set; }
+        internal bool PresentationActive;
         const float RecordingScale = .65f;
+        const float StandingEyeHeight = 1.65f;
         public bool CabinView { get; private set; }
         public bool TeleportValid { get; private set; }
         public Vector3 TeleportPoint { get; private set; }
@@ -59,9 +61,11 @@ namespace CarAR
         bool teleporting, turnReady, locomotionReady, tracking, desktopTeleport, initializedXR;
         float yaw, pitch, speed = 1.4f, gravity, vignette, nextStats;
         float trackingInvalidTime,trackingValidTime;
+        float nextHeadDiagnostics;
         Vector3 standingFloorOffset;
         bool menuOpen = true;
         internal bool ReplayControls;
+        internal Transform VehicleShadow { get; private set; }
         string error;
         Vector3 beforeTeleport;
         int teleportCount;
@@ -92,12 +96,21 @@ namespace CarAR
             pipeline.supportsCameraOpaqueTexture=false;
             RecordingMode=XRLaunch.HasArgument("--vr-recording");
             ApplyQuality(true);
+            // Retain the authored HDR sky, source GI, and local reflections.
+            origin.Camera.clearFlags=CameraClearFlags.Skybox;
             RenderSettings.ambientMode = AmbientMode.Custom;
             var sh = new SphericalHarmonicsL2();
             if (ambientCoefficients?.Length == 27)
                 for (int c=0;c<3;c++) for (int n=0;n<9;n++) sh[c,n]=ambientCoefficients[c*9+n];
             RenderSettings.ambientProbe=sh;
+            if(Desktop && XRLaunch.HasArgument("--vr-walkthrough"))
+            {
+                // Calibrated against the supplied white-paint / warm-room reference.
+                Shader.SetGlobalFloat("_CarARPresentationPaintGain",2.2f);
+                Shader.SetGlobalVector("_CarARPresentationRoomGain",new Vector4(.65f,.6175f,.572f,1));
+            }
             ApplySourceLightmaps();
+            CreateVehicleShadow();
             if (navigation != null) navInstance = NavMesh.AddNavMeshData(navigation);
             body = origin.gameObject.AddComponent<CharacterController>();
             body.radius=Radius; body.height=1.7f; body.center=Vector3.up*.9f;
@@ -143,6 +156,29 @@ namespace CarAR
             }
         }
 
+        void CreateVehicleShadow()
+        {
+            // Freeze a closed-car copy outside the articulated/exploded hierarchy.
+            // Reuse meshes and materials; these renderers only enter shadow maps.
+            VehicleShadow=new GameObject("Closed vehicle ground shadow").transform;
+            foreach(var source in car.GetComponentsInChildren<MeshRenderer>())
+            {
+                source.shadowCastingMode=ShadowCastingMode.Off;source.receiveShadows=false;
+                var filter=source.GetComponent<MeshFilter>();
+                if(filter==null || filter.sharedMesh==null)continue;
+                bool opaque=false;
+                foreach(var material in source.sharedMaterials)
+                    opaque|=material!=null && material.renderQueue<(int)RenderQueue.Transparent;
+                if(!opaque)continue;
+                var copy=new GameObject(source.name,typeof(MeshFilter),typeof(MeshRenderer));
+                copy.layer=VehicleLayer;copy.transform.SetParent(VehicleShadow,false);
+                copy.transform.SetPositionAndRotation(source.transform.position,source.transform.rotation);
+                copy.transform.localScale=source.transform.lossyScale;
+                copy.GetComponent<MeshFilter>().sharedMesh=filter.sharedMesh;
+                var renderer=copy.GetComponent<MeshRenderer>();renderer.sharedMaterials=source.sharedMaterials;
+                renderer.shadowCastingMode=ShadowCastingMode.ShadowsOnly;renderer.receiveShadows=false;
+            }
+        }
         IEnumerator Start()
         {
             if (!Desktop)
@@ -152,17 +188,62 @@ namespace CarAR
                 yield return manager.InitializeLoader();
                 if (manager.activeLoader==null) { StartupFailed("头显启动失败。请检查 OpenXR 运行时与设备连接；可按 F2 进入桌面漫游。"); yield break; }
                 manager.StartSubsystems(); initializedXR=true;
+                // XROrigin.Start can run before the manually started XR loader
+                // exists. Apply the origin again now that input is available.
+                Debug.Log($"[CarAR VR Origin] Before configuration: mode={origin.CurrentTrackingOriginMode}; height={origin.CameraInOriginSpaceHeight:F3}");
+                origin.RequestedTrackingOriginMode=XROrigin.TrackingOriginMode.Floor;
                 float deadline=Time.realtimeSinceStartup+20;
-                while (!HeadTracked() && Time.realtimeSinceStartup<deadline) yield return null;
+                yield return WaitForHeadPose(deadline);
                 if (!HeadTracked()) { StartupFailed("等待头显有效定位。请佩戴头显，或按 F2 进入桌面漫游。"); yield break; }
-                yield return null;
+                if (!ValidStartupEyeHeight(origin.CameraInOriginSpaceHeight) || origin.CurrentTrackingOriginMode==TrackingOriginModeFlags.Unknown)
+                {
+                    Debug.LogWarning($"[CarAR VR Origin] Invalid floor height={origin.CameraInOriginSpaceHeight:F3}; mode={origin.CurrentTrackingOriginMode}; falling back to device origin");
+                    origin.RequestedTrackingOriginMode=XROrigin.TrackingOriginMode.Device;
+                    yield return WaitForHeadPose(deadline);
+                    if (!HeadTracked() || origin.CurrentTrackingOriginMode!=TrackingOriginModeFlags.Device || !CalibrateDeviceHeight())
+                    { StartupFailed("头显地面定位异常。请在头显软件中重新定位；可按 F2 进入桌面漫游。"); yield break; }
+                }
+                Debug.Log($"[CarAR VR Origin] Configured: mode={origin.CurrentTrackingOriginMode}; raw={InputSystem.GetDevice<XRHMD>().centerEyePosition.ReadValue():F3}; height={origin.CameraInOriginSpaceHeight:F3}; offset={origin.CameraFloorOffsetObject.transform.localPosition:F3}");
+                if(XRLaunch.HasArgument("--vr-stop-recenter"))
+                {
+                    origin.StopAllCoroutines();
+                    Debug.Log("[CarAR VR Origin] Diagnostic: stopped automatic recenter retries");
+                }
             }
             Ready=true; tracking=true;
             MoveRig(entry, Quaternion.LookRotation(Vector3.ProjectOnPlane(entryLook-entry,Vector3.up)).eulerAngles.y);
             menuOpen=!Desktop;PositionMenu(); menu.gameObject.SetActive(menuOpen);
             comfort.SetFloat("_Fade",0);
             Debug.Log($"[CarAR VR] Ready; desktop={Desktop}; world is fixed; navmesh={navInstance.valid}; native stereo; HDR/AgX; static GI and local reflections.");
+            if(Desktop && !XRLaunch.HasArgument("--vr-smoke"))
+            {
+                if(XRLaunch.HasArgument("--vr-walkthrough"))gameObject.AddComponent<VRWalkthrough>();
+            }
             if (XRLaunch.HasArgument("--vr-smoke")) yield return VRSmoke();
+        }
+        IEnumerator WaitForHeadPose(float deadline)
+        {
+            float stable=0;
+            // Let the pose driver consume the new reference space before
+            // placing the viewer. The first tracked sample can still be old.
+            do
+            {
+                yield return null;
+                stable=HeadTracked()?stable+Time.unscaledDeltaTime:0;
+            } while(stable<.2f && Time.realtimeSinceStartup<deadline);
+        }
+        internal static bool ValidStartupEyeHeight(float height) => float.IsFinite(height) && height>=.25f && height<=2.7f;
+        internal bool CalibrateDeviceHeight()
+        {
+            float height=origin.CameraInOriginSpaceHeight;
+            if(!float.IsFinite(height))return false;
+            // Correct the shared tracking parent, keeping hands aligned and
+            // preserving subsequent physical crouching and head movement.
+            var offset=origin.CameraFloorOffsetObject.transform;
+            var calibrated=offset.localPosition+Vector3.up*(StandingEyeHeight-height);
+            origin.CameraYOffset=calibrated.y;
+            offset.localPosition=calibrated;
+            return ValidStartupEyeHeight(origin.CameraInOriginSpaceHeight);
         }
         void StartupFailed(string message)
         {
@@ -179,6 +260,7 @@ namespace CarAR
             origin.CameraFloorOffsetObject.transform.localPosition=Vector3.zero;
             origin.Camera.transform.SetLocalPositionAndRotation(Vector3.up*1.65f,Quaternion.identity);
             origin.Camera.fieldOfView=55;
+            origin.Camera.nearClipPlane=.06f;origin.Camera.farClipPlane=40;
         }
         Hand CreateHand(string hand)
         {
@@ -223,9 +305,15 @@ namespace CarAR
 
         void Update()
         {
+            if(!Desktop && Time.unscaledTime>=nextHeadDiagnostics)
+            {
+                nextHeadDiagnostics=Time.unscaledTime+5;
+                LogHeadDiagnostics();
+            }
             var keyboard=Application.isFocused?Keyboard.current:null;
             if (error!=null && keyboard?.f2Key.wasPressedThisFrame==true) EnterDesktopFallback();
             if (!Ready) return;
+            if (PresentationActive) return;
             if(!TickTracking(Desktop || HeadTracked(),Time.unscaledDeltaTime))return;
             if (keyboard?.escapeKey.wasPressedThisFrame==true || keyboard?.tabKey.wasPressedThisFrame==true) ToggleMenu();
             if (keyboard?.fKey.wasPressedThisFrame==true) GoTo(0);
@@ -244,8 +332,17 @@ namespace CarAR
             if (Time.unscaledTime>nextStats)
             {
                 nextStats=Time.unscaledTime+10;
-                Debug.Log($"[CarAR VR] fps={1/Mathf.Max(.0001f,Time.unscaledDeltaTime):F0}; head={origin.Camera.transform.position:F2}; teleport={teleportCount}; mode={(Continuous?"smooth":"teleport")}; quality={HighQuality}; recording={RecordingMode}; renderScale={pipeline.renderScale:F2}; eye={XRSettings.eyeTextureWidth}x{XRSettings.eyeTextureHeight}");
+                Debug.Log($"[CarAR VR] fps={1/Mathf.Max(.0001f,Time.unscaledDeltaTime):F0}; head={origin.Camera.transform.position:F2}; feet={Feet:F2}; origin={origin.CurrentTrackingOriginMode}; teleport={teleportCount}; mode={(Continuous?"smooth":"teleport")}; quality={HighQuality}; recording={RecordingMode}; renderScale={pipeline.renderScale:F2}; eye={XRSettings.eyeTextureWidth}x{XRSettings.eyeTextureHeight}");
             }
+        }
+        void LogHeadDiagnostics()
+        {
+            var head=InputSystem.GetDevice<XRHMD>();
+            var driver=origin.Camera.GetComponent<TrackedPoseDriver>();
+            var native=InputDevices.GetDeviceAtXRNode(XRNode.Head);
+            native.TryGetFeatureValue(UnityEngine.XR.CommonUsages.devicePosition,out var nativePosition);
+            native.TryGetFeatureValue(UnityEngine.XR.CommonUsages.deviceRotation,out var nativeRotation);
+            Debug.Log($"[CarAR VR Pose] device={head?.name}; tracked={head?.isTracked.isPressed}; state={head?.trackingState.ReadValue()}; input={head?.centerEyePosition.ReadValue():F3}/{head?.centerEyeRotation.ReadValue().eulerAngles:F2}; native={nativePosition:F3}/{nativeRotation.eulerAngles:F2}; camera={origin.Camera.transform.localPosition:F3}/{origin.Camera.transform.localEulerAngles:F2}; driver={driver?.isActiveAndEnabled}; actions={driver?.positionInput.action.enabled}/{driver?.rotationInput.action.enabled}/{driver?.trackingStateInput.action.enabled}; actionPose={driver?.positionInput.action.ReadValue<Vector3>():F3}/{driver?.rotationInput.action.ReadValue<Quaternion>().eulerAngles:F2}; origin={origin.CurrentTrackingOriginMode}; offset={origin.CameraFloorOffsetObject.transform.localPosition:F3}");
         }
         // Stop controls immediately, but do not flash black for a single bad
         // tracking sample. Sustained loss still fades out; recovery is re-armed.
@@ -406,6 +503,16 @@ namespace CarAR
             }
             vignette=Desktop?0:.82f;
         }
+        // Use the same floor navigation and capsule movement as desktop WASD.
+        internal void WalkForPresentation(Vector3 direction,float metresPerSecond)
+        {
+            UpdateBody();
+            var forward=Vector3.ProjectOnPlane(origin.Camera.transform.forward,Vector3.up).normalized;
+            var right=Vector3.Cross(Vector3.up,forward);
+            MoveAlongFloor(new Vector2(Vector3.Dot(direction,right),Vector3.Dot(direction,forward)),metresPerSecond);
+            gravity=body.isGrounded?-1:Mathf.Max(-8,gravity-9.81f*Time.deltaTime);
+            body.Move(Vector3.up*(gravity*Time.deltaTime));
+        }
         internal Vector3 Feet => new(origin.Camera.transform.position.x,origin.transform.position.y,origin.Camera.transform.position.z);
         internal bool ValidateDestination(Vector3 point,out Vector3 result)
         {
@@ -558,6 +665,19 @@ namespace CarAR
         void ApplyQuality(bool high)
         {
             HighQuality=high;pipeline.renderScale=(HighQuality?1:.8f)*(RecordingMode?RecordingScale:1);
+            // Keep the original presentation's shading/post-processing path.
+            // Supersampling plus MSAA improves edges without changing its look.
+            if(Desktop && XRLaunch.HasArgument("--vr-walkthrough"))
+            {
+                pipeline.renderScale=HighQuality?2f:1f;
+                pipeline.msaaSampleCount=8;
+                var cameraData=origin.Camera.GetUniversalAdditionalCameraData();
+                cameraData.renderPostProcessing=false;
+                cameraData.antialiasing=AntialiasingMode.None;
+                origin.Camera.allowMSAA=true;
+                origin.Camera.allowDynamicResolution=false;
+                QualitySettings.anisotropicFiltering=AnisotropicFiltering.ForceEnable;
+            }
             pipeline.mainLightShadowmapResolution=HighQuality?4096:2048;
         }
         public void ToggleRecordingMode()
@@ -596,6 +716,7 @@ namespace CarAR
         }
         void OnGUI()
         {
+            if(PresentationActive)return;
             if(XRLaunch.HasArgument("--vr-smoke"))return;
             if(!Desktop && error==null)return;
             if(desktopFont!=null)GUI.skin.font=desktopFont;
@@ -634,6 +755,9 @@ namespace CarAR
             QualitySettings.renderPipeline=previousPipeline;
             if(comfort!=null)Destroy(comfort);
             if(pipeline!=null)Destroy(pipeline);
+            if(VehicleShadow!=null)Destroy(VehicleShadow.gameObject);
+            Shader.SetGlobalFloat("_CarARPresentationPaintGain",1);
+            Shader.SetGlobalVector("_CarARPresentationRoomGain",Vector4.zero);
         }
         static void FailSmokeOnException(string message,string stack,LogType type)
         {if(type==LogType.Exception)Application.Quit(1);}
@@ -682,7 +806,7 @@ namespace CarAR
             {Debug.LogError("[CarAR VR Smoke] Teleport moved the world or failed");Application.Quit(1);yield break;}
             panels[0].Toggle();yield return new WaitForSeconds(.8f);
             if(!panels[0].IsOpen){Application.Quit(1);yield break;}
-            Capture("vr-door.png");panels[0].Close();yield return new WaitForSeconds(.8f);
+            Capture("vr-door.png");VerifyFixedVehicleShadow();panels[0].Close();yield return new WaitForSeconds(.8f);
             explode.SetTarget(1);yield return new WaitForSeconds(2.5f);Capture("vr-exploded.png");
             explode.SetTarget(0);yield return new WaitForSeconds(2.2f);
             if(explode.Progress>.001f || !panels[0].IsClosed){Application.Quit(1);yield break;}
@@ -720,6 +844,7 @@ namespace CarAR
         {
             var light=RenderSettings.sun;
             if(light==null || light.intensity<=0 || light.shadows==LightShadows.None)throw new Exception("VR vehicle shadows have no active light");
+            VerifyFixedVehicleShadow();
             // Stay inside the room and see the car and its floor receiver.
             var position=entry+Vector3.up*2.8f;
             var rotation=Quaternion.LookRotation(entryLook-position);
@@ -735,14 +860,43 @@ namespace CarAR
                 if(i/1280<400 && before>45 && after<before*.93f)darkened++;
             }
             if(darkened<150)throw new Exception("Vehicle shadows did not darken baked receivers: "+darkened+" pixels");
-            Debug.Log("[CarAR VR Shadow Smoke] PASS: moving vehicle geometry darkens baked room receivers; pixels="+darkened);
+            // The ground shadow must not introduce dark patches on the dashboard.
+            var cabinRotation=car.rotation*Quaternion.Euler(8,0,0);
+            var cabinWith=Capture("vr-cabin-shadow-on.png",CabinEye,cabinRotation);
+            Color32[] cabinWithout;
+            try {VehicleShadow.gameObject.SetActive(false);cabinWithout=Capture("vr-cabin-shadow-off.png",CabinEye,cabinRotation);}
+            finally {VehicleShadow.gameObject.SetActive(true);}
+            int cabinChanged=0;
+            for(int y=150;y<400;y++)for(int x=360;x<920;x++)
+            {
+                int i=y*1280+x;
+                if(Mathf.Abs(cabinWith[i].r-cabinWithout[i].r)+Mathf.Abs(cabinWith[i].g-cabinWithout[i].g)+Mathf.Abs(cabinWith[i].b-cabinWithout[i].b)>6)cabinChanged++;
+            }
+            if(cabinChanged>100)throw new Exception("Ground shadow still darkens cabin surfaces: "+cabinChanged+" pixels");
+            Debug.Log($"[CarAR VR Shadow Smoke] PASS: fixed closed-car ground shadow; floor pixels={darkened}; cabin changed pixels={cabinChanged}; vehicle self shadows disabled");
+        }
+        void VerifyFixedVehicleShadow()
+        {
+            if(VehicleShadow==null || VehicleShadow.IsChildOf(car) || VehicleShadow.childCount==0)
+                throw new Exception("Closed vehicle shadow is missing or follows the animated vehicle");
+            foreach(var renderer in car.GetComponentsInChildren<Renderer>())
+            {
+                if(renderer.shadowCastingMode!=ShadowCastingMode.Off || renderer.receiveShadows)
+                    throw new Exception("Vehicle part still casts or receives shadows: "+renderer.name);
+                foreach(var material in renderer.sharedMaterials)
+                    if(material.HasProperty("_ReceiveShadows") && (material.GetFloat("_ReceiveShadows")!=0 || !material.IsKeywordEnabled("_RECEIVE_SHADOWS_OFF")))
+                        throw new Exception("Vehicle material still receives shadows: "+material.name);
+            }
+            foreach(var renderer in VehicleShadow.GetComponentsInChildren<Renderer>())
+                if(renderer.shadowCastingMode!=ShadowCastingMode.ShadowsOnly || renderer.receiveShadows)
+                    throw new Exception("Vehicle shadow copy renders visible geometry or receives shadows");
         }
         internal Color32[] Capture(string name,Vector3? position=null,Quaternion? rotation=null)
         {
             var go=new GameObject("VR validation camera");var cam=go.AddComponent<Camera>();
             cam.CopyFrom(origin.Camera);cam.enabled=false;
             cam.transform.SetPositionAndRotation(position ?? origin.Camera.transform.position,rotation ?? origin.Camera.transform.rotation);
-            var data=go.AddComponent<UniversalAdditionalCameraData>();data.allowXRRendering=false;data.renderPostProcessing=true;
+            var data=go.AddComponent<UniversalAdditionalCameraData>();data.allowXRRendering=false;data.renderPostProcessing=false;
             var rt=RenderTexture.GetTemporary(1280,800,24,RenderTextureFormat.ARGBHalf,RenderTextureReadWrite.Linear,4);
             cam.targetTexture=rt;var previous=RenderTexture.active;cam.Render();RenderTexture.active=rt;
             var texture=new Texture2D(1280,800,TextureFormat.RGB24,false,true);

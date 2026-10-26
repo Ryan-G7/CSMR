@@ -18,6 +18,7 @@ Shader "CarAR/BlenderLayeredPaint"
         [HideInInspector] _BaseMap("Base map", 2D) = "white" {}
         [HideInInspector] _Cutoff("Alpha cutoff", Float) = 0
         [HideInInspector] _Cull("Cull", Float) = 0
+        [ToggleOff] _ReceiveShadows("Receive shadows", Float) = 1
     }
     SubShader
     {
@@ -36,6 +37,7 @@ Shader "CarAR/BlenderLayeredPaint"
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
             #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
             #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
             #pragma multi_compile_fog
@@ -47,6 +49,7 @@ Shader "CarAR/BlenderLayeredPaint"
                 half4 _BaseColor, _PrincipledColor, _CoatColor;
                 float _PrincipledMetallic, _PrincipledRoughness, _PrincipledMix, _CoatRoughness, _CoatIOR;
             CBUFFER_END
+            float _CarARPresentationPaintGain;
             struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; float4 tangentOS:TANGENT; float2 uv:TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct Varyings { float4 positionCS:SV_POSITION; float3 positionWS:TEXCOORD0; half3 normalWS:TEXCOORD1; half4 tangentWS:TEXCOORD2; float2 uv:TEXCOORD3; half fog:TEXCOORD4; UNITY_VERTEX_OUTPUT_STEREO };
             Varyings Vert(Attributes v)
@@ -95,7 +98,8 @@ Shader "CarAR/BlenderLayeredPaint"
                 float a=(g-cosine)/max(g+cosine,1e-5);
                 float b=(cosine*(g+cosine)-1)/max(cosine*(g-cosine)+1,1e-5);
                 float fresnel=saturate(.5*a*a*(1+b*b));
-                return half4(MixFog(lerp(lerp(flake,base,_PrincipledMix),coat,fresnel),v.fog),1);
+                half3 pigment=lerp(flake,base,_PrincipledMix)*max(1,_CarARPresentationPaintGain);
+                return half4(MixFog(lerp(pigment,coat,fresnel),v.fog),1);
             }
             ENDHLSL
         }

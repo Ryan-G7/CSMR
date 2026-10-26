@@ -1,7 +1,0 @@
-{
-  "dll": "D:\\Soft\\AIXR Agent\\resource\\tool\\api_layer\\Release\\jxrsdk.dll",
-  "interfaceAvailable": true,
-  "sdkVersion": "5.0.0.0",
-  "sessionCreated": true,
-  "note": "Standalone SDK init only. GetLayerEnableState is unimplemented in this installed DLL; a success return does not verify VST."
-}

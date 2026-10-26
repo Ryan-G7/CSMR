@@ -466,12 +466,14 @@ namespace CarAR.EditorTools
                 controls.buttons[i].UseGazeDwell = false;
                 foreach (var label in button.GetComponentsInChildren<TMP_Text>(true))
                 {
+                    label.font = font; label.fontSharedMaterial = font.material;
                     if (label.gameObject.name == "Text")
                     {
                         label.gameObject.SetActive(true);
                         label.text = labels[i]; label.fontSize = 24; label.font = font;
                     }
                     else label.gameObject.SetActive(false);
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(label);
                 }
             }
             var textGo = new GameObject("Instructions and provider status", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -517,32 +519,49 @@ namespace CarAR.EditorTools
             VRSceneBuilder.BuildScene(true);AssetDatabase.SaveAssets();
         }
 
-        public static void BuildPreview()
+        public static void BuildPreview()=>BuildPlayer(false);
+        public static void BuildPresentation()=>BuildPlayer(true);
+
+        static void BuildPlayer(bool presentation)
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            const BuildTarget target=BuildTarget.StandaloneWindows64;
+            var apis=PlayerSettings.GetGraphicsAPIs(target);
+            bool automaticApis=PlayerSettings.GetUseDefaultGraphicsAPIs(target);
+            string output=presentation?"Build/Presentation":"Build/Windows";
+            int exitCode=1;
             try
             {
                 ConfigurePlayer();
+                PlayerSettings.SetUseDefaultGraphicsAPIs(target,false);
+                PlayerSettings.SetGraphicsAPIs(target,new[]{GraphicsDeviceType.Direct3D11});
                 HuijingInteropValidation.Validate();
                 ConfigureUrp(); AssignOpenXRLoader(); EnableHandTrackingFeatures(); BuildScene();
                 VRSceneBuilder.BuildScene();
                 AssetDatabase.SaveAssets();
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                     scenes = System.Array.ConvertAll(EditorBuildSettings.scenes, scene => scene.path),
-                    locationPathName = "Build/Windows/CarAR.exe",
-                    target = BuildTarget.StandaloneWindows64, options = BuildOptions.Development
+                    locationPathName = output+"/CarAR.exe",
+                    target = target, options = presentation?BuildOptions.None:BuildOptions.Development
                 });
                 if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
-                    throw new Exception("Preview build failed: " + report.summary.result);
-                string boot = System.IO.File.ReadAllText("Build/Windows/CarAR_Data/boot.config");
+                    throw new Exception("Player build failed: " + report.summary.result);
+                string boot = System.IO.File.ReadAllText(output+"/CarAR_Data/boot.config");
                 if (boot.Contains("xrsdk-pre-init-library=UnityOpenXR"))
                     throw new Exception("HJXR build must use Unity's OpenXR loader without PreInit");
                 Debug.Log("[HJXR Validation] PASS: built player does not bootstrap a temporary OpenXR instance");
-                Debug.Log("[CarAR] PREVIEW BUILD PASSED");
-                System.IO.File.WriteAllText("Build/Windows/carar-capabilities.json", "{\"vr\":true,\"mr\":true,\"scene\":\"CarVR\",\"version\":1}");
-                EditorApplication.Exit(0);
+                Debug.Log(presentation?"[CarAR Presentation] RELEASE BUILD PASS":"[CarAR] PREVIEW BUILD PASSED");
+                System.IO.File.WriteAllText(output+"/carar-capabilities.json", "{\"vr\":true,\"mr\":true,\"scene\":\"CarVR\",\"version\":1}");
+                exitCode=0;
             }
-            catch (Exception e) { Debug.LogException(e); EditorApplication.Exit(1); }
+            catch (Exception e) { Debug.LogException(e); }
+            finally
+            {
+                PlayerSettings.SetGraphicsAPIs(target,apis);
+                PlayerSettings.SetUseDefaultGraphicsAPIs(target,automaticApis);
+                AssetDatabase.SaveAssets();
+            }
+            if(Application.isBatchMode)EditorApplication.Exit(exitCode);
         }
 
         static GameObject CreatePlanePrefab()

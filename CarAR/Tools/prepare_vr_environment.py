@@ -158,7 +158,7 @@ print('VR_TEXTURES',len(used_images),flush=True)
 class SceneBaker(Baker):
     def __init__(self):
         super().__init__(PROJECT)
-        self.directory=OUT/'MaterialBakes';self.directory.mkdir(exist_ok=True)
+        self.directory=PROJECT/'tmp/vr-material-bakes';self.directory.mkdir(parents=True,exist_ok=True)
         self.scene.cycles.samples=1
         self.resolution=2048
 

@@ -1,4 +1,4 @@
-// ABI and coordinate conventions from the manufacturer's unity_mr_sdk_demo/3rd/hjxr.
+// ABI and coordinate conventions from the manufacturer's HJXR C headers.
 using System;
 using System.IO;
 using System.Runtime.InteropServices;

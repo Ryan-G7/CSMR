@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!21 &-8647866818461733492
+--- !u!21 &-3681863313445157532
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 0
@@ -19,12 +19,12 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 1602440551056044849}
+        m_Texture: {fileID: 6143999034287934051}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -102,11 +102,11 @@ MonoBehaviour:
     m_StrikethroughOffset: 12
     m_StrikethroughThickness: 3
     m_TabWidth: 32
-  m_Material: {fileID: -8647866818461733492}
+  m_Material: {fileID: -3681863313445157532}
   m_SourceFontFileGUID: 1f78243539bce1147936f8c39a3d2939
   m_CreationSettings:
-    sourceFontFileName: 
-    sourceFontFileGUID: 
+    sourceFontFileName:
+    sourceFontFileGUID:
     faceIndex: 0
     pointSizeSamplingMode: 0
     pointSize: 0
@@ -116,21 +116,21 @@ MonoBehaviour:
     atlasWidth: 0
     atlasHeight: 0
     characterSetSelectionMode: 0
-    characterSequence: 
-    referencedFontAssetGUID: 
-    referencedTextAssetGUID: 
+    characterSequence:
+    referencedFontAssetGUID:
+    referencedTextAssetGUID:
     fontStyle: 0
     fontStyleModifier: 0
     renderMode: 0
     includeFontFeatures: 0
   m_SourceFontFile: {fileID: 12800000, guid: 1f78243539bce1147936f8c39a3d2939, type: 3}
-  m_SourceFontFilePath: 
+  m_SourceFontFilePath:
   m_AtlasPopulationMode: 1
   InternalDynamicOS: 0
   m_GlyphTable: []
   m_CharacterTable: []
   m_AtlasTextures:
-  - {fileID: 1602440551056044849}
+  - {fileID: 6143999034287934051}
   m_AtlasTextureIndex: 0
   m_IsMultiAtlasTexturesEnabled: 1
   m_GetFontFeatures: 1
@@ -182,7 +182,7 @@ MonoBehaviour:
   italicStyle: 35
   tabSize: 10
   m_fontInfo:
-    Name: 
+    Name:
     PointSize: 0
     Scale: 0
     CharacterCount: 0
@@ -208,7 +208,7 @@ MonoBehaviour:
     kerningPairs: []
   fallbackFontAssets: []
   atlas: {fileID: 0}
---- !u!28 &1602440551056044849
+--- !u!28 &6143999034287934051
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -229,7 +229,7 @@ Texture2D:
   m_IsReadable: 1
   m_IsPreProcessed: 0
   m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
+  m_MipmapLimitGroupName:
   m_StreamingMipmaps: 0
   m_StreamingMipmapsPriority: 0
   m_VTOnly: 0
@@ -246,11 +246,11 @@ Texture2D:
     m_WrapW: 0
   m_LightmapFormat: 0
   m_ColorSpace: 1
-  m_PlatformBlob: 
+  m_PlatformBlob:
   image data: 1
   _typelessdata: 00
   m_StreamData:
     serializedVersion: 2
     offset: 0
     size: 0
-    path: 
+    path:

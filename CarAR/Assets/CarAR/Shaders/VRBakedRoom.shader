@@ -46,6 +46,7 @@ Shader "CarAR/VRBakedRoom"
                 half4 _BaseColor;
                 half _BumpScale,_Smoothness,_EnvironmentReflections,_VehicleShadowStrength,_Cull,_Cutoff;
             CBUFFER_END
+            float4 _CarARPresentationRoomGain;
             struct Attributes
             {
                 float4 positionOS:POSITION;float3 normalOS:NORMAL;float4 tangentOS:TANGENT;
@@ -86,11 +87,18 @@ Shader "CarAR/VRBakedRoom"
                 // The color bake already contains source diffuse reflectance.
                 // Cancel URP's dielectric energy split to apply it exactly once.
                 d.bakedGI=SAMPLE_TEXTURE2D(_SourceLighting,sampler_SourceLighting,v.lightingUV).rgb/.96h;
-                // The movable car is absent from the Cycles bake. Its realtime
-                // visibility map darkens baked receivers without adding the
-                // ceiling illumination a second time. Retain indirect fill.
+                if(_CarARPresentationRoomGain.w>.5)d.bakedGI*=_CarARPresentationRoomGain.rgb;
+                // The closed car shadow darkens upward-facing floor surfaces.
+                // Keep wall lighting and the baked indirect fill intact.
                 Light vehicleShadow=GetMainLight(d.shadowCoord);
-                d.bakedGI*=lerp(1.0h,vehicleShadow.shadowAttenuation,_VehicleShadowStrength);
+                half floorReceiver=step(.7h,normalize(v.normalWS).y);
+                d.bakedGI*=lerp(1.0h,vehicleShadow.shadowAttenuation,_VehicleShadowStrength*floorReceiver);
+                #if defined(_ENVIRONMENTREFLECTIONS_OFF)
+                    // URP's reflections-off path adds a uniform glossy sky
+                    // fallback. The Cycles color bake already includes the
+                    // authored wall lighting; keep its darks and warm pools.
+                    return half4(d.bakedGI*.96h,1);
+                #endif
                 SurfaceData s=(SurfaceData)0;s.albedo=1;s.normalTS=half3(0,0,1);s.occlusion=1;s.alpha=1;
                 s.smoothness=_Smoothness;
                 #if defined(_METALLICSPECGLOSSMAP)

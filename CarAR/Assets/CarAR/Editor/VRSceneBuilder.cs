@@ -67,14 +67,22 @@ namespace CarAR.EditorTools
             string stamp=source.source_sha256+source.gltf_sha256+SceneVersion;
             if(File.Exists(ScenePath) && File.Exists(Settings+"source-stamp.txt") && File.ReadAllText(Settings+"source-stamp.txt")==stamp)
             {
+                var authoredMaterials=new Dictionary<string,Material>();
+                foreach(var renderer in FindInactiveRoot(SceneManager.GetActiveScene(),"CarRoot").GetComponentsInChildren<Renderer>(true))
+                    foreach(var material in renderer.sharedMaterials)
+                        if(material!=null)authoredMaterials[material.name]=material;
                 Debug.Log("[CarAR VR Build] Reusing validated static lighting and navigation");
                 var cached=EditorSceneManager.OpenScene(ScenePath,OpenSceneMode.Single);
                 CreateRoomMaterials();
                 var cachedPipeline=AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(Settings+"Pipeline.asset");
+                cachedPipeline.supportsCameraOpaqueTexture=false;
                 ConfigureSoftShadows(cachedPipeline);
                 var cachedAgX=AssetDatabase.LoadAssetAtPath<Material>(Settings+"AgX.mat");
                 cachedAgX.SetFloat("_ExposureEV",0);EditorUtility.SetDirty(cachedAgX);
-                ConfigureOcclusion(AssetDatabase.LoadAssetAtPath<UniversalRendererData>(Settings+"Renderer.asset"));
+                RemoveUnusedOcclusion(AssetDatabase.LoadAssetAtPath<UniversalRendererData>(Settings+"Renderer.asset"));
+                foreach(var root in cached.GetRootGameObjects())
+                    if(root.name=="VR highlight bloom")UnityEngine.Object.DestroyImmediate(root);
+                AssetDatabase.DeleteAsset(Settings+"Volume.asset");
                 foreach(var root in cached.GetRootGameObjects())
                 {
                     var light=root.GetComponent<Light>();
@@ -86,12 +94,29 @@ namespace CarAR.EditorTools
                     if(root==null)continue;
                     var review=root.GetComponent<VRShowroom>();
                     if(review==null)continue;
+                    // Refresh cached VR variants from the current authored MR
+                    // materials before applying the VR-only shadow overrides.
+                    foreach(var renderer in review.car.GetComponentsInChildren<Renderer>(true))
+                    {
+                        var refreshed=renderer.sharedMaterials;
+                        for(int i=0;i<refreshed.Length;i++)
+                            if(refreshed[i]!=null && authoredMaterials.TryGetValue(refreshed[i].name,out var authored))refreshed[i]=authored;
+                        renderer.sharedMaterials=refreshed;
+                    }
                     var leftover=review.car.GetComponent<ConstraintManager>();
                     if(leftover!=null){UnityEngine.Object.DestroyImmediate(leftover);EditorSceneManager.SaveScene(cached,ScenePath);}
                     review.origin.Camera.nearClipPlane=.02f;
+                    review.origin.Camera.GetUniversalAdditionalCameraData().renderPostProcessing=false;
                     if(review.buttons.Length!=16)
                     {
                         UnityEngine.Object.DestroyImmediate(review.menu.gameObject);CreateMenu(review);
+                    }
+                    var font=AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/CarAR/Fonts/ShowroomChinese.asset");
+                    foreach(var label in review.menu.GetComponentsInChildren<TMP_Text>(true))
+                    {
+                        label.font=font;label.fontSharedMaterial=font.material;
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(label);
+                        EditorUtility.SetDirty(label);
                     }
                     // Navigation changes must also reach the lighting-cache path.
                     BakeNavigation(review,review.environment.gameObject,source);
@@ -190,7 +215,7 @@ namespace CarAR.EditorTools
             cameraObject.tag="MainCamera";cameraObject.transform.SetParent(offset.transform,false);
             var camera=cameraObject.GetComponent<Camera>();camera.nearClipPlane=.02f;camera.farClipPlane=120;
             camera.clearFlags=CameraClearFlags.Skybox;camera.allowHDR=true;camera.allowMSAA=true;
-            cameraObject.AddComponent<UniversalAdditionalCameraData>().renderPostProcessing=true;
+            cameraObject.AddComponent<UniversalAdditionalCameraData>().renderPostProcessing=false;
             var driver=cameraObject.GetComponent<TrackedPoseDriver>();
             driver.positionInput=new InputActionProperty(new InputAction("VR Head position",InputActionType.Value,"<XRHMD>/centerEyePosition",expectedControlType:"Vector3"));
             driver.rotationInput=new InputActionProperty(new InputAction("VR Head rotation",InputActionType.Value,"<XRHMD>/centerEyeRotation",expectedControlType:"Quaternion"));
@@ -215,10 +240,6 @@ namespace CarAR.EditorTools
             BakeNavigation(app,environment,source);
             Debug.Log("[CarAR VR Build] Navigation ready; preparing static GI");
             BakeLightProbes();
-            var volume=new GameObject("VR highlight bloom",typeof(Volume)).GetComponent<Volume>();volume.isGlobal=true;
-            var profile=ScriptableObject.CreateInstance<VolumeProfile>();
-            var bloom=profile.Add<Bloom>(true);bloom.intensity.Override(.045f);bloom.threshold.Override(1.8f);bloom.scatter.Override(.45f);
-            SaveAsset(profile,Settings+"Volume.asset");volume.sharedProfile=profile;
             var lightSettings=new LightingSettings {name="CarRoom high quality static GI",bakedGI=true,realtimeGI=false,
                 lightmapper=LightingSettings.Lightmapper.ProgressiveGPU,lightmapResolution=24,lightmapMaxSize=4096,
                 directSampleCount=64,indirectSampleCount=512,environmentSampleCount=256,maxBounces=6,
@@ -233,7 +254,7 @@ namespace CarAR.EditorTools
             if(!Lightmapping.Bake())throw new Exception("VR lightmap bake failed");
             if(LightmapSettings.lightmaps.Length==0)throw new Exception("VR bake did not produce lightmaps");
             RenderSettings.ambientMode=AmbientMode.Custom;
-            BakeReflection(new Vector3(0,1.2f,0),new Vector3(13,6,13),"Room");
+            CreateReflectionProbe(new Vector3(0,1.2f,0),new Vector3(13,6,13));
             EditorSceneManager.SaveScene(scene,ScenePath);AssetDatabase.SaveAssets();
             File.WriteAllText(Settings+"source-stamp.txt",stamp);
             if(!prepareLighting){AttachCyclesLighting(source);EditorSceneManager.SaveScene(scene,ScenePath);}
@@ -259,7 +280,8 @@ namespace CarAR.EditorTools
                 if(!File.Exists(path))throw new FileNotFoundException(rebuild,path);
                 AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceSynchronousImport);
                 var importer=(TextureImporter)AssetImporter.GetAtPath(path);
-                importer.textureType=TextureImporterType.Default;importer.sRGBTexture=false;importer.mipmapEnabled=false;
+                importer.textureType=TextureImporterType.Default;importer.sRGBTexture=false;importer.mipmapEnabled=true;
+                importer.filterMode=FilterMode.Trilinear;importer.anisoLevel=16;
                 importer.maxTextureSize=4096;importer.textureCompression=TextureImporterCompression.Uncompressed;importer.SaveAndReimport();
                 maps.Add(AssetDatabase.LoadAssetAtPath<Texture2D>(path));
             }
@@ -320,7 +342,7 @@ namespace CarAR.EditorTools
                     }
                 }
                 // Architectural occlusion is already in the bake. Realtime
-                // shadow maps contain only animated vehicle geometry.
+                // shadow maps contain only the closed vehicle shadow copy.
                 renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=true;
             }
             var sun=RenderSettings.sun;
@@ -338,8 +360,39 @@ namespace CarAR.EditorTools
             }
             sun.lightmapBakeType=LightmapBakeType.Realtime;sun.shadows=LightShadows.Soft;
             sun.shadowStrength=1;sun.shadowBias=.02f;sun.shadowNormalBias=.03f;sun.shadowNearPlane=.05f;
+            var shadowMaterials=new Dictionary<Material,Material>();
+            string vehiclePath=Settings+"VehicleMaterials.mat";
+            var savedMaterials=new Dictionary<string,Material>();
+            foreach(var asset in AssetDatabase.LoadAllAssetsAtPath(vehiclePath))
+                if(asset is Material saved)savedMaterials[saved.name]=saved;
             foreach(var renderer in app.car.GetComponentsInChildren<Renderer>())
-            {renderer.shadowCastingMode=ShadowCastingMode.On;renderer.receiveShadows=true;}
+            {
+                renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
+                var materials=renderer.sharedMaterials;
+                for(int i=0;i<materials.Length;i++)
+                {
+                    var original=materials[i];
+                    if(original==null || !original.HasProperty("_ReceiveShadows"))continue;
+                    if(!shadowMaterials.TryGetValue(original,out var copy))
+                    {
+                        if(savedMaterials.TryGetValue(original.name,out copy))
+                        {if(copy!=original)EditorUtility.CopySerialized(original,copy);}
+                        else
+                        {
+                            copy=new Material(original){name=original.name};
+                            if(AssetDatabase.LoadMainAssetAtPath(vehiclePath)==null)AssetDatabase.CreateAsset(copy,vehiclePath);
+                            else AssetDatabase.AddObjectToAsset(copy,vehiclePath);
+                            savedMaterials[original.name]=copy;
+                        }
+                        copy.SetFloat("_ReceiveShadows",0);copy.EnableKeyword("_RECEIVE_SHADOWS_OFF");
+                        EditorUtility.SetDirty(copy);
+                        shadowMaterials.Add(original,copy);
+                    }
+                    materials[i]=copy;
+                }
+                renderer.sharedMaterials=materials;
+            }
+            // Keep VR material variants separate from the original MR assets.
             var pipeline=app.pipeline;pipeline.renderScale=1;pipeline.mainLightShadowmapResolution=4096;
             EditorUtility.SetDirty(sun);EditorUtility.SetDirty(pipeline);
         }
@@ -381,7 +434,7 @@ namespace CarAR.EditorTools
                 bool matteWall=p.name=="stone" || p.name=="wall.001" || p.name=="wall.side" || p.name=="floor_plaster";
                 m.SetFloat("_EnvironmentReflections",matteWall?0:1);
                 if(matteWall)m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
-                m.SetColor("_BaseColor",emitter?Color.black:new Color(p.base_color[0],p.base_color[1],p.base_color[2],p.base_color[3]));
+                m.SetColor("_BaseColor",new Color(p.base_color[0],p.base_color[1],p.base_color[2],p.base_color[3]));
                 m.SetTexture("_BaseMap",Load(p.base_map,true));
                 if(p.metallic==0)
                 {
@@ -399,8 +452,7 @@ namespace CarAR.EditorTools
                 if(normal!=null)m.EnableKeyword("_NORMALMAP");
                 m.SetTexture("_EmissionMap",Load(p.emission_map,false));
                 m.SetColor("_EmissionColor",new Color(p.emission[0],p.emission[1],p.emission[2]));
-                if(emitter)m.EnableKeyword("_EMISSION");
-                m.globalIlluminationFlags=emitter?MaterialGlobalIlluminationFlags.BakedEmissive:MaterialGlobalIlluminationFlags.None;
+                m.globalIlluminationFlags=MaterialGlobalIlluminationFlags.None;
                 // glTF UVs use a top-left origin; glTFast's mesh conversion flips
                 // V back to Unity, so reverse the KHR transform's V translation.
                 m.SetTextureScale("_BaseMap",new Vector2(p.scale[0],p.scale[1]));
@@ -423,13 +475,9 @@ namespace CarAR.EditorTools
         {
             var renderer=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/CarAR/Settings/URP_Renderer.asset"));
             renderer.name="VR forward renderer";
-            // Clone features as well: MR and VR never share mutable quality settings.
-            var features=renderer.rendererFeatures.ToArray();renderer.rendererFeatures.Clear();
+            // The source bake supplies VR occlusion; only its view LUT is needed.
+            renderer.rendererFeatures.Clear();
             SaveAsset(renderer,Settings+"Renderer.asset");
-            foreach(var feature in features)
-            {
-                var copy=UnityEngine.Object.Instantiate(feature);AssetDatabase.AddObjectToAsset(copy,renderer);renderer.rendererFeatures.Add(copy);
-            }
             var agx=ScriptableObject.CreateInstance<BlenderAgXFeature>();agx.name="Blender source AgX";
             AssetDatabase.AddObjectToAsset(agx,renderer);renderer.rendererFeatures.Add(agx);
             var lutImage=new Texture2D(2,2,TextureFormat.RGBA32,false,true);
@@ -442,13 +490,12 @@ namespace CarAR.EditorTools
             agx.material=SaveMaterial(Settings+"AgX.mat","CarAR/BlenderAgX");
             agx.material.SetTexture("_Lut",lut);agx.material.SetVector("_Domain",new Vector4(source.lut_min,source.lut_max,source.lut_size,0));
             agx.material.SetFloat("_ExposureEV",0);
-            ConfigureOcclusion(renderer);
             renderer.SetDirty();EditorUtility.SetDirty(renderer);EditorUtility.SetDirty(agx);
             pipeline=UniversalRenderPipelineAsset.Create(renderer);pipeline.name="VR HDR pipeline";
             pipeline.supportsHDR=true;pipeline.msaaSampleCount=4;pipeline.renderScale=1;
             ConfigureSoftShadows(pipeline);
             pipeline.mainLightShadowmapResolution=4096;pipeline.shadowDistance=35;pipeline.shadowCascadeCount=4;
-            pipeline.supportsCameraDepthTexture=true;pipeline.supportsCameraOpaqueTexture=true;
+            pipeline.supportsCameraDepthTexture=true;pipeline.supportsCameraOpaqueTexture=false;
             var serialized=new SerializedObject(pipeline);serialized.FindProperty("m_ReflectionProbeBlending").boolValue=true;
             serialized.FindProperty("m_ReflectionProbeBoxProjection").boolValue=true;
             serialized.FindProperty("m_ColorGradingMode").intValue=1;serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -489,16 +536,14 @@ namespace CarAR.EditorTools
             RenderSettings.ambientProbe=sh;
             var result=new float[27];for(int c=0;c<3;c++)for(int i=0;i<9;i++)result[c*9+i]=sh[c,i];return result;
         }
-        static void ConfigureOcclusion(UniversalRendererData renderer)
+        static void RemoveUnusedOcclusion(UniversalRendererData renderer)
         {
-            foreach(var feature in renderer.rendererFeatures)
+            for(int i=renderer.rendererFeatures.Count-1;i>=0;i--)
             {
+                var feature=renderer.rendererFeatures[i];
                 if(feature.GetType().Name!="ScreenSpaceAmbientOcclusion")continue;
-                var settings=new SerializedObject(feature);
-                settings.FindProperty("m_Settings.Radius").floatValue=.3f;
-                settings.FindProperty("m_Settings.Intensity").floatValue=.65f;
-                settings.FindProperty("m_Settings.DirectLightingStrength").floatValue=.12f;
-                settings.ApplyModifiedPropertiesWithoutUndo();EditorUtility.SetDirty(feature);
+                renderer.rendererFeatures.RemoveAt(i);
+                if(AssetDatabase.GetAssetPath(feature)==Settings+"Renderer.asset")UnityEngine.Object.DestroyImmediate(feature,true);
             }
             renderer.SetDirty();EditorUtility.SetDirty(renderer);
         }
@@ -530,8 +575,10 @@ namespace CarAR.EditorTools
                 app.buttons[i]=go.GetComponent<StatefulInteractable>();app.buttons[i].UseGazeDwell=false;
                 foreach(var label in go.GetComponentsInChildren<TMP_Text>(true))
                 {
-                    label.gameObject.SetActive(label.name=="Text");if(label.name!="Text")continue;
-                    label.text=labels[i];label.font=font;label.fontSize=24;
+                    label.font=font;label.fontSharedMaterial=font.material;
+                    label.gameObject.SetActive(label.name=="Text");
+                    if(label.name=="Text"){label.text=labels[i];label.fontSize=24;}
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(label);
                 }
             }
         }
@@ -558,19 +605,15 @@ namespace CarAR.EditorTools
             for(float x=-4;x<=4;x+=1.5f)for(float z=-4;z<=4;z+=1.5f)foreach(float y in new[]{.25f,.9f,1.65f,2.7f})points.Add(new Vector3(x,y,z));
             probes.probePositions=points.ToArray();
         }
-        static void BakeReflection(Vector3 position,Vector3 size,string name)
+        static void CreateReflectionProbe(Vector3 position,Vector3 size)
         {
-            var go=new GameObject(name+" local HDR reflection");go.transform.position=position;
-            var probe=go.AddComponent<ReflectionProbe>();probe.mode=ReflectionProbeMode.Baked;probe.hdr=true;
+            var go=new GameObject("Room local HDR reflection");go.transform.position=position;
+            var probe=go.AddComponent<ReflectionProbe>();probe.mode=ReflectionProbeMode.Custom;probe.hdr=true;
             probe.cullingMask=1<<VRShowroom.EnvironmentLayer;
             probe.resolution=1024;probe.size=size;probe.boxProjection=true;probe.blendDistance=1;probe.nearClipPlane=.1f;probe.farClipPlane=30;
-            string path=Dir+name+"Reflection.exr";
-            if(!Lightmapping.BakeReflectionProbe(probe,path))throw new Exception("Cannot bake "+name+" reflection");
-            AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceSynchronousImport);
-            // A manually baked texture needs an explicit reference in the scene;
-            // bakedTexture is maintained separately by Unity's GI data store.
-            probe.mode=ReflectionProbeMode.Custom;
-            probe.customBakedTexture=AssetDatabase.LoadAssetAtPath<Texture>(path);
+            // Cycles supplies the final interior panorama. The authored world
+            // is sufficient while preparing its geometry; no duplicate bake.
+            probe.customBakedTexture=RenderSettings.customReflectionTexture;
         }
         static void BuildLauncher()
         {

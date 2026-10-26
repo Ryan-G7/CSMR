@@ -1,27 +1,38 @@
-param([string]$UnityPath = $env:CARAR_UNITY_EDITOR, [switch]$Smoke)
+param([string]$UnityPath = $env:CARAR_UNITY_EDITOR, [switch]$Smoke, [switch]$Presentation)
 $ErrorActionPreference = 'Stop'
 $projectDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 if (-not $UnityPath) { $UnityPath = Join-Path $env:ProgramFiles 'Unity/Hub/Editor/6000.6.3f1/Editor/Unity.exe' }
 if (-not (Test-Path -LiteralPath $UnityPath -PathType Leaf)) {
     throw 'Install Unity 6000.6.3f1 with Windows Build Support, or pass -UnityPath <Unity.exe>.'
 }
-$source = [IO.File]::OpenRead((Join-Path $projectDir '../AMG.blend'))
-try {
-    $reader = New-Object IO.StreamReader($source)
-    $prefix = New-Object char[] 42
-    [void]$reader.Read($prefix, 0, $prefix.Length)
-    if ((-join $prefix).StartsWith('version https://git-lfs.github.com/spec/v1')) {
-        throw 'Model assets are LFS pointers. Run git lfs install and git lfs pull from the repository root.'
-    }
-} finally { $source.Dispose() }
-$log = Join-Path $projectDir 'build-windows.log'
-$arguments = @('-batchmode', '-force-d3d11', '-projectPath', ('"' + $projectDir + '"'), '-executeMethod', 'CarAR.EditorTools.CarARSetupWizard.BuildPreview', '-logFile', ('"' + $log + '"'))
-$process = Start-Process -FilePath $UnityPath -ArgumentList $arguments -WindowStyle Hidden -PassThru -Wait
+# Portable exports are sufficient; the original Blender source is optional.
+foreach ($asset in @('Assets/Models/AMG-interactive.glb', 'Assets/Environment/VR/CarRoom.glb')) {
+    $source = [IO.File]::OpenRead((Join-Path $projectDir $asset))
+    try {
+        $prefix = New-Object byte[] 42
+        [void]$source.Read($prefix, 0, $prefix.Length)
+        if ([Text.Encoding]::ASCII.GetString($prefix).StartsWith('version https://git-lfs.github.com/spec/v1')) {
+            throw 'Model assets are LFS pointers. Run git lfs install and git lfs pull.'
+        }
+    } finally { $source.Dispose() }
+}
+$log = Join-Path $projectDir $(if ($Presentation) { 'build-presentation.log' } else { 'build-windows.log' })
+$method = if ($Presentation) { 'BuildPresentation' } else { 'BuildPreview' }
+$start = New-Object System.Diagnostics.ProcessStartInfo
+$start.FileName = $UnityPath
+$start.WorkingDirectory = $projectDir
+$start.Arguments = '-batchmode -force-d3d11 -disable-assembly-updater -job-worker-count 8 -projectPath "' + $projectDir + '" -executeMethod CarAR.EditorTools.CarARSetupWizard.' + $method + ' -logFile "' + $log + '"'
+$start.UseShellExecute = $false
+$start.CreateNoWindow = $true
+$start.EnvironmentVariables['DOTNET_SYSTEM_GLOBALIZATION_INVARIANT'] = '1'
+$process = [System.Diagnostics.Process]::Start($start)
+$process.WaitForExit()
 if ($process.ExitCode -ne 0) { throw "Unity build failed ($($process.ExitCode)). See $log" }
-$application = Join-Path $projectDir 'Build/Windows/CarAR.exe'
+$output = if ($Presentation) { 'Build/Presentation' } else { 'Build/Windows' }
+$application = Join-Path $projectDir ($output + '/CarAR.exe')
 if (-not (Test-Path -LiteralPath $application)) { throw 'Unity returned success without producing CarAR.exe.' }
 # A new local build supersedes any previously downloaded player.
-$stamp = Join-Path $projectDir 'Build/Windows/carar-release.json'
+$stamp = Join-Path $projectDir ($output + '/carar-release.json')
 if (Test-Path -LiteralPath $stamp) { Remove-Item -LiteralPath $stamp }
 if ($Smoke) {
     $smokeLog = Join-Path $projectDir 'smoke-windows.log'

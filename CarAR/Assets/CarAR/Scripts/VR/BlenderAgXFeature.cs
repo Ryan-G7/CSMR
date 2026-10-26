@@ -24,13 +24,24 @@ namespace CarAR
         sealed class AgXPass : ScriptableRenderPass
         {
             public Material material;
+            int reportedWidth,reportedHeight;
             public override void RecordRenderGraph(RenderGraph graph,ContextContainer frame)
             {
                 var resources=frame.Get<UniversalResourceData>();
+                var camera=frame.Get<UniversalCameraData>();
+                if(Time.frameCount>30 && XRLaunch.HasArgument("--vr-walkthrough") &&
+                    (reportedWidth!=camera.cameraTargetDescriptor.width || reportedHeight!=camera.cameraTargetDescriptor.height))
+                {
+                    reportedWidth=camera.cameraTargetDescriptor.width;reportedHeight=camera.cameraTargetDescriptor.height;
+                    Debug.Log($"[CarAR Render Quality] AA={camera.antialiasing}; post={camera.postProcessEnabled}; samples={camera.cameraTargetDescriptor.msaaSamples}; render={camera.cameraTargetDescriptor.width}x{camera.cameraTargetDescriptor.height}");
+                }
                 if(resources.isActiveTargetBackBuffer)return;
                 var source=resources.activeColorTexture;
                 var description=graph.GetTextureDesc(source);
                 description.name="Authored Blender AgX";description.clearBuffer=false;
+                // The full-screen LUT samples the resolved color. Its output
+                // needs one sample; carrying MSAA into this pass wastes memory.
+                description.msaaSamples=MSAASamples.None;description.bindTextureMS=false;
                 var output=graph.CreateTexture(description);
                 graph.AddBlitPass(new RenderGraphUtils.BlitMaterialParameters(source,output,material,0),passName:"Blender authored AgX / exposure / look");
                 resources.cameraColor=output;

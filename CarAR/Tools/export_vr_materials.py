@@ -48,5 +48,11 @@ for material in gltf['materials']:
         emission=emission.tolist(),emission_map=texture(material.get('emissiveTexture')),
         scale=transform.get('scale',[1,1]),offset=transform.get('offset',[0,0])))
 (directory/'materials.json').write_text(json.dumps(dict(materials=records),indent=2),encoding='utf-8')
+# Packed glTF roughness inputs are intermediates. Keep only textures consumed
+# by the native material manifest, including shared base/normal/emission maps.
+used={record[key] for record in records for key in ('base_map','normal_map','metal_smooth_map','emission_map') if record[key]}
+for name in set(paths)-used:
+    (textures/name).unlink()
+    (textures/(name+'.meta')).unlink(missing_ok=True)
 print('VR_NATIVE_MATERIALS',len(records),flush=True)
 sys.stdout.flush();sys.stderr.flush();os._exit(0)

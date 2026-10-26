@@ -14,6 +14,7 @@ namespace CarAR
         static void Check(bool result,string detail){if(!result)throw new InvalidOperationException("VR controller smoke: "+detail);}
         public static IEnumerator Run(VRShowroom app)
         {
+            VerifyTrackingHeight(app);
             InputSystem.RegisterLayout(@"{""name"":""VRSmokeController"",""extend"":""XRController"",""controls"":[
                 {""name"":""pointerPosition"",""layout"":""Vector3""},
                 {""name"":""pointerRotation"",""layout"":""Quaternion""},
@@ -105,6 +106,28 @@ namespace CarAR
             Check(app.environment.localToWorldMatrix==world && app.car.localToWorldMatrix==vehicle && app.HighQuality,"cabin visit changed the world, car or high-quality preset");
             app.EndControllerReplay();InputSystem.RemoveDevice(left);InputSystem.RemoveDevice(right);
             Debug.Log("[CarAR VR Controller Smoke] PASS: real XR actions, default left-stick walk, held-input arming, snap turn, tracking loss/recovery without transient blackout, gradual-release teleport, near-car landing, seated cabin entry/exit and stable height through the car.");
+        }
+        static void VerifyTrackingHeight(VRShowroom app)
+        {
+            var head=app.origin.Camera.transform;
+            var offset=app.origin.CameraFloorOffsetObject.transform;
+            var headPosition=head.localPosition;var floorOffset=offset.localPosition;float cameraYOffset=app.origin.CameraYOffset;
+            var world=app.environment.localToWorldMatrix;var vehicle=app.car.localToWorldMatrix;
+            try
+            {
+                // Reproduce the device's stale origin: a tracked pose is finite
+                // but puts the viewer more than fifteen metres below the room.
+                head.localPosition=new Vector3(2,-17.21f,-3);
+                Check(!VRShowroom.ValidStartupEyeHeight(app.origin.CameraInOriginSpaceHeight),"underground startup pose was accepted");
+                Check(app.CalibrateDeviceHeight() && Mathf.Abs(app.origin.CameraInOriginSpaceHeight-1.65f)<.001f,"device-origin fallback left the viewer below the floor");
+                Check(head.localPosition==new Vector3(2,-17.21f,-3),"height calibration overwrote the tracked head pose");
+                head.localPosition+=Vector3.down*.4f;
+                Check(Mathf.Abs(app.origin.CameraInOriginSpaceHeight-1.25f)<.001f,"height correction prevented physical crouching");
+                Check(app.environment.localToWorldMatrix==world && app.car.localToWorldMatrix==vehicle,"height correction moved the room or vehicle");
+                Check(!VRShowroom.ValidStartupEyeHeight(float.NaN) && !VRShowroom.ValidStartupEyeHeight(8) && VRShowroom.ValidStartupEyeHeight(1.2f),"startup height validation rejected seated height or accepted invalid height");
+            }
+            finally {head.localPosition=headPosition;app.origin.CameraYOffset=cameraYOffset;offset.localPosition=floorOffset;}
+            Debug.Log("[CarAR VR Origin Smoke] PASS: underground tracked pose recovers to standing height; raw head pose, crouching and fixed scene preserved");
         }
         static void Send(UnityEngine.InputSystem.InputDevice device,Vector2 stick,bool tracked=true,Vector3? handPosition=null,Quaternion? handRotation=null)
         {

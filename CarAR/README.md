@@ -8,13 +8,15 @@
 
 `CarVR.unity` 使用 `D:\BaiduNetdiskDownload\CarRoom-2.blend`。`Launch.unity` 在创建 XR rig 之前按启动参数选择模式：无参数为原桌面预览，`--hjxr` 为原荟镜 MR，`--vr` 为原生 OpenXR VR，`--vr-desktop` 为桌面第一人称漫游，`--vr-smoke` 为 VR 自动回归。根目录有两个 VR 启动器，完整操作见仓库首页。
 
+VR 在 OpenXR 输入启动后重新请求 Floor 参考空间，等待定位稳定再放置访客。若眼高低于 0.25 米或高于 2.7 米（例如旧定位把视点放到地下约 15.6 米），改用 Device / LOCAL，并通过相机与手柄共用的父节点恢复 1.65 米初始眼高，之后保留真实蹲下与头部移动。`[CarAR VR Origin]` 日志记录实际参考空间、原始位置、眼高和偏移；无法恢复有效定位时显示错误，可按 F2 进入桌面漫游。
+
 静态场景导出为 `Assets/Environment/VR/CarRoom.glb`，源文件、哈希、车辆摆放和色彩配置记录在 `carroom.json`。对应发动机盖顶点拟合车辆刚体摆放，误差小于 0.002 米；原静态车被排除，替换为已有的可交互 AMG。保留全部岩壁面，按 2 米空间单元及顶点上限拆块；保留源 UV、最高 4K 贴图，复杂颜色 / 粗糙度 / 法线由 Cycles 求值。导航来自实际环境几何；内饰观察允许贴车及穿过车身，车辆不再整块挖空导航，也不再把访客的角色胶囊顶到车顶。房间墙壁和地面边界保持约束，传送落点检查环境胶囊空间与路径连通性，车顶不是可达地面。缓存复用时也重新生成导航，保留现有光照烘焙。
 
-VR 使用独立 HDR URP、4x MSAA 和 SSAO。Unity 以 24 texels/m 分配最终 UV2 图集，Blender Cycles 使用原材质与 world，在最终 UV2 布局上以八倍边长烘焙带材质颜色的直接光及间接光（256 samples，linear EXR）；当前为 4096² 和 2048² 两张图集。这保留原节点的几何遮蔽与颜色细节，运行时不再重复乘一次底色。原灯带的发光强度参与烘焙。另渲染 2048×1024 的室内 HDR 全景，生成粗糙度卷积反射和室内漫反射球谐，供可开合、可爆炸的车辆使用；车辆不烘焙进固定光照图；地面材质叠加随车门与爆炸零件更新的实时车影，SSAO 继续提供接触遮挡。阴影方向按源顶灯发光三角面的面积与亮度加权，使用单主方向近似面光源遮挡；这不是 Cycles 的逐盏面光追踪，保留烘焙环境光与间接补光，不重复照亮房间。岩壁与墙顶使用烘焙的漫反射，避免室外开口在房间中央反射探针中造成错误的墙面高光；木地板与金属保留实时镜面反射，灯具以 HDR 发光表面显示。源 HDR 保留 Mapping 旋转。Blender 生成包含源曝光、Filmic 与 Medium High Contrast 的 3D LUT，由双眼兼容的 Render Graph pass 应用；当前额外曝光修正为 0 EV。精细 / 流畅分别使用 100% / 80% 渲染比例。
+VR 使用独立 HDR URP 和 4x MSAA，关闭 VR 的屏幕空间遮蔽以避免车门边缘及内饰黑色伪影。Unity 以 24 texels/m 分配最终 UV2 图集，Blender Cycles 使用原材质与 world，在最终 UV2 布局上以八倍边长烘焙带材质颜色的直接光及间接光（256 samples，linear EXR）；当前为 4096² 和 2048² 两张图集。这保留原节点的几何遮蔽与颜色细节，运行时不再重复乘一次底色。原灯带的发光强度参与烘焙。另渲染 2048×1024 的室内 HDR 全景，生成粗糙度卷积反射和室内漫反射球谐，供可开合、可爆炸的车辆使用；车辆不烘焙进固定光照图；地面材质叠加固定的闭合整车轮廓阴影；运行时独立复制投影用的网格节点并复用模型资源，车门开关与爆炸零件不会改变该轮廓。车辆可见材质不接收实时阴影，各零件也不单独投影。阴影方向按源顶灯发光三角面的面积与亮度加权，使用单主方向近似面光源遮挡；这不是 Cycles 的逐盏面光追踪，保留烘焙环境光与间接补光，不重复照亮房间。岩壁与墙顶使用烘焙的漫反射，避免室外开口在房间中央反射探针中造成错误的墙面高光；木地板与金属保留实时镜面反射，灯具以 HDR 发光表面显示。源 HDR 保留 Mapping 旋转。Blender 生成包含源曝光、Filmic 与 Medium High Contrast 的 3D LUT，由双眼兼容的 Render Graph pass 应用；当前额外曝光修正为 0 EV。精细 / 流畅分别使用 100% / 80% 渲染比例。
 
 `Tools/Export-VRScene.ps1 -SourcePath <scene.blend> -Reference` 只读源文件，使用临时副本导出并生成参考图，不覆盖 Blender 源。导出后运行 `Tools/Bake-VRLighting.ps1`，自动准备 Unity 最终几何和 UV2、烘焙 Cycles 光照、渲染室内 HDR。再运行 `Tools/Build-Windows.ps1 -Smoke` 构建。构建检查源 / GLB 哈希和 UV2 布局，拒绝过期光照；源文件在本机可用时同时验证源哈希。未安装 Blender 的机器可使用已导出的模型、场景与烘焙资产直接构建。
 
-`Build-Windows.ps1 -Smoke` 验证原 MR 四组回归及 VR 导航、非法落点、场景固定、门盖、爆炸 / 还原、画质和原生 XR 输入事件回放。检查摇杆回中、单次 30° 转向、以头部为轴旋转、恢复跟踪防误触及掉线取消传送。自动检查不能代替头显双眼成像、舒适度与实际性能的佩戴验收。
+`Build-Windows.ps1 -Smoke` 验证原 MR 四组回归及 VR 导航、非法落点、场景固定、门盖、爆炸 / 还原、画质和原生 XR 输入事件回放。检查摇杆回中、单次 30° 转向、以头部为轴旋转、恢复跟踪防误触及掉线取消传送。阴影回归检查地面投影仍然可见，以及切换整车投影不会使驾驶位内饰变暗。自动检查不能代替头显双眼成像、舒适度与实际性能的佩戴验收。
 
 VR 每次启动强制使用“精细”画质：100% 渲染比例、4096 阴影贴图，不自动降到流畅。传送前让摇杆回中，再向前推住右摇杆瞄准，打开的面板会自动收起；绿色落点才可达，松回中立区提交。松杆途中的中间数值不会再提前取消瞄准。回归会通过真实 Input System 事件验证完整传送，并比较开关阴影的渲染图。
 
@@ -62,12 +64,12 @@ Windows 运行中持续检查跟踪。头显失效或已跟踪手柄与头显空
 
 ## 模型与渲染
 
-当前模型来自根目录 `AMG.blend`，默认按源模型米制单位 1:1 展示，未经原厂尺寸标定。后台导出不覆盖 `.blend`：
+当前模型来自 AMG Blender 源文件，仓库保留已导出的模型与材质，默认按源模型米制单位 1:1 展示，未经原厂尺寸标定。重新制作时提供自己的源文件路径，后台导出不覆盖 `.blend`：
 
 ```powershell
 $env:OIIO_THREADS = "1"
 $env:OPENIMAGEIO_THREADS = "1"
-& D:/Soft/Blender/blender.exe --background --factory-startup --threads 1 D:/Code/CSMR/AMG.blend --python-exit-code 1 --python D:/Code/CSMR/CarAR/Tools/prepare_amg.py
+& 'D:/Soft/Blender/blender.exe' --background --factory-startup --threads 1 'D:/Sources/AMG.blend' --python-exit-code 1 --python ./Tools/prepare_amg.py
 ```
 
 导出应用 Mirror / Subdivision，仅沿原有不相连的网格岛分离左右门。门壳、玻璃、门饰件、把手和后视镜使用经过确认的源组件；门内饰、扶手、扬声器与按键按明确来源清单归属左右门，座椅 / 仪表台 / 车身密封框保持固定。上沿长条 `Cube.013` 的两侧网格岛分别随门运动；混合源 `Cube.092` 仅取两侧各 109 顶点的门饰条，中间两块中控台网格保持静态。分岛数量、顶点数及边界有导出断言，来源保留在 JSON。零碎内饰按总成和材质合批，目前为 168 个网格、1,306,154 个三角形。后窗随尾门、发动机盖独立开合，四轮组件整体爆炸 / 组装。源模型缺少门盖内层厚度与完整发动机，双面渲染只能显示现有几何。
@@ -82,15 +84,14 @@ ARFoundation 请求测光与环境探针，只有提供方实际输出数据时�
 
 当前 Windows / Pimax OpenXR / HJXR 实机日志明确报告没有 AR Camera 和 Environment Probe 提供方，因此目前**不能接收现实房间的实时光照**，也不会根据房间开关灯更新 HDR 反射。厂家透视视频由合成层提供，不等于 ARFoundation 测光输入。设置页显示“静态 HDR · 现实测光未接入”；“HDR / 自动光照”在无提供方时恢复静态 HDR。`[CarAR Lighting]` 记录实际提供方、当前功能和是否收到有效样本。
 
-Blender 截图使用 `forest.exr` 材质预览环境和 AgX；当前使用用户指定的瀑布 HDR，环境内容本身会改变反射。URP 与 Blender 的 BSDF、多次散射、色调映射存在差异，不能宣称逐像素一致。程序化图烘焙在一个 UV 单元内；Object/Generated 坐标纹理在单位平面上求值，不能完全保留每个原始物体的三维程序化分布。实时玻璃不做真实折射，彩色透射近似为标量透明度。这些是转换限制，不通过改色或额外加灯掩盖。
+MR / 桌面预览使用摄影棚 HDR，VR 使用展厅源光照；环境内容本身会改变反射。URP 与 Blender 的 BSDF、多次散射、色调映射存在差异，不能宣称逐像素一致。程序化图烘焙在一个 UV 单元内；Object/Generated 坐标纹理在单位平面上求值，不能完全保留每个原始物体的三维程序化分布。实时玻璃不做真实折射，彩色透射近似为标量透明度。
 
 这台 Windows 机器上的 Blender 5.2 在 glTF 导出成功后的原生退出清理中会崩溃。导出器使用临时 `.blend` 副本和一次性导出进程，在文件写入、GLB 头和 JSON 检查后直接退出该进程，父进程继续校验材质、法线、切线并发布结果；失败不会替换模型。原始 `AMG.blend` 不会保存。HDR 漫反射的 27 个球谐系数显式存入场景组件，避免编辑器 RenderSettings 的临时值在播放器中丢失。
 
 ## 验证与现实精度边界
 
 ```powershell
-Start-Process -FilePath 'C:/Program Files/Unity/Hub/Editor/6000.6.3f1/Editor/Unity.exe' -ArgumentList '-batchmode -projectPath D:/Code/CSMR/CarAR -executeMethod CarAR.EditorTools.CarARSetupWizard.BuildPreview -logFile D:/Code/CSMR/CarAR/mr-refresh-build.log' -WindowStyle Hidden -Wait
-Start-Process -FilePath './Build/Windows/CarAR.exe' -ArgumentList '--carar-smoke -force-d3d11 -screen-fullscreen 0 -screen-width 1440 -screen-height 900 -logFile D:/Code/CSMR/CarAR/mr-refresh-smoke.log' -WindowStyle Hidden -Wait
+powershell -NoProfile -ExecutionPolicy Bypass -File ./Tools/Build-Windows.ps1 -Smoke
 ```
 
 自动验证覆盖 MRTK 单 / 双手操控、真实 Input System 控制器事件与 XRI 射线、摆放高度和地面轴心、锁定、车门来源白名单与独立运动、门盖、爆炸组装还原、模拟测光失效与模式切换。原生 URP 离屏检查图输出为 `Build/Windows/hdr-default.png`、`assembled.png`、`left-door.png`、`panels.png`、`exploded.png`。这些图片不包含真实相机视频。
@@ -99,6 +100,6 @@ Start-Process -FilePath './Build/Windows/CarAR.exe' -ArgumentList '--carar-smoke
 
 停车诊断记录 local/world scale，用于区分尺寸改变与摆放距离或头显合成造成的视觉变化。已删除重复的逐次缩放日志及命令来源参数；保留已验证的握键 / 摇杆防误触和双手距离退化保护。回归加入实机记录的 14.7 米头显坐标跳变：不一致期间禁止摆放、恢复后地面正确、同源定位恢复不搬车、有效坐标重置须重停。另验证上下门饰条随门运动，中控台保持静止。
 
-保留 `Tools/Set-HuijingAlignment.ps1` 供显式诊断视频时序使用；它不是定位板校准。默认只设置 pose defer 为 0，不猜测视频时差。旧的 0ms 视频实验请求已移出活动文件，值保存在 `tmp/hjxr-alignment-before-marker-removal.json`，启动保留厂家视频时序。诊断改动仅影响该进程，不写回厂家配置。
+保留 `Tools/Set-HuijingAlignment.ps1` 供显式诊断视频时序使用；它不是定位板校准。默认只设置 pose defer 为 0，不猜测视频时差，启动保留厂家视频时序。诊断改动仅影响该进程，不写回厂家配置。
 
-此前设备排查日志和 Git 历史保留作证据，旧版定位板操作不适用于当前版本。MRTK 依赖及 Unity 6 兼容改动见 [迁移说明](MRTK3-MIGRATION.md)。旧 911 资源仍保留作历史资源，当前场景使用 AMG。
+旧版定位板操作不适用于当前版本。MRTK 依赖及 Unity 6 兼容改动见 [维护说明](MRTK3-MIGRATION.md)，发布会导出见 [录制说明](发布会录制说明.md)。历史 911 资源、实验文件与旧排查日志已清理。

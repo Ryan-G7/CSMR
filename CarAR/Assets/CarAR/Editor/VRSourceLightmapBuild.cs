@@ -11,6 +11,7 @@ namespace CarAR.EditorTools
         public int callbackOrder=>0;
         public void OnProcessScene(Scene scene,BuildReport report)
         {
+            ProjectValidation.ValidateScene(scene);
             foreach(var root in scene.GetRootGameObjects())
             {
                 var app=root.GetComponent<VRShowroom>();if(app!=null)app.ApplySourceLightmaps();
