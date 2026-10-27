@@ -258,7 +258,7 @@ namespace CarAR
             if (driver!=null) driver.enabled=false;
             origin.enabled=false;
             origin.CameraFloorOffsetObject.transform.localPosition=Vector3.zero;
-            origin.Camera.transform.SetLocalPositionAndRotation(Vector3.up*1.65f,Quaternion.identity);
+            origin.Camera.transform.SetLocalPositionAndRotation(Vector3.up*StandingEyeHeight,Quaternion.identity);
             origin.Camera.fieldOfView=55;
             origin.Camera.nearClipPlane=.06f;origin.Camera.farClipPlane=40;
         }
@@ -545,11 +545,11 @@ namespace CarAR
                 if(Physics.Linecast(previous,next,out var hit,CollisionMask,QueryTriggerInteraction.Ignore))
                 {
                     arc.SetPosition(i,hit.point);count=i+1;
-                    TeleportValid=Vector3.Dot(hit.normal,Vector3.up)>.75f && ValidateDestination(hit.point,out var landing);
-                    if(TeleportValid)
+                    TeleportValid=false;
+                    if(Vector3.Dot(hit.normal,Vector3.up)>.75f && ValidateDestination(hit.point,out var landing))
                     {
-                        ValidateDestination(hit.point,out var valid);TeleportPoint=valid;
-                        destination.position=valid+Vector3.up*.012f;destination.gameObject.SetActive(true);
+                        TeleportValid=true;TeleportPoint=landing;
+                        destination.position=landing+Vector3.up*.012f;destination.gameObject.SetActive(true);
                     }
                     break;
                 }
@@ -590,7 +590,7 @@ namespace CarAR
                 if(Desktop)
                 {
                     float distance=Vector3.ProjectOnPlane(entryLook-floor,Vector3.up).magnitude;
-                    pitch=Mathf.Atan2(floor.y+1.65f-entryLook.y,Mathf.Max(.1f,distance))*Mathf.Rad2Deg;
+                    pitch=Mathf.Atan2(floor.y+StandingEyeHeight-entryLook.y,Mathf.Max(.1f,distance))*Mathf.Rad2Deg;
                     origin.Camera.transform.localRotation=Quaternion.Euler(pitch,0,0);
                 }
             }
@@ -789,13 +789,11 @@ namespace CarAR
                 if(!HighQuality || RecordingMode!=wasRecording || !Mathf.Approximately(pipeline.renderScale,startupScale) || pipeline.supportsCameraOpaqueTexture)throw new Exception("Recording preset did not restore the requested state or retained unused opaque copy");
                 Debug.Log($"[CarAR VR Recording Smoke] PASS: startup recording={RecordingMode}; button and quality combination restore requested resolution; unused opaque copy disabled");
                 VerifyVehicleShadows();
-                var world=environment.localToWorldMatrix;var carPose=car.localToWorldMatrix;
                 if(ValidateDestination(new Vector3(float.NaN,0,0),out _) || ValidateDestination(Feet+Vector3.up*8,out _))throw new Exception("Unsafe teleport accepted");
                 Capture("vr-entrance.png");
                 if(XRLaunch.HasArgument("--vr-material-diagnostics"))CaptureMaterialDiagnostics();
                 var start=Feet;
-                if(!NavMesh.SamplePosition(start+Vector3.left*.7f,out var target,.4f,NavMesh.AllAreas)||!ValidateDestination(target.position,out var valid))throw new Exception("Reachable floor rejected");
-                beforeTeleport=Feet;
+                if(!NavMesh.SamplePosition(start+Vector3.left*.7f,out var target,.4f,NavMesh.AllAreas)||!ValidateDestination(target.position,out _))throw new Exception("Reachable floor rejected");
                 Debug.Log("[CarAR VR Smoke] Destination validation passed");
             }
             catch(Exception e){Debug.LogException(e);Application.Quit(1);yield break;}

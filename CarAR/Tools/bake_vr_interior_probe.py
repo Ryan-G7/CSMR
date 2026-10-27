@@ -1,6 +1,5 @@
 import bpy, numpy as np, os, sys, json, math, hashlib
 from pathlib import Path
-from mathutils import Euler
 scene=bpy.context.scene;p=Path(__file__).resolve().parents[1];directory=p/'Assets/Environment/VR'
 with Path(bpy.data.filepath).open('rb') as source_file:source_sha=hashlib.file_digest(source_file,'sha256').hexdigest()
 if source_sha!=json.loads((directory/'carroom.json').read_text(encoding='utf-8'))['source_sha256']:

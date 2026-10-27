@@ -10,7 +10,6 @@ import json
 import math
 import os
 import sys
-import struct
 from collections import defaultdict
 from pathlib import Path
 import numpy as np
@@ -20,7 +19,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 OUT = PROJECT / 'Assets/Environment/VR'
 OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(Path(__file__).parent))
-from export_blender_materials import Baker, resolve, is_expression, uniform
+from export_blender_materials import Baker, resolve, uniform
 
 scene = bpy.context.scene
 source = Path(bpy.data.filepath)

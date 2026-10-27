@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -18,8 +17,6 @@ namespace CarAR
         public const int VehicleLayer = 2;
         public XRRayInteractor LeftRay => left.ray;
         public XRRayInteractor RightRay => right.ray;
-        public XRRayInteractor LeftGrabRay => left.grab;
-        public XRRayInteractor RightGrabRay => right.grab;
         public bool LeftRayVisible => RayVisible(left);
         public bool RightRayVisible => RayVisible(right);
         public string Status { get; private set; } = "等待手柄连接";

@@ -4,7 +4,7 @@ Unity exports evaluated geometry and final atlas coordinates first. Cycles uses
 the original .blend materials/world; the result stays scene linear (EXR).
 No source .blend is saved or changed.
 """
-import bpy, json, math, os, sys, struct, hashlib
+import bpy, json, os, sys, struct, hashlib
 from pathlib import Path
 import numpy as np
 
