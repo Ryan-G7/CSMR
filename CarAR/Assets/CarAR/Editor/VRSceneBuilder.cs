@@ -111,7 +111,7 @@ namespace CarAR.EditorTools
                         UnityEngine.Object.DestroyImmediate(interactable);
                     review.origin.Camera.nearClipPlane=.02f;
                     review.origin.Camera.GetUniversalAdditionalCameraData().renderPostProcessing=false;
-                    if(review.buttons.Length!=28)
+                    if(review.buttons.Length!=39)
                     {
                         UnityEngine.Object.DestroyImmediate(review.menu.gameObject);CreateMenu(review);
                     }
@@ -576,21 +576,21 @@ namespace CarAR.EditorTools
         {
             var panel=new GameObject("VR review menu",typeof(RectTransform),typeof(Canvas));
             var canvas=panel.GetComponent<Canvas>();canvas.renderMode=RenderMode.WorldSpace;canvas.worldCamera=app.origin.Camera;
-            var rect=panel.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(700,1000);rect.localScale=Vector3.one*.001f;app.menu=rect;
+            var rect=panel.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(700,1300);rect.localScale=Vector3.one*.001f;app.menu=rect;
             var bg=new GameObject("Background",typeof(RectTransform),typeof(Image));bg.transform.SetParent(rect,false);
             var br=bg.GetComponent<RectTransform>();br.anchorMin=Vector2.zero;br.anchorMax=Vector2.one;br.offsetMin=br.offsetMax=Vector2.zero;
             bg.GetComponent<Image>().color=new Color(.015f,.025f,.04f,.94f);bg.GetComponent<Image>().raycastTarget=false;
             var font=AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/CarAR/Fonts/ShowroomChinese.asset");
             var text=new GameObject("VR instructions",typeof(RectTransform),typeof(TextMeshProUGUI));text.transform.SetParent(rect,false);
-            text.GetComponent<RectTransform>().sizeDelta=new Vector2(670,180);text.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,400);
+            text.GetComponent<RectTransform>().sizeDelta=new Vector2(670,180);text.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,535);
             app.status=text.GetComponent<TMP_Text>();app.status.font=font;app.status.fontSize=24;app.status.alignment=TextAlignmentOptions.Center;app.status.raycastTarget=false;
-            string[] labels={"移动：连续 + 传送","步速：正常","返回入口","车头视角","右侧视角","右后视角","车尾视角","导入 GLB","开启剖切","上一材质","下一材质","模型爆炸","画质：精细","收起面板","保存快照","录屏优化：关闭","切换颜色","金属度 +","金属度 -","粗糙度 +","粗糙度 -","透明度 +","透明度 -","添加标注","撤销标注","剖面 X","剖面 -10cm","剖面 +10cm"};
+            string[] labels={"移动：连续 + 传送","步速：正常","返回入口","车头视角","右侧视角","右后视角","车尾视角","导入 GLB","开启剖切","上一材质","下一材质","模型爆炸","画质：精细","收起面板","保存快照","录屏优化：关闭","切换颜色","金属度 +","金属度 -","粗糙度 +","粗糙度 -","透明度 +","透明度 -","添加标注","撤销标注","剖面 X","剖面 -10cm","剖面 +10cm","两点距离","曲线测量","曲面面积","完成曲线","清除测量","上一网格","下一网格","显示 / 隐藏网格","全部显示","注释当前快照","手柄跟随剖面"};
             app.buttons=new StatefulInteractable[labels.Length];
             var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Packages/org.mixedrealitytoolkit.uxcomponents/Button/Prefabs/Action Button.prefab");
             for(int i=0;i<labels.Length;i++)
             {
                 var go=(GameObject)PrefabUtility.InstantiatePrefab(prefab);go.name=labels[i];go.transform.SetParent(rect,false);
-                var r=go.GetComponent<RectTransform>();r.sizeDelta=new Vector2(205,62);r.anchoredPosition=new Vector2((i%3-1)*220,220-i/3*78);
+                var r=go.GetComponent<RectTransform>();r.sizeDelta=new Vector2(205,62);r.anchoredPosition=new Vector2((i%3-1)*220,360-i/3*78);
                 app.buttons[i]=go.GetComponent<StatefulInteractable>();app.buttons[i].UseGazeDwell=false;
                 foreach(var label in go.GetComponentsInChildren<TMP_Text>(true))
                 {

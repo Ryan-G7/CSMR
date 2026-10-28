@@ -25,9 +25,11 @@ namespace CarAR
         public bool AwaitingPlacement { get; private set; }
         public bool Editing { get; private set; }
         public int Count => entries.Count;
+        public IReadOnlyList<Entry> Entries => entries;
         readonly List<Entry> entries = new();
         readonly List<GameObject> visuals = new();
         Entry pending;
+        ReviewSnapshot snapshotTarget;
         string draft = "";
         string storagePath;
         float armedAt;
@@ -53,13 +55,24 @@ namespace CarAR
         }
         public void BeginPlacement()
         {
+            Cancel();
             AwaitingPlacement = true;
             armedAt = Time.unscaledTime + .25f;
+        }
+        public void BeginSnapshotAnnotation(ReviewSnapshot snapshot)
+        {
+            if (snapshot == null || string.IsNullOrEmpty(snapshot.LastPath)) return;
+            Cancel();
+            snapshotTarget = snapshot;
+            Editing = true;
+            draft = "";
+            OpenKeyboard();
         }
         public void Cancel()
         {
             AwaitingPlacement = false;
             Editing = false;
+            snapshotTarget = null;
             if (keyboard != null)
             {
                 keyboard.OnTextSubmit.RemoveListener(SubmitKeyboard);
@@ -91,22 +104,30 @@ namespace CarAR
             AwaitingPlacement = false;
             Editing = true;
             draft = "";
-            if (!IsDesktop)
+            OpenKeyboard();
+        }
+        void OpenKeyboard()
+        {
+            if (IsDesktop) return;
+            keyboard = NonNativeKeyboard.Instance;
+            if (keyboard != null)
             {
-                keyboard = NonNativeKeyboard.Instance;
-                if (keyboard != null)
-                {
-                    keyboard.SubmitOnEnter = true;
-                    keyboard.OnTextSubmit.AddListener(SubmitKeyboard);
-                    keyboard.Open("");
-                }
-                else
-                {
-                    pending.text = "标注 " + (entries.Count + 1);
-                    Add(pending);
-                    Editing = false;
-                }
+                keyboard.SubmitOnEnter = true;
+                keyboard.OnTextSubmit.AddListener(SubmitKeyboard);
+                keyboard.Open("");
+                return;
             }
+            if (snapshotTarget != null)
+            {
+                snapshotTarget.AddNote("快照注释");
+                snapshotTarget = null;
+            }
+            else
+            {
+                pending.text = "标注 " + (entries.Count + 1);
+                Add(pending);
+            }
+            Editing = false;
         }
         void SubmitKeyboard(string text)
         {
@@ -117,8 +138,16 @@ namespace CarAR
         public void Submit(string text)
         {
             if (!Editing) return;
-            pending.text = string.IsNullOrWhiteSpace(text) ? "标注 " + (entries.Count + 1) : text.Trim();
-            Add(pending);
+            if (snapshotTarget != null)
+            {
+                snapshotTarget.AddNote(text);
+                snapshotTarget = null;
+            }
+            else
+            {
+                pending.text = string.IsNullOrWhiteSpace(text) ? "标注 " + (entries.Count + 1) : text.Trim();
+                Add(pending);
+            }
             Editing = false;
             draft = "";
         }
@@ -211,7 +240,7 @@ namespace CarAR
         {
             if (!IsDesktop || !Editing) return;
             var rect = new Rect((Screen.width - 460) / 2, (Screen.height - 150) / 2, 460, 150);
-            GUI.Box(rect, "添加文字标注");
+            GUI.Box(rect, snapshotTarget == null ? "添加文字标注" : "注释当前快照");
             GUI.SetNextControlName("AnnotationText");
             draft = GUI.TextField(new Rect(rect.x + 20, rect.y + 45, 420, 35), draft);
             if (Event.current.type == EventType.Repaint) GUI.FocusControl("AnnotationText");

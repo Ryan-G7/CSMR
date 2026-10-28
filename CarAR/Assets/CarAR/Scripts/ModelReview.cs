@@ -14,16 +14,21 @@ namespace CarAR
         public Transform modelRoot;
         public RuntimeGlbLoader loader;
         public bool Clipping { get; private set; }
+        public bool HandClipping { get; private set; }
         public int SelectedIndex { get; private set; }
+        public int SelectedMeshIndex { get; private set; }
         public float PlaneOffset { get; private set; }
         public Vector3 PlaneNormal { get; private set; } = Vector3.right;
         public IReadOnlyList<Material> Materials => materials;
+        public event System.Action MeshVisibilityChanged;
         readonly List<Material> materials = new();
+        readonly List<Renderer> renderers = new();
         readonly Dictionary<Renderer, Material[]> originals = new();
         readonly Dictionary<Material, Override> overrides = new();
         readonly Dictionary<Material, Material> edited = new();
         readonly Dictionary<Material, Material> clipped = new();
         Shader clipShader;
+        Transform clippingHand;
 
         void Start()
         {
@@ -34,25 +39,47 @@ namespace CarAR
         public void RefreshModel()
         {
             SetClipping(false);
+            HandClipping = false;
+            clippingHand = null;
             foreach (var material in edited.Values) Destroy(material);
             foreach (var material in clipped.Values) Destroy(material);
-            originals.Clear(); overrides.Clear(); edited.Clear(); clipped.Clear(); materials.Clear();
+            originals.Clear(); overrides.Clear(); edited.Clear(); clipped.Clear(); materials.Clear(); renderers.Clear();
             foreach (var renderer in modelRoot.GetComponentsInChildren<Renderer>(true))
             {
+                renderer.enabled = true;
+                renderers.Add(renderer);
                 var source = renderer.sharedMaterials;
                 originals[renderer] = source;
                 foreach (var material in source)
                     if (material != null && !materials.Contains(material)) materials.Add(material);
             }
             SelectedIndex = 0;
+            SelectedMeshIndex = 0;
             PlaneOffset = 0;
             PlaneNormal = Vector3.right;
         }
         public Material SelectedMaterial => materials.Count == 0 ? null : materials[Mathf.Clamp(SelectedIndex, 0, materials.Count - 1)];
         public string SelectedName => SelectedMaterial == null ? "无材质" : $"{SelectedIndex + 1}/{materials.Count}  {SelectedMaterial.name}";
+        public Renderer SelectedMesh => renderers.Count == 0 ? null : renderers[Mathf.Clamp(SelectedMeshIndex, 0, renderers.Count - 1)];
+        public string SelectedMeshName => SelectedMesh == null ? "无网格" : $"{SelectedMeshIndex + 1}/{renderers.Count}  {SelectedMesh.name} · {(SelectedMesh.enabled ? "显示" : "隐藏")}";
         public void SelectMaterial(int delta)
         {
             if (materials.Count > 0) SelectedIndex = (SelectedIndex + delta % materials.Count + materials.Count) % materials.Count;
+        }
+        public void SelectMesh(int delta)
+        {
+            if (renderers.Count > 0) SelectedMeshIndex = (SelectedMeshIndex + delta % renderers.Count + renderers.Count) % renderers.Count;
+        }
+        public void ToggleSelectedMesh()
+        {
+            if (SelectedMesh == null) return;
+            SelectedMesh.enabled = !SelectedMesh.enabled;
+            MeshVisibilityChanged?.Invoke();
+        }
+        public void ShowAllMeshes()
+        {
+            foreach (var renderer in renderers) renderer.enabled = true;
+            MeshVisibilityChanged?.Invoke();
         }
         Override Values(Material material)
         {
@@ -206,14 +233,29 @@ namespace CarAR
             }
             if (!Clipping) Shader.SetGlobalVector("_CarARClipPlane", Vector4.zero);
         }
-        public void SetPlaneAxis(Vector3 normal) { PlaneNormal = normal.normalized; PlaneOffset = 0; }
-        public void MovePlane(float delta) { PlaneOffset = Mathf.Clamp(PlaneOffset + delta, -10, 10); }
+        public void SetPlaneAxis(Vector3 normal) { HandClipping = false; PlaneNormal = normal.normalized; PlaneOffset = 0; }
+        public void MovePlane(float delta) { HandClipping = false; PlaneOffset = Mathf.Clamp(PlaneOffset + delta, -10, 10); }
+        public void SetHandClipping(bool value, Transform hand)
+        {
+            HandClipping = value && hand != null;
+            clippingHand = HandClipping ? hand : null;
+            if (HandClipping) SetClipping(true);
+        }
         void LateUpdate()
         {
             if (!Clipping || modelRoot == null) return;
-            var normal = modelRoot.TransformDirection(PlaneNormal).normalized;
-            var centre = modelRoot.TransformPoint(ModelBounds.Local(modelRoot).center);
-            var point = centre + normal * PlaneOffset * modelRoot.localScale.x;
+            Vector3 normal, point;
+            if (HandClipping && clippingHand != null)
+            {
+                normal = clippingHand.forward.normalized;
+                point = clippingHand.position;
+            }
+            else
+            {
+                normal = modelRoot.TransformDirection(PlaneNormal).normalized;
+                var centre = modelRoot.TransformPoint(ModelBounds.Local(modelRoot).center);
+                point = centre + normal * PlaneOffset * modelRoot.localScale.x;
+            }
             Shader.SetGlobalVector("_CarARClipPlane", new Vector4(normal.x, normal.y, normal.z, Vector3.Dot(normal, point)));
         }
         void OnDestroy()

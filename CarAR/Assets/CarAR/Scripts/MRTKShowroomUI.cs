@@ -17,9 +17,10 @@ namespace CarAR
         float noticeUntil;
         string notice;
         int page, colorIndex;
-        readonly int[] main = { 5, 4, 0, 3, 1, 27, 16, 43, 36, 25, 24, 26 };
+        readonly int[] main = { 5, 4, 0, 3, 1, 27, 16, 55, 36, 25, 24, 26 };
         readonly int[] settings = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
         readonly int[] materials = { 2, 28, 29, 30, 31, 32, 33, 34, 35, 38, 39, 40, 41, 42, 1, 25, 26 };
+        readonly int[] tools = { 44, 45, 46, 47, 48, 49, 50, 51, 54, 53, 52, 43, 25, 26 };
 
         void Start()
         {
@@ -79,6 +80,22 @@ namespace CarAR
             Bind(41, () => showroom.review.MovePlane(-.1f));
             Bind(42, () => showroom.review.MovePlane(.1f));
             Bind(43, () => { page = 2; SetPage(); });
+            Bind(44, () => BeginMeasurement(ModelMeasurement.MeasurementMode.Distance));
+            Bind(45, () => BeginMeasurement(ModelMeasurement.MeasurementMode.Curve));
+            Bind(46, () => BeginMeasurement(ModelMeasurement.MeasurementMode.Surface));
+            Bind(47, showroom.measurement.Finish);
+            Bind(48, showroom.measurement.Clear);
+            Bind(49, () => showroom.review.SelectMesh(-1));
+            Bind(50, () => showroom.review.SelectMesh(1));
+            Bind(51, showroom.review.ToggleSelectedMesh);
+            Bind(52, () =>
+            {
+                showroom.annotations.BeginSnapshotAnnotation(showroom.snapshot);
+                controlPanel.gameObject.SetActive(false);
+            });
+            Bind(53, showroom.ToggleHandClipping);
+            Bind(54, showroom.review.ShowAllMeshes);
+            Bind(55, () => { page = 3; SetPage(); });
             SetPage(); controlPanel.gameObject.SetActive(false);
         }
         void Bind(int index, UnityEngine.Events.UnityAction action)
@@ -92,10 +109,16 @@ namespace CarAR
             if (showroom.explode.IsBusy) { Notice("请先组装还原，再解锁模型"); return; }
             showroom.gestures.SetManipulation(!showroom.gestures.ManipulationEnabled);
         }
+        void BeginMeasurement(ModelMeasurement.MeasurementMode mode)
+        {
+            showroom.measurement.Begin(mode);
+            controlPanel.gameObject.SetActive(false);
+            Notice("用射线指向模型并按扳机选点");
+        }
         void SetPage()
         {
             foreach (var button in buttons) button.gameObject.SetActive(false);
-            var pageButtons = page == 1 ? settings : page == 2 ? materials : main;
+            var pageButtons = page == 1 ? settings : page == 2 ? materials : page == 3 ? tools : main;
             for (int i = 0; i < pageButtons.Length; i++)
             {
                 var button = buttons[pageButtons[i]];
@@ -139,13 +162,17 @@ namespace CarAR
                 "菜单 / Y / B：面板 · 扳机：点选 · 标注：射线选点后输入文字\n" +
                 (showroom.gestures.ManipulationEnabled ? "已解锁 · 左摇杆平移 / 右摇杆旋转缩放 / 双握键缩放" : "已停车锁定 / 可爆炸、剖切、编辑材质");
             if (page == 2) status.text += $"\n{showroom.review.SelectedName} · 金属 {showroom.review.Metallic:F2} · 粗糙 {showroom.review.Roughness:F2} · 透明 {showroom.review.ColorValue.a:F2}";
+            if (page == 3) status.text += $"\n{showroom.measurement.Status}\n{showroom.review.SelectedMeshName}";
             if (page == 1) status.text += "\n" + showroom.lighting.DisplayStatus + " · " + showroom.placement.DisplayStatus;
             else if (!showroom.placement.IsPlaced) status.text += "\n" + showroom.placement.DisplayStatus;
             if (showroom.annotations.AwaitingPlacement) status.text += "\n请用控制器射线在模型上选择标注位置";
+            if (showroom.measurement.AwaitingPoint) status.text += "\n测量中：用控制器射线选点";
             if (Time.unscaledTime < noticeUntil) status.text += "\n" + notice;
             SetLabel(buttons[4], showroom.gestures.ManipulationEnabled ? "停车锁定" : "解除锁定");
             SetLabel(buttons[3], showroom.explode.IsExploded ? "组装还原" : "模型爆炸");
             SetLabel(buttons[1], showroom.review.Clipping ? "关闭剖切" : "开启剖切");
+            SetLabel(buttons[51], showroom.review.SelectedMesh != null && showroom.review.SelectedMesh.enabled ? "隐藏选中网格" : "显示选中网格");
+            SetLabel(buttons[53], showroom.review.HandClipping ? "取消手柄剖面" : "手柄跟随剖面");
             SetLabel(buttons[24], GetComponent<MRPresentation>().HighQuality ? "切换流畅画质" : "切换精细画质");
             if (Application.isFocused && Keyboard.current?.hKey.wasPressedThisFrame == true) TogglePanel();
             if (Application.isFocused && Keyboard.current?.mKey.wasPressedThisFrame == true) ToggleLock();

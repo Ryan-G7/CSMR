@@ -21,9 +21,11 @@ namespace CarAR
         public ModelReview review;
         public ReviewSnapshot snapshot;
         public ModelAnnotations annotations;
+        public ModelMeasurement measurement;
         public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 && !Huijing.HuijingMRBridge.Requested;
         float brightness = 0, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
         GUIStyle title, text, button;
+        Vector2 toolsScroll;
         bool smokeControlsCamera;
         void Awake()
         {
@@ -33,10 +35,12 @@ namespace CarAR
             modelLoader = gameObject.AddComponent<RuntimeGlbLoader>();
             modelLoader.modelRoot = car; modelLoader.interaction = gestures; modelLoader.explode = explode; modelLoader.placement = placement;
             review = gameObject.AddComponent<ModelReview>(); review.modelRoot = car; review.loader = modelLoader;
-            snapshot = gameObject.AddComponent<ReviewSnapshot>(); snapshot.sourceCamera = Camera.main;
             annotations = gameObject.AddComponent<ModelAnnotations>();
             annotations.modelRoot = car; annotations.loader = modelLoader; annotations.viewCamera = Camera.main; annotations.IsDesktop = IsPreview;
             annotations.font = GetComponent<MRTKShowroomUI>()?.status?.font; annotations.AimAtModel = AimAtModel;
+            snapshot = gameObject.AddComponent<ReviewSnapshot>(); snapshot.sourceCamera = Camera.main; snapshot.loader = modelLoader; snapshot.annotations = annotations;
+            measurement = gameObject.AddComponent<ModelMeasurement>();
+            measurement.modelRoot = car; measurement.loader = modelLoader; measurement.viewCamera = Camera.main; measurement.IsDesktop = IsPreview; measurement.AimAtModel = AimAtModel;
             if (!IsPreview) return;
             foreach (var manager in FindObjectsByType<ARSession>(FindObjectsSortMode.None)) manager.enabled = false;
             foreach (var manager in FindObjectsByType<AREnvironmentProbeManager>(FindObjectsSortMode.None)) manager.enabled = false;
@@ -130,6 +134,13 @@ namespace CarAR
             hit = default;
             return false;
         }
+        public void ToggleHandClipping()
+        {
+            var input = GetComponent<MRTKControllerInput>();
+            if (input == null) return;
+            var hand = input.RightRayVisible || !input.LeftRayVisible ? input.RightRay : input.LeftRay;
+            review.SetHandClipping(!review.HandClipping, hand.transform);
+        }
         void OnGUI()
         {
             if (!IsPreview) return; // Headset interaction uses tracked 3D colliders, not a head-locked desktop overlay.
@@ -139,6 +150,7 @@ namespace CarAR
             float scale = Mathf.Max(.65f, Mathf.Min(Screen.width / 1280f, Screen.height / 800f));
             GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
             GUILayout.BeginArea(new Rect(22, 20, 360, 750), GUI.skin.box);
+            toolsScroll = GUILayout.BeginScrollView(toolsScroll);
             GUILayout.Space(10); GUILayout.Label("GLB / MR MODEL REVIEW", title);
             GUILayout.Label(modelLoader.Status, text); GUILayout.Space(8);
             if (GUILayout.Button("导入 GLB 模型", button)) modelLoader.PickFile();
@@ -184,6 +196,24 @@ namespace CarAR
             if (GUILayout.Button("撤销标注")) annotations.RemoveLast();
             GUILayout.EndHorizontal();
             GUILayout.Label($"已保存标注 {annotations.Count} 个", text);
+            if (GUILayout.Button("注释当前快照", button)) annotations.BeginSnapshotAnnotation(snapshot);
+            GUILayout.Label(measurement.Status, text);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("两点距离")) measurement.Begin(ModelMeasurement.MeasurementMode.Distance);
+            if (GUILayout.Button("曲线")) measurement.Begin(ModelMeasurement.MeasurementMode.Curve);
+            if (GUILayout.Button("曲面面积")) measurement.Begin(ModelMeasurement.MeasurementMode.Surface);
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("完成曲线")) measurement.Finish();
+            if (GUILayout.Button("清除测量")) measurement.Clear();
+            GUILayout.EndHorizontal();
+            GUILayout.Label(review.SelectedMeshName, text);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("上一网格")) review.SelectMesh(-1);
+            if (GUILayout.Button("下一网格")) review.SelectMesh(1);
+            if (GUILayout.Button("显示 / 隐藏")) review.ToggleSelectedMesh();
+            if (GUILayout.Button("全部显示")) review.ShowAllMeshes();
+            GUILayout.EndHorizontal();
             GUI.enabled = true;
             GUILayout.Label($"补光 {brightness:F2}", text);
             float b = GUILayout.HorizontalSlider(brightness, 0, 1f);
@@ -192,6 +222,7 @@ namespace CarAR
             if (b != brightness || t != temperature) { brightness = b; temperature = t; lighting.SetPreviewLight(b, t); }
             GUILayout.Label("地面: " + placement.Status, text);
             GUILayout.Label("快照目录: " + System.IO.Path.Combine(Application.persistentDataPath, "Snapshots"), text);
+            GUILayout.EndScrollView();
             GUILayout.EndArea();
         }
         IEnumerator Smoke()
@@ -305,15 +336,51 @@ namespace CarAR
             if (Vector4.Distance(review.ColorValue, originalColor) > .001f || Mathf.Abs(review.Metallic - originalMetallic) > .001f ||
                 Mathf.Abs(review.Roughness - originalRoughness) > .001f)
                 throw new System.InvalidOperationException("Material reset did not restore original values");
+            var targetRenderer = car.GetComponentInChildren<MeshRenderer>();
+            Vector2 screen = Camera.main.WorldToScreenPoint(targetRenderer.bounds.center);
+            measurement.Begin(ModelMeasurement.MeasurementMode.Distance);
+            yield return new WaitForSeconds(.3f);
+            yield return Click(screen);
+            yield return Click(screen + new Vector2(12, 0));
+            if (measurement.AwaitingPoint || measurement.LastLength <= 0)
+                throw new System.InvalidOperationException("Two-point surface measurement failed");
+            measurement.Begin(ModelMeasurement.MeasurementMode.Curve);
+            yield return new WaitForSeconds(.3f);
+            yield return Click(screen);
+            yield return Click(screen + new Vector2(12, 0));
+            measurement.Finish();
+            if (measurement.AwaitingPoint || measurement.LastLength <= 0)
+                throw new System.InvalidOperationException("Curve measurement failed");
+            measurement.Begin(ModelMeasurement.MeasurementMode.Surface);
+            yield return new WaitForSeconds(.3f);
+            yield return Click(screen);
+            if (measurement.LastSurfaceArea <= 0 || measurement.LastMeshArea < measurement.LastSurfaceArea)
+                throw new System.InvalidOperationException("Triangle and mesh surface-area measurement failed: " + measurement.Status);
+            measurement.Clear();
+            var selectedMesh = review.SelectedMesh;
+            review.ToggleSelectedMesh();
+            if (selectedMesh.enabled) throw new System.InvalidOperationException("Mesh visibility toggle did not hide the selected renderer");
+            review.ShowAllMeshes();
+            foreach (var renderer in car.GetComponentsInChildren<Renderer>(true))
+                if (!renderer.enabled) throw new System.InvalidOperationException("Show-all did not restore every renderer");
+            review.SetClipping(true);
+            var hand = new GameObject("Smoke clipping hand").transform;
+            hand.SetPositionAndRotation(car.position + Vector3.forward, Quaternion.identity);
+            review.SetHandClipping(true, hand);
+            yield return null;
+            var planeBefore = Shader.GetGlobalVector("_CarARClipPlane");
+            hand.position += Vector3.right * .2f;
+            hand.rotation = Quaternion.Euler(0, 45, 0);
+            yield return null;
+            var planeAfter = Shader.GetGlobalVector("_CarARClipPlane");
+            if (Vector4.Distance(planeBefore, planeAfter) < .01f)
+                throw new System.InvalidOperationException("Clipping plane did not follow hand translation and rotation");
+            review.SetHandClipping(false, null);
+            review.SetClipping(false);
+            Destroy(hand.gameObject);
             annotations.BeginPlacement();
             yield return new WaitForSeconds(.3f);
-            var targetRenderer = car.GetComponentInChildren<MeshRenderer>();
-            var screen = Camera.main.WorldToScreenPoint(targetRenderer.bounds.center);
-            var mouse = Mouse.current;
-            if (mouse == null) throw new System.InvalidOperationException("Annotation regression requires a mouse");
-            InputSystem.QueueStateEvent(mouse, new MouseState { position = screen, buttons = 1 });
-            yield return null;
-            InputSystem.QueueStateEvent(mouse, new MouseState { position = screen });
+            yield return Click(screen);
             if (!annotations.Editing) throw new System.InvalidOperationException("Ray selection did not start annotation editing");
             annotations.Submit("Generic GLB note");
             if (annotations.Count != 1) throw new System.InvalidOperationException("Annotation was not created");
@@ -321,13 +388,28 @@ namespace CarAR
             var png = File.ReadAllBytes(path);
             if (png.Length < 100 || png[0] != 137 || png[1] != 80 || png[2] != 78 || png[3] != 71)
                 throw new System.InvalidOperationException("Snapshot is not a valid PNG: " + path);
+            annotations.BeginSnapshotAnnotation(snapshot);
+            annotations.Submit("Snapshot review note");
+            string infoPath = path + ".json";
+            if (snapshot.Notes.Count != 1 || !File.Exists(infoPath) || !File.ReadAllText(infoPath).Contains("Snapshot review note"))
+                throw new System.InvalidOperationException("Snapshot annotation was not saved with model information");
             _ = modelLoader.Load(modelLoader.CurrentPath);
             float deadline = Time.time + 30;
             while (modelLoader.IsLoading && Time.time < deadline) yield return null;
             if (modelLoader.IsLoading || annotations.Count != 1 || modelLoader.RendererCount != car.GetComponentsInChildren<MeshRenderer>(true).Length)
                 throw new System.InvalidOperationException("Model reload did not restore saved annotations or isolated model content");
             annotations.RemoveLast();
-            Debug.Log("[CarAR Review Tools] PASS: external-only GLB content, color/metallic/roughness/opacity edits and reset, complete clipping restore, ray-picked persisted annotation, model reload and PNG snapshot: " + path);
+            Debug.Log("[CarAR Review Tools] PASS: external GLB, materials, manual/hand clipping, distance/curve/surface measurement, mesh visibility, persisted model and snapshot annotations, model reload and PNG: " + path);
+        }
+
+        IEnumerator Click(Vector2 screen)
+        {
+            var mouse = Mouse.current;
+            if (mouse == null) throw new System.InvalidOperationException("Review regression requires a mouse");
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = screen, buttons = 1 });
+            yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = screen });
+            yield return null;
         }
 
         Material ActiveReviewMaterial()
@@ -369,7 +451,7 @@ namespace CarAR
         {
             var ui = GetComponent<MRTKShowroomUI>();
             var manipulator = gestures.manipulator;
-            if (ui == null || ui.buttons.Length != 44 || manipulator == null || manipulator.enabled)
+            if (ui == null || ui.buttons.Length != 56 || manipulator == null || manipulator.enabled)
                 throw new System.InvalidOperationException("MRTK controls missing or car not locked initially");
             var originalPosition = car.position; var originalRotation = car.rotation; var originalScale = car.localScale;
             ui.buttons[4].OnClicked.Invoke();

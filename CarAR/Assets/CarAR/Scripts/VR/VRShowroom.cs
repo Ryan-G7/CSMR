@@ -27,6 +27,7 @@ namespace CarAR
         public ModelReview review;
         public ReviewSnapshot snapshot;
         public ModelAnnotations annotations;
+        public ModelMeasurement measurement;
         public NavMeshData navigation;
         public Transform menu;
         public StatefulInteractable[] buttons;
@@ -113,10 +114,12 @@ namespace CarAR
             ApplySourceLightmaps();
             modelLoader=gameObject.AddComponent<RuntimeGlbLoader>();modelLoader.modelRoot=car;modelLoader.modelLayer=VehicleLayer;modelLoader.explode=explode;
             review=gameObject.AddComponent<ModelReview>();review.modelRoot=car;review.loader=modelLoader;
-            snapshot=gameObject.AddComponent<ReviewSnapshot>();snapshot.sourceCamera=origin.Camera;
             annotations=gameObject.AddComponent<ModelAnnotations>();annotations.modelRoot=car;annotations.loader=modelLoader;
             annotations.viewCamera=origin.Camera;annotations.IsDesktop=Desktop;annotations.font=status?.font;annotations.AimAtModel=AimAtModel;
-            modelLoader.ModelChanged+=RefreshModel;
+            snapshot=gameObject.AddComponent<ReviewSnapshot>();snapshot.sourceCamera=origin.Camera;snapshot.loader=modelLoader;snapshot.annotations=annotations;
+            measurement=gameObject.AddComponent<ModelMeasurement>();measurement.modelRoot=car;measurement.loader=modelLoader;
+            measurement.viewCamera=origin.Camera;measurement.IsDesktop=Desktop;measurement.AimAtModel=AimAtModel;
+            modelLoader.ModelChanged+=RefreshModel;review.MeshVisibilityChanged+=RefreshModel;
             CreateVehicleShadow();
             if (navigation != null) navInstance = NavMesh.AddNavMeshData(navigation);
             body = origin.gameObject.AddComponent<CharacterController>();
@@ -169,9 +172,15 @@ namespace CarAR
         }
         bool AimAtModel(out RaycastHit hit)
         {
-            if(HandTracked(right) && right.ray.TryGetCurrent3DRaycastHit(out hit))return true;
-            if(HandTracked(left) && left.ray.TryGetCurrent3DRaycastHit(out hit))return true;
+            int mask=1<<VehicleLayer;
+            if(HandTracked(right) && Physics.Raycast(right.ray.transform.position,right.ray.transform.forward,out hit,right.ray.maxRaycastDistance,mask))return true;
+            if(HandTracked(left) && Physics.Raycast(left.ray.transform.position,left.ray.transform.forward,out hit,left.ray.maxRaycastDistance,mask))return true;
             hit=default;return false;
+        }
+        void ToggleHandClipping()
+        {
+            var hand=HandTracked(right)||!HandTracked(left)?right:left;
+            if(hand!=null)review.SetHandClipping(!review.HandClipping,hand.ray.transform);
         }
         void CreateVehicleShadow()
         {
@@ -181,6 +190,7 @@ namespace CarAR
             foreach(var part in car.GetComponentsInChildren<Transform>(true))part.gameObject.layer=VehicleLayer;
             foreach(var source in car.GetComponentsInChildren<MeshRenderer>())
             {
+                if(!source.enabled || !source.gameObject.activeInHierarchy)continue;
                 source.shadowCastingMode=ShadowCastingMode.Off;source.receiveShadows=false;
                 var filter=source.GetComponent<MeshFilter>();
                 if(filter==null || filter.sharedMesh==null)continue;
@@ -645,6 +655,21 @@ namespace CarAR
             buttons[25].OnClicked.AddListener(()=>review.SetPlaneAxis(Vector3.right));
             buttons[26].OnClicked.AddListener(()=>review.MovePlane(-.1f));
             buttons[27].OnClicked.AddListener(()=>review.MovePlane(.1f));
+            buttons[28].OnClicked.AddListener(()=>BeginMeasurement(ModelMeasurement.MeasurementMode.Distance));
+            buttons[29].OnClicked.AddListener(()=>BeginMeasurement(ModelMeasurement.MeasurementMode.Curve));
+            buttons[30].OnClicked.AddListener(()=>BeginMeasurement(ModelMeasurement.MeasurementMode.Surface));
+            buttons[31].OnClicked.AddListener(measurement.Finish);
+            buttons[32].OnClicked.AddListener(measurement.Clear);
+            buttons[33].OnClicked.AddListener(()=>review.SelectMesh(-1));
+            buttons[34].OnClicked.AddListener(()=>review.SelectMesh(1));
+            buttons[35].OnClicked.AddListener(review.ToggleSelectedMesh);
+            buttons[36].OnClicked.AddListener(review.ShowAllMeshes);
+            buttons[37].OnClicked.AddListener(()=>{annotations.BeginSnapshotAnnotation(snapshot);menuOpen=false;menu.gameObject.SetActive(false);});
+            buttons[38].OnClicked.AddListener(ToggleHandClipping);
+        }
+        void BeginMeasurement(ModelMeasurement.MeasurementMode mode)
+        {
+            measurement.Begin(mode);menuOpen=false;menu.gameObject.SetActive(false);
         }
         Color ColorValue()
         {
@@ -710,6 +735,8 @@ namespace CarAR
             string instructions=error??(Desktop?"GLB 模型 · 沉浸评审\nWASD 移动 · 右键环视 · T 指向地面后单击传送\nTab 面板 · F 返回入口 · 空格 爆炸 / 还原":
                 "GLB 模型 · 沉浸评审\n左摇杆移动 · 右摇杆前推松开传送 / 左右转向 30°\n菜单 / Y / B：剖切、材质、快照与标注 · 扳机点选");
             if(annotations.AwaitingPlacement)instructions+="\n请用射线在模型上选点，再输入标注文字";
+            if(measurement.AwaitingPoint)instructions+="\n测量中：请用射线在模型上选点";
+            instructions+="\n"+measurement.Status;
             if(status.text!=instructions)status.text=instructions;
             SetLabel(0,Continuous?"移动：连续 + 传送":"移动：舒适传送");
             SetLabel(1,speed<1.3f?"步速：缓慢":"步速：正常");
@@ -719,6 +746,8 @@ namespace CarAR
             SetLabel(5,"右后视角");
             SetLabel(4,"右侧视角");
             SetLabel(15,RecordingMode?"录屏优化：开启":"录屏优化：关闭");
+            SetLabel(35,review.SelectedMesh!=null&&review.SelectedMesh.enabled?"隐藏选中网格":"显示选中网格");
+            SetLabel(38,review.HandClipping?"取消手柄剖面":"手柄跟随剖面");
         }
         void SetLabel(int index,string value)
         {
@@ -739,9 +768,9 @@ namespace CarAR
             }
             GUI.Box(new Rect(18,18,610,70),"GLB 模型 · 场景评审\nWASD 移动 / 右键环视 / Tab 面板 / T 传送");
             if(!menuOpen)return;
-            string[] labels={Continuous?"移动：连续 + 传送":"移动：舒适传送",speed<1.3f?"步速：缓慢":"步速：正常","返回入口 [F]","车头视角","右侧视角","右后视角","车尾视角","导入 GLB",review.Clipping?"关闭剖切":"开启剖切","上一材质","下一材质","爆炸 / 还原 [空格]",HighQuality?"画质：精细":"画质：流畅","收起面板 [Tab]","保存快照",RecordingMode?"录屏优化：开启 [F8]":"录屏优化：关闭 [F8]","切换颜色","金属度 +","金属度 -","粗糙度 +","粗糙度 -","透明度 +","透明度 -","添加标注","撤销标注","剖面 X","剖面 -10cm","剖面 +10cm"};
+            string[] labels={Continuous?"移动：连续 + 传送":"移动：舒适传送",speed<1.3f?"步速：缓慢":"步速：正常","返回入口 [F]","车头视角","右侧视角","右后视角","车尾视角","导入 GLB",review.Clipping?"关闭剖切":"开启剖切","上一材质","下一材质","爆炸 / 还原 [空格]",HighQuality?"画质：精细":"画质：流畅","收起面板 [Tab]","保存快照",RecordingMode?"录屏优化：开启 [F8]":"录屏优化：关闭 [F8]","切换颜色","金属度 +","金属度 -","粗糙度 +","粗糙度 -","透明度 +","透明度 -","添加标注","撤销标注","剖面 X","剖面 -10cm","剖面 +10cm","两点距离","曲线测量","曲面面积","完成曲线","清除测量","上一网格","下一网格","显示 / 隐藏网格","全部显示","注释当前快照","手柄跟随剖面"};
             for(int i=0;i<labels.Length;i++)if(GUI.Button(new Rect(18+(i%3)*205,100+(i/3)*43,198,38),labels[i],style))buttons[i].OnClicked.Invoke();
-            GUI.Label(new Rect(18,545,610,60),$"{modelLoader.Status}\n{review.SelectedName} · 标注 {annotations.Count} 个");
+            GUI.Label(new Rect(18,675,610,90),$"{modelLoader.Status}\n{review.SelectedName} · {review.SelectedMeshName}\n{measurement.Status} · 标注 {annotations.Count} 个");
         }
         void EnterDesktopFallback()
         {
@@ -764,6 +793,7 @@ namespace CarAR
             foreach(var a in actions)a.Dispose();StopXR();
             if(navInstance.valid)navInstance.Remove();
             QualitySettings.renderPipeline=previousPipeline;
+            if(review!=null)review.MeshVisibilityChanged-=RefreshModel;
             if(comfort!=null)Destroy(comfort);
             if(pipeline!=null)Destroy(pipeline);
             if(VehicleShadow!=null)Destroy(VehicleShadow.gameObject);
@@ -791,7 +821,7 @@ namespace CarAR
                 float startupScale=XRLaunch.HasArgument("--vr-recording")?RecordingScale:1;
                 if(!HighQuality || !Mathf.Approximately(pipeline.renderScale,startupScale) || pipeline.mainLightShadowmapResolution!=4096)throw new Exception("VR did not start at the requested high quality / recording preset");
                 bool wasRecording=RecordingMode;
-                if(buttons.Length!=28)throw new Exception("VR review buttons are missing");
+                if(buttons.Length!=39)throw new Exception("VR review buttons are missing");
                 buttons[15].OnClicked.Invoke();
                 if(RecordingMode==wasRecording || !HighQuality || !Mathf.Approximately(pipeline.renderScale,wasRecording?1:RecordingScale))throw new Exception("Recording button did not switch render resolution independently of high quality");
                 ToggleQuality();
