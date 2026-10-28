@@ -240,6 +240,12 @@ namespace CarAR
             manualFloor = true;
         }
         public float GroundHeight { get; private set; }
+        public void RefreshModel()
+        {
+            if (suppressed) SetSuppressed(false);
+            if (placed && carRoot != null)
+                carRoot.position = new Vector3(carRoot.position.x, GroundHeight, carRoot.position.z);
+        }
         public void AdjustFloor(float delta)
         {
             if (!IsPlaced || carRoot == null) return;

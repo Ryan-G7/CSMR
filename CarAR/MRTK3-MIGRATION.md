@@ -12,7 +12,7 @@
 
 ## 当前交互与设备边界
 
-MRTK 提供 XR Rig、标准 Action Button 和 ObjectManipulator，XRI 提供原生手柄动作、射线与选择。手柄与头显共用 CameraFloorOffsetObject；应用负责车辆停车、地面轴心、门盖动画和误触保护。握键与按钮使用不同交互层，视线不触发选择。双手缩放使用 `VehicleScaleLogic`，跟踪退化时重新建立距离基准。
+MRTK 提供 XR Rig、标准 Action Button 和 ObjectManipulator，XRI 提供原生手柄动作、射线与选择。手柄与头显共用 CameraFloorOffsetObject；应用负责模型停车、地面轴心、通用爆炸和误触保护。握键与按钮使用不同交互层，视线不触发选择。双手缩放使用 `VehicleScaleLogic`，跟踪退化时重新建立距离基准。
 
 荟镜 HJXR 使用安装在本机的厂商 SDK 与 Pimax OpenXR，运行时显式加载 SDK；仓库不分发替代 DLL。Windows 使用 `OpenXRLoaderNoPreInit`，避免临时 OpenXR 实例破坏厂商相机配置，构建会检查 boot.config。输入启动后 MR 请求 Device / LOCAL，额外眼高为零；VR 优先请求 Floor，异常眼高才回退 Device 并建立站立眼高。
 

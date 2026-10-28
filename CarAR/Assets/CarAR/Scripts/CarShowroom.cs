@@ -2,6 +2,7 @@ using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.Management;
 using UnityEngine.Rendering;
@@ -16,7 +17,10 @@ namespace CarAR
         public ARLightEstimation lighting;
         public MRTKCarInteraction gestures;
         public ExplodeController explode;
-        public CarPanel leftDoor, rightDoor, trunk, hood;
+        public RuntimeGlbLoader modelLoader;
+        public ModelReview review;
+        public ReviewSnapshot snapshot;
+        public ModelAnnotations annotations;
         public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 && !Huijing.HuijingMRBridge.Requested;
         float brightness = 0, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
         GUIStyle title, text, button;
@@ -26,6 +30,13 @@ namespace CarAR
             Application.runInBackground = true;
             InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
             QualitySettings.vSyncCount = 0;
+            modelLoader = gameObject.AddComponent<RuntimeGlbLoader>();
+            modelLoader.modelRoot = car; modelLoader.interaction = gestures; modelLoader.explode = explode; modelLoader.placement = placement;
+            review = gameObject.AddComponent<ModelReview>(); review.modelRoot = car; review.loader = modelLoader;
+            snapshot = gameObject.AddComponent<ReviewSnapshot>(); snapshot.sourceCamera = Camera.main;
+            annotations = gameObject.AddComponent<ModelAnnotations>();
+            annotations.modelRoot = car; annotations.loader = modelLoader; annotations.viewCamera = Camera.main; annotations.IsDesktop = IsPreview;
+            annotations.font = GetComponent<MRTKShowroomUI>()?.status?.font; annotations.AimAtModel = AimAtModel;
             if (!IsPreview) return;
             foreach (var manager in FindObjectsByType<ARSession>(FindObjectsSortMode.None)) manager.enabled = false;
             foreach (var manager in FindObjectsByType<AREnvironmentProbeManager>(FindObjectsSortMode.None)) manager.enabled = false;
@@ -105,12 +116,19 @@ namespace CarAR
             Camera.main.transform.LookAt(target - look * Vector3.right * .3f);
             var k = Application.isFocused ? Keyboard.current : null;
             if (k == null) return;
-            if (k.digit1Key.wasPressedThisFrame) leftDoor.Toggle();
-            if (k.digit2Key.wasPressedThisFrame) rightDoor.Toggle();
-            if (k.digit3Key.wasPressedThisFrame) trunk.Toggle();
-            if (k.digit4Key.wasPressedThisFrame) hood.Toggle();
             if (k.spaceKey.wasPressedThisFrame) explode.Toggle();
             if (k.escapeKey.wasPressedThisFrame) Application.Quit();
+        }
+        bool AimAtModel(out RaycastHit hit)
+        {
+            var input = GetComponent<MRTKControllerInput>();
+            int mask = 1 << MRTKControllerInput.VehicleLayer;
+            if (input.RightRayVisible && Physics.Raycast(input.RightRay.transform.position, input.RightRay.transform.forward,
+                out hit, input.RightRay.maxRaycastDistance, mask)) return true;
+            if (input.LeftRayVisible && Physics.Raycast(input.LeftRay.transform.position, input.LeftRay.transform.forward,
+                out hit, input.LeftRay.maxRaycastDistance, mask)) return true;
+            hit = default;
+            return false;
         }
         void OnGUI()
         {
@@ -120,38 +138,74 @@ namespace CarAR
             button ??= new GUIStyle(GUI.skin.button) { fontSize = 16, fixedHeight = 40 };
             float scale = Mathf.Max(.65f, Mathf.Min(Screen.width / 1280f, Screen.height / 800f));
             GUI.matrix = Matrix4x4.Scale(Vector3.one * scale);
-            GUILayout.BeginArea(new Rect(22, 20, 340, 720), GUI.skin.box);
-            GUILayout.Space(10); GUILayout.Label("AMG GT / AR SHOWROOM", title);
-            GUILayout.Label("DESKTOP PREVIEW", text); GUILayout.Space(12);
-            if (GUILayout.Button("VR CAR ROOM / WALKTHROUGH", button)) XRLaunch.OpenVRPreview();
-            GUILayout.Label("Drag right mouse to orbit. Scroll to zoom.", text);
-            GUILayout.Space(14);
-            GUI.enabled = car.gameObject.activeInHierarchy && !explode.IsBusy;
-            if (GUILayout.Button("[1]  " + (leftDoor.IsOpen ? "Close left door" : "Open left door"), button)) leftDoor.Toggle();
-            if (GUILayout.Button("[2]  " + (rightDoor.IsOpen ? "Close right door" : "Open right door"), button)) rightDoor.Toggle();
-            if (GUILayout.Button("[3]  " + (trunk.IsOpen ? "Close rear hatch" : "Open rear hatch"), button)) trunk.Toggle();
-            if (GUILayout.Button("[4]  " + (hood.IsOpen ? "Close hood" : "Open hood"), button)) hood.Toggle();
+            GUILayout.BeginArea(new Rect(22, 20, 360, 750), GUI.skin.box);
+            GUILayout.Space(10); GUILayout.Label("GLB / MR MODEL REVIEW", title);
+            GUILayout.Label(modelLoader.Status, text); GUILayout.Space(8);
+            if (GUILayout.Button("导入 GLB 模型", button)) modelLoader.PickFile();
+            if (GUILayout.Button("VR 场景漫游", button)) XRLaunch.OpenVRPreview();
+            GUILayout.Label("右键环视 · 滚轮缩放", text);
             GUI.enabled = car.gameObject.activeInHierarchy;
-            if (GUILayout.Button("[Space]  " + (explode.IsExploded ? "Assemble vehicle" : "Explode vehicle"), button)) explode.Toggle();
-            GUI.enabled = true; GUILayout.Space(16);
-            GUILayout.Label("HDR ENVIRONMENT / OPTIONAL FILL", text);
-            GUILayout.Label($"Direct fill  {brightness:F2}", text);
+            if (GUILayout.Button("[空格] " + (explode.IsExploded ? "组装还原" : "模型爆炸"), button)) explode.Toggle();
+            if (GUILayout.Button(review.Clipping ? "关闭剖切" : "开启剖切", button)) review.SetClipping(!review.Clipping);
+            if (review.Clipping)
+            {
+                GUILayout.Label($"剖切面 {review.PlaneNormal} · 偏移 {review.PlaneOffset:F2}m", text);
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("X")) review.SetPlaneAxis(Vector3.right);
+                if (GUILayout.Button("Y")) review.SetPlaneAxis(Vector3.up);
+                if (GUILayout.Button("Z")) review.SetPlaneAxis(Vector3.forward);
+                if (GUILayout.Button("-10cm")) review.MovePlane(-.1f);
+                if (GUILayout.Button("+10cm")) review.MovePlane(.1f);
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.Label(review.SelectedName, text);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("上一材质")) review.SelectMaterial(-1);
+            if (GUILayout.Button("下一材质")) review.SelectMaterial(1);
+            if (GUILayout.Button("还原")) review.ResetMaterial();
+            GUILayout.EndHorizontal();
+            var color = review.ColorValue;
+            GUILayout.Label($"金属度 {review.Metallic:F2} · 粗糙度 {review.Roughness:F2} · 透明度 {color.a:F2}", text);
+            float metallic = GUILayout.HorizontalSlider(review.Metallic, 0, 1);
+            float roughness = GUILayout.HorizontalSlider(review.Roughness, 0, 1);
+            float opacity = GUILayout.HorizontalSlider(color.a, 0, 1);
+            if (metallic != review.Metallic) review.SetMetallic(metallic);
+            if (roughness != review.Roughness) review.SetRoughness(roughness);
+            if (opacity != color.a) review.SetOpacity(opacity);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("红色")) review.SetColor(new Color(.8f, .04f, .03f, color.a));
+            if (GUILayout.Button("白色")) review.SetColor(new Color(.9f, .9f, .9f, color.a));
+            if (GUILayout.Button("蓝色")) review.SetColor(new Color(.03f, .25f, .8f, color.a));
+            GUILayout.EndHorizontal();
+            if (GUILayout.Button("保存快照 PNG", button))
+            { snapshot.Capture(); modelLoader.GetComponent<MRTKShowroomUI>()?.Notice(snapshot.LastPath); }
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(annotations.AwaitingPlacement ? "单击模型选点…" : "添加文字标注")) annotations.BeginPlacement();
+            if (GUILayout.Button("撤销标注")) annotations.RemoveLast();
+            GUILayout.EndHorizontal();
+            GUILayout.Label($"已保存标注 {annotations.Count} 个", text);
+            GUI.enabled = true;
+            GUILayout.Label($"补光 {brightness:F2}", text);
             float b = GUILayout.HorizontalSlider(brightness, 0, 1f);
-            GUILayout.Label($"Color temperature  {temperature:F0} K", text);
+            GUILayout.Label($"色温 {temperature:F0} K", text);
             float t = GUILayout.HorizontalSlider(temperature, 2500, 10000);
             if (b != brightness || t != temperature) { brightness = b; temperature = t; lighting.SetPreviewLight(b, t); }
-            GUILayout.Space(18); GUILayout.Label("Floor: " + placement.Status, text);
-            GUILayout.Label("Light: " + lighting.Status, text);
-            GUILayout.Label("Hands: " + gestures.Status, text);
-            GUILayout.Space(16);
-            GUILayout.Label("AMG.blend: original independent door, window, mirror, hood and hatch meshes. Default scale = 1:1.", text);
-            GUILayout.Space(8);
-            GUILayout.Label("HDR lighting is shared with MR. Direct fill is optional; live estimation requires a device provider.", text);
+            GUILayout.Label("地面: " + placement.Status, text);
+            GUILayout.Label("快照目录: " + System.IO.Path.Combine(Application.persistentDataPath, "Snapshots"), text);
             GUILayout.EndArea();
         }
         IEnumerator Smoke()
         {
             yield return new WaitForSeconds(2);
+            if (!string.IsNullOrWhiteSpace(XRLaunch.ModelPath))
+            {
+                float deadline = Time.time + 30;
+                while (modelLoader.IsLoading && Time.time < deadline) yield return null;
+                if (modelLoader.IsLoading || modelLoader.CurrentPath != Path.GetFullPath(XRLaunch.ModelPath) ||
+                    modelLoader.RendererCount == 0 || modelLoader.RendererCount != car.GetComponentsInChildren<MeshRenderer>(true).Length)
+                    throw new System.InvalidOperationException("External GLB did not completely replace the default model");
+                yield return ReviewToolsSmoke();
+            }
             if (car.localScale != Vector3.one || gestures.ManipulationEnabled || !car.gameObject.activeInHierarchy)
                 throw new System.InvalidOperationException("First activation did not retain a visible, locked 1:1 vehicle");
             if (RenderSettings.defaultReflectionMode != DefaultReflectionMode.Custom ||
@@ -183,46 +237,19 @@ namespace CarAR
             foreach (var r in parts) Debug.Log($"[CarAR Render] {r.name} active={r.gameObject.activeInHierarchy} enabled={r.enabled} bounds={r.bounds} shader={r.sharedMaterial.shader.name}");
             if (parts.Length == 0) { Debug.LogError("[CarAR Smoke] No renderers"); Application.Quit(1); yield break; }
             var modelSize = gestures.ModelSize;
-            if (modelSize.z < 4.5f || modelSize.z > 4.9f || modelSize.y < 1.2f || modelSize.y > 1.5f)
-                throw new System.InvalidOperationException("AMG physical scale / axis conversion is incorrect: " + modelSize);
-            foreach (var panel in new[] { leftDoor, rightDoor })
-            {
-                bool shell = false, glass = false, mirror = false;
-                foreach (var r in panel.GetComponentsInChildren<MeshRenderer>())
-                {
-                    shell |= r.name.StartsWith("Cube.002__") || r.name.StartsWith("Cube.135__");
-                    glass |= r.name.StartsWith("Cube.017__");
-                    mirror |= r.name.StartsWith("Cube.139__");
-                }
-                if (!shell || !glass || !mirror) throw new System.InvalidOperationException("AMG door is missing original shell, glass or mirror: " + panel.name);
-            }
-            if (explode.assemblyRoots.Length != 4) throw new System.InvalidOperationException("AMG wheel assemblies are missing");
-            leftDoor.Toggle();
-            yield return new WaitForSeconds(1);
-            CaptureVehicle("left-door.png");
-            leftDoor.Close();
-            yield return new WaitForSeconds(1);
+            if (modelSize.x <= 0 || modelSize.y <= 0 || modelSize.z <= 0)
+                throw new System.InvalidOperationException("Model bounds are invalid: " + modelSize);
             var positions = new Vector3[parts.Length];
             var rotations = new Quaternion[parts.Length];
-            var doorClosedPoints = new Vector3[4];
-            var panels = new[] { leftDoor, rightDoor, trunk, hood };
             for (int i = 0; i < parts.Length; i++) positions[i] = parts[i].transform.localPosition;
             for (int i = 0; i < parts.Length; i++) rotations[i] = parts[i].transform.localRotation;
-            for (int i = 0; i < panels.Length; i++) doorClosedPoints[i] = panels[i].GetComponentInChildren<MeshRenderer>().bounds.center;
-            leftDoor.Toggle(); rightDoor.Toggle(); trunk.Toggle(); hood.Toggle();
-            yield return new WaitForSeconds(1);
-            if (!leftDoor.IsOpen || !rightDoor.IsOpen || !trunk.IsOpen || !hood.IsOpen) { Debug.LogError("[CarAR Smoke] Panel open failed"); Application.Quit(1); yield break; }
-            for (int i = 0; i < panels.Length; i++)
-                if (Vector3.Distance(doorClosedPoints[i], panels[i].GetComponentInChildren<MeshRenderer>().bounds.center) < .05f)
-                    throw new System.InvalidOperationException("AMG animation did not move real panel geometry: " + panels[i].name);
-            CaptureVehicle("panels.png");
             yield return new WaitForSeconds(.2f);
             explode.SetTarget(1);
             yield return new WaitForSeconds(2.8f);
-            if (explode.Progress < .999f || !leftDoor.IsClosed || !rightDoor.IsClosed || !trunk.IsClosed || !hood.IsClosed) { Debug.LogError("[CarAR Smoke] Explode failed"); Application.Quit(1); yield break; }
+            if (explode.Progress < .999f || explode.AssemblyCount == 0) { Debug.LogError("[CarAR Smoke] Explode failed"); Application.Quit(1); yield break; }
             foreach (var r in parts)
                 if (r.bounds.min.y < placement.GroundHeight - .01f)
-                    throw new System.InvalidOperationException("AMG exploded part went below the review floor: " + r.name);
+                    throw new System.InvalidOperationException("Exploded model part went below the review floor: " + r.name);
             CaptureVehicle("exploded.png");
             yield return new WaitForSeconds(.2f);
             explode.SetTarget(0);
@@ -236,8 +263,79 @@ namespace CarAR
             yield return new WaitForSeconds(2);
             if (RenderSettings.sun.intensity > .12f || RenderSettings.sun.color.b > .6f) { Debug.LogError("[CarAR Smoke] Light response failed"); Application.Quit(1); yield break; }
             CaptureVehicle("warm-dim.png");
-            Debug.Log($"[CarAR Smoke] PASS: parked root stable, locked transforms rejected, explicit scaling preserves ground pivot, {parts.Length} renderers, 4 panel animations, explode/assemble restores original positions, light intensity and color response.");
+            Debug.Log($"[CarAR Smoke] PASS: parked root stable, locked transforms rejected, explicit scaling preserves ground pivot, {parts.Length} renderers, generic explode/assemble restores original positions, light intensity and color response.");
             yield return new WaitForSeconds(.5f); Application.Quit(0);
+        }
+
+        IEnumerator ReviewToolsSmoke()
+        {
+            while (annotations.Count > 0) annotations.RemoveLast();
+            if (review.SelectedMaterial == null) throw new System.InvalidOperationException("External GLB has no editable material");
+            var originalColor = review.ColorValue;
+            float originalMetallic = review.Metallic, originalRoughness = review.Roughness;
+            review.SetColor(new Color(.21f, .43f, .67f, .62f));
+            review.SetMetallic(.73f); review.SetRoughness(.41f);
+            var edited = ActiveReviewMaterial();
+            float actualMetallic = edited != null && edited.HasProperty("_Metallic") ? edited.GetFloat("_Metallic") : edited != null ? edited.GetFloat("metallicFactor") : -1;
+            float actualRoughness = edited != null && edited.HasProperty("_Roughness") ? edited.GetFloat("_Roughness") : edited != null && edited.HasProperty("roughnessFactor") ? edited.GetFloat("roughnessFactor") : edited != null ? 1 - edited.GetFloat("_Smoothness") : -1;
+            var actualColor = edited != null && edited.HasProperty("_BaseColor") ? edited.GetColor("_BaseColor") : edited != null ? edited.GetColor("baseColorFactor") : Color.clear;
+            if (Mathf.Abs(actualMetallic - .73f) > .001f || Mathf.Abs(actualRoughness - .41f) > .001f || Mathf.Abs(actualColor.a - .62f) > .001f)
+                throw new System.InvalidOperationException($"Material edits failed: selected={review.SelectedName}; shader={edited?.shader?.name}; metallic={actualMetallic}; roughness={actualRoughness}; color={actualColor}; overrides={review.Metallic}/{review.Roughness}/{review.ColorValue}");
+            bool blended = edited.GetFloat("_SrcBlend") == (float)UnityEngine.Rendering.BlendMode.SrcAlpha &&
+                edited.GetFloat("_DstBlend") == (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha &&
+                edited.renderQueue == (int)UnityEngine.Rendering.RenderQueue.Transparent &&
+                (edited.shader.name == "CarAR/ReviewClip" || edited.HasProperty("_Surface") && edited.GetFloat("_Surface") == 1);
+            if (!blended)
+                throw new System.InvalidOperationException($"glTF opacity did not activate blending: shader={edited.shader.name}; queue={edited.renderQueue}; src={edited.GetFloat("_SrcBlend")}; dst={edited.GetFloat("_DstBlend")}");
+            review.SetOpacity(1);
+            var opaque = ActiveReviewMaterial();
+            if (opaque == null || opaque.renderQueue == (int)UnityEngine.Rendering.RenderQueue.Transparent ||
+                opaque.HasProperty("_Surface") && opaque.GetFloat("_Surface") == 1)
+                throw new System.InvalidOperationException("Opaque restore retained transparent rendering");
+            review.SetOpacity(.62f);
+            review.SetClipping(true); review.SetPlaneAxis(Vector3.up); review.MovePlane(.1f);
+            yield return null;
+            foreach (var renderer in car.GetComponentsInChildren<Renderer>(true))
+                foreach (var material in renderer.sharedMaterials)
+                    if (material != null && material.shader.name != "CarAR/ReviewClip")
+                        throw new System.InvalidOperationException("Clipping did not cover every external GLB material");
+            review.SetClipping(false);
+            if (ActiveReviewMaterial() == null) throw new System.InvalidOperationException("Clipping discarded the edited material");
+            review.ResetMaterial();
+            if (Vector4.Distance(review.ColorValue, originalColor) > .001f || Mathf.Abs(review.Metallic - originalMetallic) > .001f ||
+                Mathf.Abs(review.Roughness - originalRoughness) > .001f)
+                throw new System.InvalidOperationException("Material reset did not restore original values");
+            annotations.BeginPlacement();
+            yield return new WaitForSeconds(.3f);
+            var targetRenderer = car.GetComponentInChildren<MeshRenderer>();
+            var screen = Camera.main.WorldToScreenPoint(targetRenderer.bounds.center);
+            var mouse = Mouse.current;
+            if (mouse == null) throw new System.InvalidOperationException("Annotation regression requires a mouse");
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = screen, buttons = 1 });
+            yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = screen });
+            if (!annotations.Editing) throw new System.InvalidOperationException("Ray selection did not start annotation editing");
+            annotations.Submit("Generic GLB note");
+            if (annotations.Count != 1) throw new System.InvalidOperationException("Annotation was not created");
+            string path = snapshot.Capture();
+            var png = File.ReadAllBytes(path);
+            if (png.Length < 100 || png[0] != 137 || png[1] != 80 || png[2] != 78 || png[3] != 71)
+                throw new System.InvalidOperationException("Snapshot is not a valid PNG: " + path);
+            _ = modelLoader.Load(modelLoader.CurrentPath);
+            float deadline = Time.time + 30;
+            while (modelLoader.IsLoading && Time.time < deadline) yield return null;
+            if (modelLoader.IsLoading || annotations.Count != 1 || modelLoader.RendererCount != car.GetComponentsInChildren<MeshRenderer>(true).Length)
+                throw new System.InvalidOperationException("Model reload did not restore saved annotations or isolated model content");
+            annotations.RemoveLast();
+            Debug.Log("[CarAR Review Tools] PASS: external-only GLB content, color/metallic/roughness/opacity edits and reset, complete clipping restore, ray-picked persisted annotation, model reload and PNG snapshot: " + path);
+        }
+
+        Material ActiveReviewMaterial()
+        {
+            foreach (var renderer in car.GetComponentsInChildren<Renderer>(true))
+                foreach (var material in renderer.sharedMaterials)
+                    if (material != null && (material.name.EndsWith("(review)") || material.name.EndsWith("(clipped)"))) return material;
+            return null;
         }
 
         void CaptureVehicle(string file)
@@ -250,11 +348,6 @@ namespace CarAR
             camera.transform.SetPositionAndRotation(Camera.main.transform.position, Camera.main.transform.rotation);
             camera.fieldOfView = 45;
             camera.transform.LookAt(car.position + Vector3.up * .65f);
-            if (file == "left-door.png")
-            {
-                camera.transform.position = leftDoor.transform.position + car.rotation * new Vector3(-2.4f, 1.15f, -1.5f) * car.localScale.x;
-                camera.transform.LookAt(leftDoor.transform.position + Vector3.up * .05f * car.localScale.x);
-            }
             if (explode.Progress > .5f)
             {
                 var centre = car.position + Vector3.up * .8f;
@@ -276,7 +369,7 @@ namespace CarAR
         {
             var ui = GetComponent<MRTKShowroomUI>();
             var manipulator = gestures.manipulator;
-            if (ui == null || ui.buttons.Length != 28 || manipulator == null || manipulator.enabled)
+            if (ui == null || ui.buttons.Length != 44 || manipulator == null || manipulator.enabled)
                 throw new System.InvalidOperationException("MRTK controls missing or car not locked initially");
             var originalPosition = car.position; var originalRotation = car.rotation; var originalScale = car.localScale;
             ui.buttons[4].OnClicked.Invoke();
@@ -352,10 +445,10 @@ namespace CarAR
                 throw new System.InvalidOperationException("MRTK parked vehicle drifted after release");
             Destroy(a); Destroy(b);
             car.SetPositionAndRotation(originalPosition, originalRotation); car.localScale = originalScale;
-            ui.buttons[0].OnClicked.Invoke();
-            yield return new WaitForSeconds(.8f);
-            if (!leftDoor.IsOpen) throw new System.InvalidOperationException("MRTK door button binding failed");
-            ui.buttons[0].OnClicked.Invoke(); yield return new WaitForSeconds(.8f);
+            ui.buttons[1].OnClicked.Invoke();
+            if (!review.Clipping) throw new System.InvalidOperationException("MRTK clipping button binding failed");
+            ui.buttons[1].OnClicked.Invoke();
+            if (review.Clipping) throw new System.InvalidOperationException("MRTK clipping restore failed");
             Debug.Log("[CarAR MRTK Smoke] PASS: locked 1:1 first activation, explicit 0.1x/10x limits and 1:1 reset, XRI selection, one-hand translation without attach-scale changes, deliberate two-hand scaling clamped at 10x, coincident/recovered controller poses preserve scale, release and park.");
         }
 

@@ -17,11 +17,17 @@ namespace CarAR
         void Awake()
         {
             showroom = FindAnyObjectByType<CarShowroom>();
-            var renderers = GetComponentsInChildren<Renderer>(true);
-            if (renderers.Length == 0) return;
-            var bounds = renderers[0].bounds;
-            foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
-            ModelSize = bounds.size / transform.localScale.x;
+            RefreshModel();
+        }
+        public void RefreshModel()
+        {
+            var bounds = ModelBounds.Local(transform);
+            ModelSize = bounds.size;
+            if (manipulator != null)
+            {
+                manipulator.colliders.Clear();
+                foreach (var collider in GetComponentsInChildren<Collider>(true)) manipulator.colliders.Add(collider);
+            }
             Debug.Log($"[CarAR Dimensions] 1:1 model bounds: {ModelSize:F3}m; model units, not certified OEM dimensions.");
         }
         public bool ManipulationEnabled => manipulator != null && manipulator.enabled;

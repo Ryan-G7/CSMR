@@ -16,17 +16,18 @@ namespace CarAR
         public Transform ControlPanel => controlPanel;
         float noticeUntil;
         string notice;
-        bool settingsPage;
-        readonly int[] main = { 5, 4, 0, 1, 2, 27, 3, 16, 17, 25, 24, 26 };
-        readonly int[] settings = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
+        int page, colorIndex;
+        readonly int[] main = { 5, 4, 0, 3, 1, 27, 16, 43, 36, 25, 24, 26 };
+        readonly int[] settings = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
+        readonly int[] materials = { 2, 28, 29, 30, 31, 32, 33, 34, 35, 38, 39, 40, 41, 42, 1, 25, 26 };
 
         void Start()
         {
-            Bind(0, showroom.leftDoor.Toggle); Bind(1, showroom.rightDoor.Toggle); Bind(2, showroom.trunk.Toggle);
+            Bind(0, () => showroom.modelLoader.PickFile());
+            Bind(1, () => showroom.review.SetClipping(!showroom.review.Clipping));
+            Bind(2, () => showroom.review.SelectMaterial(-1));
             Bind(3, () =>
             {
-                // A tracking reset can suspend an exploded vehicle. Always allow
-                // assembly so the subsequent placement is not blocked by IsBusy.
                 if (!showroom.placement.IsPlaced && !showroom.explode.IsExploded) return;
                 showroom.gestures.SetManipulation(false); showroom.explode.Toggle();
             });
@@ -54,9 +55,30 @@ namespace CarAR
                 Notice(showroom.lighting.HasCameraProvider ? "等待设备输出有效测光，期间使用 HDR" : "使用静态 HDR");
             });
             Bind(24, () => GetComponent<MRPresentation>().ToggleQuality());
-            Bind(25, () => { settingsPage = !settingsPage; SetPage(); });
+            Bind(25, () => { page = page == 0 ? 1 : 0; SetPage(); });
             Bind(26, TogglePanel);
-            Bind(27, showroom.hood.Toggle);
+            Bind(27, () => { showroom.snapshot.Capture(); Notice("快照已保存\n" + showroom.snapshot.LastPath); });
+            Bind(28, () => showroom.review.SelectMaterial(1));
+            Bind(29, () =>
+            {
+                Color[] colors = { new(.8f, .04f, .03f), new(.9f, .9f, .9f), new(.03f, .25f, .8f), new(.08f, .55f, .25f) };
+                colorIndex = (colorIndex + 1) % colors.Length;
+                var color = colors[colorIndex]; color.a = showroom.review.ColorValue.a; showroom.review.SetColor(color);
+            });
+            Bind(30, () => showroom.review.SetMetallic(showroom.review.Metallic + .1f));
+            Bind(31, () => showroom.review.SetMetallic(showroom.review.Metallic - .1f));
+            Bind(32, () => showroom.review.SetRoughness(showroom.review.Roughness + .1f));
+            Bind(33, () => showroom.review.SetRoughness(showroom.review.Roughness - .1f));
+            Bind(34, () => showroom.review.SetOpacity(showroom.review.ColorValue.a + .1f));
+            Bind(35, () => showroom.review.SetOpacity(showroom.review.ColorValue.a - .1f));
+            Bind(36, () => { showroom.annotations.BeginPlacement(); controlPanel.gameObject.SetActive(false); Notice("用射线指向模型并按扳机选点"); });
+            Bind(37, showroom.annotations.RemoveLast);
+            Bind(38, () => showroom.review.SetPlaneAxis(Vector3.right));
+            Bind(39, () => showroom.review.SetPlaneAxis(Vector3.up));
+            Bind(40, () => showroom.review.SetPlaneAxis(Vector3.forward));
+            Bind(41, () => showroom.review.MovePlane(-.1f));
+            Bind(42, () => showroom.review.MovePlane(.1f));
+            Bind(43, () => { page = 2; SetPage(); });
             SetPage(); controlPanel.gameObject.SetActive(false);
         }
         void Bind(int index, UnityEngine.Events.UnityAction action)
@@ -66,22 +88,22 @@ namespace CarAR
         }
         void ToggleLock()
         {
-            if (!showroom.placement.IsPlaced) { Notice("正在放置汽车，请稍候"); return; }
-            if (showroom.explode.IsBusy) { Notice("请先组装还原，再解锁车辆"); return; }
+            if (!showroom.placement.IsPlaced) { Notice("正在放置模型，请稍候"); return; }
+            if (showroom.explode.IsBusy) { Notice("请先组装还原，再解锁模型"); return; }
             showroom.gestures.SetManipulation(!showroom.gestures.ManipulationEnabled);
         }
         void SetPage()
         {
             foreach (var button in buttons) button.gameObject.SetActive(false);
-            var page = settingsPage ? settings : main;
-            for (int i = 0; i < page.Length; i++)
+            var pageButtons = page == 1 ? settings : page == 2 ? materials : main;
+            for (int i = 0; i < pageButtons.Length; i++)
             {
-                var button = buttons[page[i]];
+                var button = buttons[pageButtons[i]];
                 button.gameObject.SetActive(true);
                 button.GetComponent<RectTransform>().anchoredPosition = new Vector2((i % 3 - 1) * 220, 80 - i / 3 * 78);
             }
-            controlPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(700, settingsPage ? 840 : 610);
-            SetLabel(buttons[25], settingsPage ? "返回评审" : "精细调整");
+            controlPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(700, page == 0 ? 610 : 840);
+            SetLabel(buttons[25], page == 0 ? "精细调整" : "返回评审");
         }
         static Vector3 ViewForward()
         {
@@ -91,8 +113,8 @@ namespace CarAR
         static Vector3 ViewRight() => Vector3.Cross(Vector3.up, ViewForward());
         void TransformCommand(System.Action command)
         {
-            if (!showroom.placement.IsPlaced) { Notice("正在放置汽车，请稍候"); return; }
-            if (showroom.explode.IsBusy) { Notice("请先组装还原，再移动汽车"); return; }
+            if (!showroom.placement.IsPlaced) { Notice("正在放置模型，请稍候"); return; }
+            if (showroom.explode.IsBusy) { Notice("请先组装还原，再移动模型"); return; }
             if (!showroom.gestures.ManipulationEnabled) { Notice("请先按“解除锁定”"); return; }
             command();
         }
@@ -103,27 +125,27 @@ namespace CarAR
             bool visible = !controlPanel.gameObject.activeSelf;
             controlPanel.gameObject.SetActive(visible);
             if (visible) PositionPanel();
-            Debug.Log("[CarAR UI] Controller panel " + (visible ? "opened" : "closed"));
         }
         public void PositionPanel()
         {
             var cam = Camera.main.transform;
             var forward = ViewForward();
-            // Anchor on invocation only. Walking or turning the head never drags the panel.
-            controlPanel.SetPositionAndRotation(cam.position + forward * 1.45f - Vector3.up * .12f,
-                Quaternion.LookRotation(forward));
+            controlPanel.SetPositionAndRotation(cam.position + forward * 1.45f - Vector3.up * .12f, Quaternion.LookRotation(forward));
         }
         void LateUpdate()
         {
             float scale = showroom.car.localScale.x;
-            status.text = $"整车评审 · {scale:F2} 倍 · 长 {showroom.gestures.ModelSize.z * scale:F2} 米\n" +
-                "菜单 / Y / B：面板 · 扳机：点选 · 选择停放位置：对齐地面\n" +
-                (showroom.gestures.ManipulationEnabled ? "已解锁 · 左摇杆平移 / 右摇杆旋转缩放 / 双握键缩放" : "已停车锁定 / 点选车门与行李厢");
-            if (settingsPage) status.text += "\n" + showroom.lighting.DisplayStatus + " · " + showroom.placement.DisplayStatus;
+            status.text = $"GLB 评审 · {scale:F2} 倍 · {showroom.modelLoader.Status}\n" +
+                "菜单 / Y / B：面板 · 扳机：点选 · 标注：射线选点后输入文字\n" +
+                (showroom.gestures.ManipulationEnabled ? "已解锁 · 左摇杆平移 / 右摇杆旋转缩放 / 双握键缩放" : "已停车锁定 / 可爆炸、剖切、编辑材质");
+            if (page == 2) status.text += $"\n{showroom.review.SelectedName} · 金属 {showroom.review.Metallic:F2} · 粗糙 {showroom.review.Roughness:F2} · 透明 {showroom.review.ColorValue.a:F2}";
+            if (page == 1) status.text += "\n" + showroom.lighting.DisplayStatus + " · " + showroom.placement.DisplayStatus;
             else if (!showroom.placement.IsPlaced) status.text += "\n" + showroom.placement.DisplayStatus;
+            if (showroom.annotations.AwaitingPlacement) status.text += "\n请用控制器射线在模型上选择标注位置";
             if (Time.unscaledTime < noticeUntil) status.text += "\n" + notice;
             SetLabel(buttons[4], showroom.gestures.ManipulationEnabled ? "停车锁定" : "解除锁定");
-            SetLabel(buttons[3], showroom.explode.IsExploded ? "组装还原" : "整车爆炸");
+            SetLabel(buttons[3], showroom.explode.IsExploded ? "组装还原" : "模型爆炸");
+            SetLabel(buttons[1], showroom.review.Clipping ? "关闭剖切" : "开启剖切");
             SetLabel(buttons[24], GetComponent<MRPresentation>().HighQuality ? "切换流畅画质" : "切换精细画质");
             if (Application.isFocused && Keyboard.current?.hKey.wasPressedThisFrame == true) TogglePanel();
             if (Application.isFocused && Keyboard.current?.mKey.wasPressedThisFrame == true) ToggleLock();

@@ -22,38 +22,6 @@ namespace CarAR
             float ground = placement.GroundHeight;
             float pivot = position.y - ground;
             FloorPlacementRegression(showroom);
-            // A door may move only its verified assembly, never mixed seat/dashboard meshes.
-            var allowedDoorSources = new System.Collections.Generic.HashSet<string> {
-                "Cube.002", "Cube.135", "Cube.013", "Cube.017", "Cube.083", "Cube.092", "Cube.106", "Cube.139", "Cube.140", "Cube.141", "Cube.142",
-                "DoorInterior_plastic", "DoorInterior_Leather Black", "DoorInterior_gril" };
-            foreach (var panel in new[] { showroom.leftDoor, showroom.rightDoor })
-            {
-                var actual = new System.Collections.Generic.HashSet<string>();
-                foreach (var renderer in panel.GetComponentsInChildren<MeshRenderer>())
-                    actual.Add(renderer.name.Split(new[] { "__" }, StringSplitOptions.None)[0]);
-                Check(actual.IsSubsetOf(allowedDoorSources) && (actual.Contains("Cube.002") || actual.Contains("Cube.135")) && actual.Contains("Cube.017") && actual.Contains("Cube.139") &&
-                    actual.Contains("Cube.013") && actual.Contains("Cube.092") && actual.Contains("DoorInterior_plastic") && actual.Contains("DoorInterior_Leather Black") && actual.Contains("DoorInterior_gril"),
-                    "door contains unrelated parts or misses shell/glass/mirror/interior: " + panel.name);
-            }
-            var staticParts = Array.FindAll(car.GetComponentsInChildren<MeshRenderer>(),
-                r => !r.transform.IsChildOf(showroom.leftDoor.transform));
-            var worldBefore = Array.ConvertAll(staticParts, r => r.transform.localToWorldMatrix);
-            var doorPoint = showroom.leftDoor.GetComponentInChildren<MeshRenderer>().bounds.center;
-            var leftTrim = Array.FindAll(showroom.leftDoor.GetComponentsInChildren<MeshRenderer>(),
-                r => r.name.StartsWith("Cube.013__") || r.name.StartsWith("Cube.092__"));
-            Check(leftTrim.Length == 2, "missing upper/lower left door trim");
-            var trimPoints = Array.ConvertAll(leftTrim, r => r.bounds.center);
-            var fixedConsole = Array.Find(car.GetComponentsInChildren<MeshRenderer>(), r => r.name.StartsWith("Cube.092__Body"));
-            Check(fixedConsole != null, "mixed source lost its static console geometry");
-            showroom.leftDoor.Toggle();
-            yield return new WaitForSeconds(.8f);
-            Check(Vector3.Distance(doorPoint, showroom.leftDoor.GetComponentInChildren<MeshRenderer>().bounds.center) > .05f,
-                "left door geometry did not move");
-            for (int i = 0; i < leftTrim.Length; i++)
-                Check(Vector3.Distance(trimPoints[i], leftTrim[i].bounds.center) > .1f, "door trim remained across the open doorway: " + leftTrim[i].name);
-            for (int i = 0; i < staticParts.Length; i++)
-                Check(staticParts[i].transform.localToWorldMatrix == worldBefore[i],
-                    "opening left door moved a body/interior/opposite-door part: " + staticParts[i].name);
             var originalRotation = car.rotation;
             car.rotation = Quaternion.Euler(9, 35, -6);
             var heading = Vector3.ProjectOnPlane(car.forward, Vector3.up).normalized;
@@ -61,16 +29,14 @@ namespace CarAR
             Check(Vector3.Distance(car.position, new Vector3(2, ground + .3f + pivot, -3)) < .0001f,
                 "estimated placement lost horizontal coordinates or the ground pivot");
             Check(Vector3.Angle(car.up, Vector3.up) < .01f && Vector3.Angle(car.forward, heading) < .05f,
-                "placement with an open door retained body tilt or lost heading");
+                "placement retained model tilt or lost heading");
             placement.PlaceOnFloorPoint(new Vector3(-2, ground - .2f, 3));
             placement.PlaceAt(new Vector3(1, ground + .1f, 2));
             Check(Vector3.Distance(car.position, new Vector3(1, ground + .1f + pivot, 2)) < .0001f,
-                "repeated placement remeasured open geometry");
+                "repeated placement remeasured model geometry");
             Check(placement.Status == "Tracked horizontal plane", "tracked placement retained the previous manual-floor status");
             placement.PlaceAt(new Vector3(position.x, ground, position.z), true);
             car.rotation = originalRotation;
-            showroom.leftDoor.Close();
-            yield return new WaitForSeconds(.8f);
 
             var input = showroom.GetComponent<MRTKControllerInput>();
             input.BeginPlacement();
@@ -165,7 +131,7 @@ namespace CarAR
                 RenderSettings.reflectionIntensity = originalReflection;
                 showroom.lighting.enabled = true;
             }
-            Debug.Log("[CarAR Review Regression] PASS: upright inactive-first/repeated placement, heading and four-wheel contact at three scales; recorded 14.7m HMD/controller mismatch, delayed placement and origin recovery; upper/lower door trim with static console; independent door motion, ground pivot, input lifecycle, stale/invalid lighting.");
+            Debug.Log("[CarAR Review Regression] PASS: upright inactive-first/repeated placement, heading and model floor contact at three scales; recorded 14.7m HMD/controller mismatch, delayed placement and origin recovery; ground pivot, input lifecycle, stale/invalid lighting.");
         }
         static void FloorPlacementRegression(CarShowroom showroom)
         {
@@ -184,14 +150,9 @@ namespace CarAR
                         "floor placement failed to level the vehicle while retaining its heading");
                     Check(car.localScale == Vector3.one * factor, "leveling changed vehicle scale");
                     Check(!showroom.gestures.ManipulationEnabled, "floor placement did not lock manipulation");
-                    foreach (var wheel in showroom.explode.assemblyRoots)
-                    {
-                        float bottom = float.PositiveInfinity;
-                        foreach (var renderer in wheel.GetComponentsInChildren<MeshRenderer>())
-                            bottom = Mathf.Min(bottom, renderer.bounds.min.y);
-                        Check(Mathf.Abs(bottom - ground) < .002f,
-                            $"{wheel.name} is not on the floor at scale {factor}: bottom={bottom:F5}, ground={ground:F5}");
-                    }
+                    float bottom = ModelBounds.BottomY(car);
+                    Check(Mathf.Abs(bottom - ground) < .002f,
+                        $"model is not on the floor at scale {factor}: bottom={bottom:F5}, ground={ground:F5}");
                 }
             }
             finally

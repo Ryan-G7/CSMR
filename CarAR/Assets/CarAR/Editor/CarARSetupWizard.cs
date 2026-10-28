@@ -313,11 +313,7 @@ namespace CarAR.EditorTools
             var bounds = modelRenderers[0].bounds;
             foreach (var r in modelRenderers) bounds.Encapsulate(r.bounds);
             car.transform.position += Vector3.up * (carRoot.transform.position.y - bounds.min.y);
-            var leftDoor = SetupPanel(car.transform, "DoorLeft", Vector3.up, 65f);
-            var rightDoor = SetupPanel(car.transform, "DoorRight", Vector3.up, -65f);
-            var trunk = SetupPanel(car.transform, "RearHatch", Vector3.right, 65f);
-            var hood = SetupPanel(car.transform, "Hood", Vector3.right, -55f);
-            Debug.Log($"[CarAR Model] AMG size={bounds.size:F3}m; panels: {leftDoor.transform.localPosition:F3}, {rightDoor.transform.localPosition:F3}, hatch={trunk.transform.localPosition:F3}, hood={hood.transform.localPosition:F3}");
+            Debug.Log($"[CarAR Model] Default GLB size={bounds.size:F3}m");
             foreach (var filter in car.GetComponentsInChildren<MeshFilter>())
             {
                 if (filter.sharedMesh == null) continue;
@@ -325,14 +321,9 @@ namespace CarAR.EditorTools
                 collider.sharedMesh = filter.sharedMesh;
             }
             var explode = carRoot.AddComponent<ExplodeController>();
-            var wheelAssemblies = new System.Collections.Generic.List<Transform>();
-            foreach (var t in car.GetComponentsInChildren<Transform>())
-                if (t.name.StartsWith("Wheel", StringComparison.Ordinal)) wheelAssemblies.Add(t);
-            explode.assemblyRoots = wheelAssemblies.ToArray();
             var manipulator = carRoot.AddComponent<ObjectManipulator>();
             manipulator.colliders.Clear();
-            foreach (var collider in car.GetComponentsInChildren<Collider>())
-                if (collider.GetComponentInParent<CarPanel>() == null) manipulator.colliders.Add(collider);
+            foreach (var collider in car.GetComponentsInChildren<Collider>()) manipulator.colliders.Add(collider);
             manipulator.selectMode = InteractableSelectMode.Multiple;
             manipulator.interactionLayers = MRTKControllerInput.VehicleLayer;
             manipulator.RotationAnchorFar = ObjectManipulator.RotateAnchorType.RotateAboutObjectCenter;
@@ -351,11 +342,6 @@ namespace CarAR.EditorTools
             manipulator.enabled = false;
             var gesture = carRoot.AddComponent<MRTKCarInteraction>();
             gesture.manipulator = manipulator;
-            foreach (var panel in new[] { leftDoor, rightDoor, trunk, hood })
-            {
-                var target = panel.gameObject.AddComponent<StatefulInteractable>();
-                UnityEditor.Events.UnityEventTools.AddPersistentListener(target.OnClicked, panel.Toggle);
-            }
 
             var placement = originGo.AddComponent<CarPlacementManager>();
             SetField(placement, "planeManager", planeManager);
@@ -369,7 +355,6 @@ namespace CarAR.EditorTools
             var showroom = new GameObject("Showroom").AddComponent<CarShowroom>();
             showroom.car = carRoot.transform; showroom.placement = placement; showroom.lighting = lightEst;
             showroom.gestures = gesture; showroom.explode = explode;
-            showroom.leftDoor = leftDoor; showroom.rightDoor = rightDoor; showroom.trunk = trunk; showroom.hood = hood;
             var presentation = showroom.gameObject.AddComponent<MRPresentation>();
             presentation.showroom = showroom;
             presentation.ambientOcclusion = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(SettingsDir + "/URP_Renderer.asset").rendererFeatures.Find(feature => feature is ScreenSpaceAmbientOcclusion);
@@ -378,6 +363,18 @@ namespace CarAR.EditorTools
             AssetDatabase.CreateAsset(presentation.shadowMaterial, SettingsDir + "/ShadowCatcher.mat");
             AssetDatabase.CreateAsset(presentation.contactMaterial, SettingsDir + "/ContactShadow.mat");
             CreateMRTKControls(showroom);
+            var keyboard = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Packages/org.mixedrealitytoolkit.uxcomponents/Experimental/NonNativeKeyboard/NonNativeKeyboard.prefab"));
+            keyboard.name = "Review spatial keyboard";
+            PrefabUtility.UnpackPrefabInstance(keyboard, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            foreach (var image in keyboard.GetComponentsInChildren<Image>(true))
+            {
+                var serialized = new SerializedObject(image);
+                serialized.FindProperty("m_Sprite").objectReferenceValue = null;
+                serialized.FindProperty("m_Sprite").objectReferenceEntityIdValue = default;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.RecordPrefabInstancePropertyModifications(image);
+            }
             var controllerInput = showroom.gameObject.AddComponent<MRTKControllerInput>();
             controllerInput.ui = showroom.GetComponent<MRTKShowroomUI>();
             controllerInput.ui.controllers = controllerInput;
@@ -453,7 +450,7 @@ namespace CarAR.EditorTools
             rect.localScale = Vector3.one * .001f;
             controls.controlPanel = rect;
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/org.mixedrealitytoolkit.uxcomponents/Button/Prefabs/Action Button.prefab");
-            string[] labels = { "左车门", "右车门", "后备厢尾门", "整车爆炸", "解除锁定", "选择停放位置", "向左 10cm", "向右 10cm", "远离 10cm", "靠近 10cm", "缩小 10%", "放大 10%", "左转 5°", "右转 5°", "地面 +1cm", "地面 -1cm", "1:1 尺寸", "1:4 展示", "补光调亮", "补光调暗", "色温调暖", "色温调冷", "光线方向", "HDR / 自动光照", "切换流畅画质", "精细调整", "收起面板", "发动机盖" };
+            string[] labels = { "导入 GLB", "开启剖切", "上一材质", "模型爆炸", "解除锁定", "选择停放位置", "向左 10cm", "向右 10cm", "远离 10cm", "靠近 10cm", "缩小 10%", "放大 10%", "左转 5°", "右转 5°", "地面 +1cm", "地面 -1cm", "1:1 尺寸", "1:4 展示", "补光调亮", "补光调暗", "色温调暖", "色温调冷", "光线方向", "HDR / 自动光照", "切换流畅画质", "精细调整", "收起面板", "保存快照", "下一材质", "切换颜色", "金属度 +", "金属度 -", "粗糙度 +", "粗糙度 -", "透明度 +", "透明度 -", "添加标注", "撤销标注", "剖面 X", "剖面 Y", "剖面 Z", "剖面 -10cm", "剖面 +10cm", "材质调整" };
             controls.buttons = new StatefulInteractable[labels.Length];
             for (int i = 0; i < labels.Length; i++)
             {
@@ -499,17 +496,6 @@ namespace CarAR.EditorTools
             foreach (var texture in font.atlasTextures) AssetDatabase.AddObjectToAsset(texture, font);
             EditorUtility.SetDirty(font);
             return font;
-        }
-
-        static CarPanel SetupPanel(Transform root, string name, Vector3 axis, float angle)
-        {
-            foreach (var t in root.GetComponentsInChildren<Transform>(true))
-                if (t.name == name)
-                {
-                    var panel = t.gameObject.AddComponent<CarPanel>();
-                    panel.localAxis = axis; panel.openAngle = angle; return panel;
-                }
-            throw new Exception("Missing interactive panel: " + name);
         }
 
         // Headless entry point: generate a reproducible scene, validate it and build a runnable desktop preview.

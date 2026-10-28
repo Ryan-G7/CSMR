@@ -88,24 +88,9 @@ namespace CarAR
             Check(!app.TickTracking(true,.06f) && app.TickTracking(true,.07f),"tracking resumed without the stable recovery interval");
             Check(!app.TickTracking(false,.3f) && app.ComfortFade>.99f,"sustained tracking loss did not fade out");
             Check(app.TickTracking(true,.2f) && app.ComfortFade==0,"stable tracking did not restore the view");
-            var nearCar=app.car.TransformPoint(new Vector3(-.92f,0,-.15f));nearCar.y=app.entry.y;
-            Check(app.ValidateDestination(nearCar,out var nearLanding) && Vector3.Distance(nearCar,nearLanding)<.1f,"near-car landing still excluded by vehicle bounds");
-            float standingHeight=app.origin.Camera.transform.position.y-app.Feet.y;
-            yield return app.EnterCabin();
-            Check(app.CabinView && Vector3.Distance(app.origin.Camera.transform.position,app.CabinEye)<.08f,"driver viewpoint was not inside the cabin at seated eye height");
-            app.Capture("vr-cabin.png");
-            Send(left,Vector2.zero);Send(right,Vector2.zero);yield return new WaitForSeconds(.12f);
-            var cabinStart=app.Feet;
-            Send(left,Vector2.left);yield return new WaitForSeconds(1.15f);
-            Send(left,Vector2.zero);yield return new WaitForSeconds(.12f);
-            var acrossDoor=app.car.InverseTransformVector(app.Feet-cabinStart);
-            Check(acrossDoor.x < -1.2f && Mathf.Abs(app.Feet.y-cabinStart.y)<.06f,"car collision blocked cabin exit or pushed the viewpoint vertically");
-            Check(app.ComfortFade==0,"walking through vehicle caused a full-screen fade");
-            app.ToggleCabinView();yield return new WaitForSeconds(.5f);
-            Check(!app.CabinView && Mathf.Abs(app.origin.Camera.transform.position.y-app.Feet.y-standingHeight)<.02f,"exiting cabin did not restore standing height");
-            Check(app.environment.localToWorldMatrix==world && app.car.localToWorldMatrix==vehicle && app.HighQuality,"cabin visit changed the world, car or high-quality preset");
+            Check(app.environment.localToWorldMatrix==world && app.car.localToWorldMatrix==vehicle && app.HighQuality,"controller review changed the world, model or high-quality preset");
             app.EndControllerReplay();InputSystem.RemoveDevice(left);InputSystem.RemoveDevice(right);
-            Debug.Log("[CarAR VR Controller Smoke] PASS: real XR actions, default left-stick walk, held-input arming, snap turn, tracking loss/recovery without transient blackout, gradual-release teleport, near-car landing, seated cabin entry/exit and stable height through the car.");
+            Debug.Log("[CarAR VR Controller Smoke] PASS: real XR actions, default left-stick walk, held-input arming, snap turn, tracking loss/recovery without transient blackout and gradual-release teleport with a fixed model and room.");
         }
         static void VerifyTrackingHeight(VRShowroom app)
         {

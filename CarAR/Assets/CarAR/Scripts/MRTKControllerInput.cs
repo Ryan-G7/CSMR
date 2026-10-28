@@ -104,7 +104,7 @@ namespace CarAR
             h.line.validColorGradient = LineColor(new Color(.1f, 1f, .7f));
             h.line.blockedColorGradient = LineColor(Color.white);
 
-            // Grip selects only the whole vehicle, so clicking a door cannot drag the car.
+            // Grip selects only the model root, so selecting a part cannot drag it independently.
             var grip = new GameObject("Grip vehicle ray"); grip.transform.SetParent(root.transform, false);
             var controller = grip.AddComponent<ActionBasedController>();
             controller.enableInputTracking = false;

@@ -24,6 +24,7 @@ __pycache__/
 *.py[cod]
 .DS_Store
 Thumbs.db
+**/Assets/Resources/PerformanceTestRun*.json*
 
 # Optional local source checkouts; required MRTK packages live in Vendor.
 /MixedRealityToolkit-Unity/

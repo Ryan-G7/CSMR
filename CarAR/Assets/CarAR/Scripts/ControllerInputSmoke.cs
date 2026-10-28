@@ -86,9 +86,10 @@ namespace CarAR
             Check(ui.ControlPanel.position == panelPosition, "panel followed head motion");
             Check(car.position == initialPosition, "parked car followed head motion");
             camera.SetPositionAndRotation(cameraPosition, cameraRotation);
-            yield return Click(27); yield return new WaitForSeconds(.7f);
-            Check(showroom.hood.IsOpen, "native trigger ray did not open AMG hood");
-            yield return Click(27); yield return new WaitForSeconds(.7f);
+            yield return Click(1); yield return new WaitForSeconds(.2f);
+            Check(showroom.review.Clipping, "native trigger ray did not enable clipping");
+            yield return Click(1); yield return new WaitForSeconds(.2f);
+            Check(!showroom.review.Clipping, "native trigger ray did not restore clipped materials");
             // Picking up a controller or unlocking with held grips must not grab
             // the vehicle until each grip has been released and pressed again.
             Send(left, grip: 1); Send(right, grip: 1, stick: Vector2.down); yield return new WaitForSeconds(.1f);
@@ -107,20 +108,32 @@ namespace CarAR
             yield return Click(26); Check(!ui.ControlPanel.gameObject.activeSelf, "panel close failed");
 
             car.SetPositionAndRotation(initialPosition, initialRotation); car.localScale = Vector3.one;
-            Pose(left, car.position + new Vector3(-.4f, .65f, -5), car.position + new Vector3(-.4f, .65f, 0));
-            Pose(right, car.position + new Vector3(.4f, .65f, -5), car.position + new Vector3(.4f, .65f, 0));
+            var initialTarget = car.GetComponentInChildren<MeshRenderer>().bounds.center;
+            Pose(left, initialTarget + new Vector3(-.2f, 0, -5), initialTarget + new Vector3(-.2f, 0, 0));
+            Pose(right, initialTarget + new Vector3(.2f, 0, -5), initialTarget + new Vector3(.2f, 0, 0));
             yield return new WaitForSeconds(.25f);
             Send(left, grip: 1); yield return new WaitForSeconds(.25f);
-            Check(showroom.gestures.manipulator.isSelected, "grip ray failed to select vehicle");
+            if (!showroom.gestures.manipulator.isSelected)
+            {
+                bool xriHit = input.LeftRay.TryGetCurrent3DRaycastHit(out var xri);
+                bool physicsHit = Physics.Raycast(input.LeftRay.transform.position, input.LeftRay.transform.forward,
+                    out var direct, 12, 1 << MRTKControllerInput.VehicleLayer);
+                var part = car.GetComponentInChildren<MeshRenderer>();
+                throw new InvalidOperationException($"Controller smoke: grip ray failed; target={initialTarget}; origin={input.LeftRay.transform.position}; direction={input.LeftRay.transform.forward}; rootLayer={car.gameObject.layer}; partLayer={part?.gameObject.layer}; colliders={showroom.gestures.manipulator.colliders.Count}; enabled={showroom.gestures.ManipulationEnabled}; xri={xriHit}/{xri.transform?.name}; physics={physicsHit}/{direct.transform?.name}");
+            }
             var beforeMove = car.position;
-            Pose(left, initialPosition + new Vector3(-.1f, .65f, -5), initialPosition + new Vector3(-.1f, .65f, 0));
+            var target = car.GetComponentInChildren<MeshRenderer>().bounds.center;
+            Pose(left, target + new Vector3(.3f, 0, -5), target + new Vector3(.3f, 0, 0));
             yield return new WaitForSeconds(.5f);
             Check(Vector3.Distance(car.position, beforeMove) > .1f, "grip drag failed");
+            target = car.GetComponentInChildren<MeshRenderer>().bounds.center;
+            Pose(right, target + new Vector3(.2f, 0, -5), target + new Vector3(.2f, 0, 0));
             Send(right, grip: 1); yield return new WaitForSeconds(.25f);
             Check(showroom.gestures.manipulator.interactorsSelecting.Count == 2, "second controller grip did not select vehicle");
             float scale = car.localScale.x;
-            Pose(left, initialPosition + new Vector3(-.6f, .65f, -5), initialPosition + new Vector3(-.6f, .65f, 0));
-            Pose(right, initialPosition + new Vector3(.9f, .65f, -5), initialPosition + new Vector3(.9f, .65f, 0));
+            target = car.GetComponentInChildren<MeshRenderer>().bounds.center;
+            Pose(left, target + new Vector3(-.2f, 0, -5), target + new Vector3(-.2f, 0, 0));
+            Pose(right, target + new Vector3(.5f, 0, -5), target + new Vector3(.5f, 0, 0));
             yield return new WaitForSeconds(.6f);
             Check(car.localScale.x > scale * 1.1f, "two-controller MRTK scaling failed");
             Send(left, tracked: false); Send(right, tracked: false, stick: Vector2.down);

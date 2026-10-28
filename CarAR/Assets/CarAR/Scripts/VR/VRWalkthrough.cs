@@ -29,14 +29,14 @@ namespace CarAR
         DateTime startedUtc;
         float nextCapture;
         int stageIndex;
-        bool driverSeatReviewed;
+        bool detailReviewed;
         VRWalkthroughRecorder recorder;
 
         [Serializable] sealed class Take
         {
             public string startedUtc,completedUtc;
             public float durationSeconds,walkedMetres;
-            public bool continuousFirstPerson,fixedWorld,assembled,driverSeatReviewed;
+            public bool continuousFirstPerson,fixedWorld,assembled,detailReviewed;
         }
 
         void Start()
@@ -119,7 +119,6 @@ namespace CarAR
             string takePath=Path.Combine(Application.dataPath,"../walkthrough-take.json");
             // A failed new take must not leave a previous success as its result.
             if(File.Exists(takePath))File.Delete(takePath);
-            foreach(var panel in app.panels)panel.Close();
             app.explode.SetTarget(0);
             while(app.explode.IsBusy)yield return null;
             // Reset before the take begins, so replay starts at the entrance
@@ -133,7 +132,7 @@ namespace CarAR
             yawVelocity=pitchVelocity=walkSpeed=0;travelDirection=Vector3.zero;
             lookPoint=app.entryLook;
             view.GetUniversalAdditionalCameraData().resetHistory=true;
-            playing=true;paused=false;walkDistance=0;stageIndex=0;driverSeatReviewed=false;
+            playing=true;paused=false;walkDistance=0;stageIndex=0;detailReviewed=false;
             if(XRLaunch.HasArgument("--vr-walkthrough-export"))
             {
                 recorder=GetComponent<VRWalkthroughRecorder>() ?? gameObject.AddComponent<VRWalkthroughRecorder>();
@@ -146,30 +145,14 @@ namespace CarAR
             yield return Go("前脸观察",0,3.4f,Look(0,.8f,1.8f),3);
             yield return Go("走向左前角",-1.8f,3.05f,Look(-.5f,.8f,1.6f),1);
             yield return Go("左前轮与侧面",-2.5f,1.35f,Look(-.85f,.65f,1.2f),3);
-            yield return Go("走到驾驶门旁",-2.5f,-.45f,Look(-.7f,.95f,-.35f),1.5f);
-            app.panels[0].Toggle();
-            yield return PauseLook("开门观察",Look(-.6f,.95f,-.35f),3);
-            yield return Go("靠近车门",-1.4f,-.55f,Look(-.15f,.95f,-.15f),1);
-            targetEye=1.18f;
-            yield return PauseLook("俯身进入车门",Look(-.435f,.95f,.15f),2);
-            targetEye=app.CabinEye.y-app.Feet.y;
-            yield return Go("坐入左侧驾驶位",-.435f,-.48f,Look(-.435f,1.05f,2.6f),2,.28f,.025f);
-            float seatError=Vector3.Distance(view.transform.position,app.CabinEye);
-            if(seatError>.08f)throw new InvalidOperationException("Driver review did not reach the driver seat: "+seatError);
-            driverSeatReviewed=true;
-            Debug.Log($"[CarAR Driver Review] seated=True; eyeLocal={app.car.InverseTransformPoint(view.transform.position):F3}; error={seatError:F3}m; continuousEntry=True");
-            yield return PauseLook("驾驶位前方视野",Look(-.435f,1.05f,3),3);
-            yield return PauseLook("驾驶位仪表与方向盘评审",Look(-.435f,.84f,.32f),4);
-            yield return PauseLook("驾驶位中控与换挡区域评审",Look(.12f,.77f,.03f),4);
-            yield return PauseLook("驾驶位查看副驾与内饰",Look(.48f,.91f,-.30f),4);
-            yield return PauseLook("回看前风挡视野",Look(-.435f,1.05f,3),3);
-            targetEye=1.18f;
-            yield return Go("从驾驶位退出车门",-1.4f,-.55f,Look(-.435f,.95f,.15f),1,.28f,.025f);
+            yield return Go("走到模型侧面",-2.5f,-.45f,Look(-.7f,.95f,-.35f),1.5f);
+            yield return PauseLook("侧面细节评审",Look(-.6f,.95f,-.35f),4);
+            yield return Go("靠近模型",-1.4f,-.55f,Look(-.15f,.95f,-.15f),1);
+            targetEye=1.35f;
+            yield return PauseLook("近景几何与材质评审",Look(-.15f,.95f,-.15f),4);
+            detailReviewed=true;
             targetEye=1.65f;
-            yield return PauseLook("下车起身",Look(-.1f,1.05f,0),2.2f);
-            yield return Go("退回车侧",-2.6f,-.55f,Look(-.6f,.95f,-.4f),1);
-            app.panels[0].Close();
-            yield return PauseLook("关门",Look(-.6f,.95f,-.4f),1.5f);
+            yield return Go("退回模型侧面",-2.6f,-.55f,Look(-.6f,.95f,-.4f),1.5f);
             yield return Go("沿车侧走向车尾",-2.6f,-2.2f,Look(-.65f,.9f,-1.1f),1.5f);
             yield return Go("绕过左后角",-1.8f,-3.35f,Look(-.3f,.85f,-1.7f),2);
             yield return Go("车尾观察",0,-3.6f,Look(0,.8f,-1.8f),4);
@@ -185,14 +168,14 @@ namespace CarAR
             yield return PauseLook("组装还原",Look(0,.85f,0),5);
             playing=false;walkSpeed=0;travelDirection=Vector3.zero;
             bool fixedWorld=app.car.localToWorldMatrix==carPose && app.environment.localToWorldMatrix==roomPose;
-            bool assembled=app.explode.Progress<.001f && Array.TrueForAll(app.panels,p=>p.IsClosed);
+            bool assembled=app.explode.Progress<.001f;
             var take=new Take{startedUtc=startedUtc.ToString("O"),completedUtc=DateTime.UtcNow.ToString("O"),
                 durationSeconds=Time.time-startedAt,walkedMetres=walkDistance,
-                continuousFirstPerson=true,fixedWorld=fixedWorld,assembled=assembled,driverSeatReviewed=driverSeatReviewed};
-            if(!fixedWorld || !assembled || !driverSeatReviewed)throw new InvalidOperationException("Walkthrough final scene validation failed");
+                continuousFirstPerson=true,fixedWorld=fixedWorld,assembled=assembled,detailReviewed=detailReviewed};
+            if(!fixedWorld || !assembled || !detailReviewed)throw new InvalidOperationException("Walkthrough final scene validation failed");
             if(recorder!=null)recorder.Finish();
             File.WriteAllText(takePath,JsonUtility.ToJson(take,true));
-            Debug.Log($"[CarAR Walkthrough] COMPLETE {take.completedUtc}; seconds={take.durationSeconds:F2}; walked={walkDistance:F2}m; fixedWorld={fixedWorld}; assembled={assembled}; driverSeatReviewed={driverSeatReviewed}");
+            Debug.Log($"[CarAR Walkthrough] COMPLETE {take.completedUtc}; seconds={take.durationSeconds:F2}; walked={walkDistance:F2}m; fixedWorld={fixedWorld}; assembled={assembled}; detailReviewed={detailReviewed}");
             if(XRLaunch.HasArgument("--vr-walkthrough-check"))Application.Quit();
         }
 
@@ -278,7 +261,7 @@ namespace CarAR
             try {if(recorder!=null)recorder.Finish();}
             catch(Exception error){Debug.LogException(error);}
             playing=false;paused=false;
-            foreach(var panel in app.panels)panel.Close();app.explode.SetTarget(0);
+            app.explode.SetTarget(0);
             var body=app.origin.GetComponent<CharacterController>();body.enabled=false;
             app.origin.transform.SetPositionAndRotation(savedRigPosition,savedRigRotation);
             view.transform.SetLocalPositionAndRotation(savedCameraPosition,savedCameraRotation);view.fieldOfView=savedFov;

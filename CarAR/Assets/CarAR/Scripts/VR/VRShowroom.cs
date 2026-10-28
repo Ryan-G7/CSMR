@@ -22,8 +22,11 @@ namespace CarAR
     {
         public XROrigin origin;
         public Transform car, environment;
-        public CarPanel[] panels;
         public ExplodeController explode;
+        public RuntimeGlbLoader modelLoader;
+        public ModelReview review;
+        public ReviewSnapshot snapshot;
+        public ModelAnnotations annotations;
         public NavMeshData navigation;
         public Transform menu;
         public StatefulInteractable[] buttons;
@@ -44,7 +47,6 @@ namespace CarAR
         internal bool PresentationActive;
         const float RecordingScale = .65f;
         const float StandingEyeHeight = 1.65f;
-        public bool CabinView { get; private set; }
         public bool TeleportValid { get; private set; }
         public Vector3 TeleportPoint { get; private set; }
         public const int EnvironmentLayer = 8, VehicleLayer = 9;
@@ -62,7 +64,6 @@ namespace CarAR
         float yaw, pitch, speed = 1.4f, gravity, vignette, nextStats;
         float trackingInvalidTime,trackingValidTime;
         float nextHeadDiagnostics;
-        Vector3 standingFloorOffset;
         bool menuOpen = true;
         internal bool ReplayControls;
         internal Transform VehicleShadow { get; private set; }
@@ -110,14 +111,19 @@ namespace CarAR
                 Shader.SetGlobalVector("_CarARPresentationRoomGain",new Vector4(.65f,.6175f,.572f,1));
             }
             ApplySourceLightmaps();
+            modelLoader=gameObject.AddComponent<RuntimeGlbLoader>();modelLoader.modelRoot=car;modelLoader.modelLayer=VehicleLayer;modelLoader.explode=explode;
+            review=gameObject.AddComponent<ModelReview>();review.modelRoot=car;review.loader=modelLoader;
+            snapshot=gameObject.AddComponent<ReviewSnapshot>();snapshot.sourceCamera=origin.Camera;
+            annotations=gameObject.AddComponent<ModelAnnotations>();annotations.modelRoot=car;annotations.loader=modelLoader;
+            annotations.viewCamera=origin.Camera;annotations.IsDesktop=Desktop;annotations.font=status?.font;annotations.AimAtModel=AimAtModel;
+            modelLoader.ModelChanged+=RefreshModel;
             CreateVehicleShadow();
             if (navigation != null) navInstance = NavMesh.AddNavMeshData(navigation);
             body = origin.gameObject.AddComponent<CharacterController>();
             body.radius=Radius; body.height=1.7f; body.center=Vector3.up*.9f;
             body.skinWidth=.025f; body.stepOffset=.18f; body.slopeLimit=45;
             body.minMoveDistance=0;
-            // Vehicle meshes remain ray targets for doors, but must not push
-            // the tracked viewer out of the cabin or up onto the bodywork.
+            // Model meshes remain ray targets, but must not push the tracked viewer.
             body.excludeLayers=1 << VehicleLayer;
             origin.Camera.nearClipPlane=.02f;
             // Move only the rig; neither the environment nor the vehicle follows it.
@@ -156,11 +162,23 @@ namespace CarAR
             }
         }
 
+        void RefreshModel()
+        {
+            if(VehicleShadow!=null)Destroy(VehicleShadow.gameObject);
+            CreateVehicleShadow();
+        }
+        bool AimAtModel(out RaycastHit hit)
+        {
+            if(HandTracked(right) && right.ray.TryGetCurrent3DRaycastHit(out hit))return true;
+            if(HandTracked(left) && left.ray.TryGetCurrent3DRaycastHit(out hit))return true;
+            hit=default;return false;
+        }
         void CreateVehicleShadow()
         {
-            // Freeze a closed-car copy outside the articulated/exploded hierarchy.
+            // Freeze a model copy outside the exploded hierarchy.
             // Reuse meshes and materials; these renderers only enter shadow maps.
-            VehicleShadow=new GameObject("Closed vehicle ground shadow").transform;
+            VehicleShadow=new GameObject("Model ground shadow").transform;
+            foreach(var part in car.GetComponentsInChildren<Transform>(true))part.gameObject.layer=VehicleLayer;
             foreach(var source in car.GetComponentsInChildren<MeshRenderer>())
             {
                 source.shadowCastingMode=ShadowCastingMode.Off;source.receiveShadows=false;
@@ -168,7 +186,15 @@ namespace CarAR
                 if(filter==null || filter.sharedMesh==null)continue;
                 bool opaque=false;
                 foreach(var material in source.sharedMaterials)
-                    opaque|=material!=null && material.renderQueue<(int)RenderQueue.Transparent;
+                {
+                    if(material==null)continue;
+                    opaque|=material.renderQueue<(int)RenderQueue.Transparent;
+                    if(material.HasProperty("_ReceiveShadows"))
+                    {
+                        material.SetFloat("_ReceiveShadows",0);
+                        material.EnableKeyword("_RECEIVE_SHADOWS_OFF");
+                    }
+                }
                 if(!opaque)continue;
                 var copy=new GameObject(source.name,typeof(MeshFilter),typeof(MeshRenderer));
                 copy.layer=VehicleLayer;copy.transform.SetParent(VehicleShadow,false);
@@ -318,7 +344,6 @@ namespace CarAR
             if (keyboard?.escapeKey.wasPressedThisFrame==true || keyboard?.tabKey.wasPressedThisFrame==true) ToggleMenu();
             if (keyboard?.fKey.wasPressedThisFrame==true) GoTo(0);
             if (keyboard?.f8Key.wasPressedThisFrame==true) ToggleRecordingMode();
-            for(int i=0;i<4;i++) if (keyboard!=null && keyboard[(Key)((int)Key.Digit1+i)].wasPressedThisFrame) panels[i].Toggle();
             if (keyboard?.spaceKey.wasPressedThisFrame==true) explode.Toggle();
             if (teleporting) return;
             UpdateBody();
@@ -398,15 +423,7 @@ namespace CarAR
                 var ray=origin.Camera.ScreenPointToRay(mouse.position.ReadValue());Aim(ray.origin,ray.direction);
                 if(mouse.leftButton.wasPressedThisFrame && TeleportValid) {StartCoroutine(Teleport(TeleportPoint,null)); desktopTeleport=false;}
             }
-            else
-            {
-                CancelAim();
-                if(mouse?.leftButton.wasPressedThisFrame==true && !menuOpen)
-                {
-                    var ray=origin.Camera.ScreenPointToRay(mouse.position.ReadValue());
-                    if(Physics.Raycast(ray,out var hit,12,CollisionMask)) hit.collider.GetComponentInParent<CarPanel>()?.Toggle();
-                }
-            }
+            else CancelAim();
         }
         void UpdateHeadset()
         {
@@ -565,7 +582,7 @@ namespace CarAR
             if(teleporting || !ValidateDestination(point,out var landing))yield break;
             teleporting=true;beforeTeleport=Feet;CancelAim();
             yield return Fade(1,.1f);
-            if(Desktop || HeadTracked()) {RestoreStandingHeight();MoveRig(landing,heading);teleportCount++;}
+            if(Desktop || HeadTracked()) {MoveRig(landing,heading);teleportCount++;}
             yield return Fade(0,.13f);teleporting=false;locomotionReady=turnReady=false;
         }
         IEnumerator SnapTurn(float angle)
@@ -607,43 +624,35 @@ namespace CarAR
             buttons[0].OnClicked.AddListener(()=>{Continuous=!Continuous;locomotionReady=false;});
             buttons[1].OnClicked.AddListener(()=>speed=speed<1.3f?1.4f:.9f);
             for(int i=0;i<5;i++){int index=i;buttons[i+2].OnClicked.AddListener(()=>GoTo(index));}
-            for(int i=0;i<4;i++){int index=i;buttons[i+7].OnClicked.AddListener(panels[index].Toggle);}
+            buttons[7].OnClicked.AddListener(modelLoader.PickFile);
+            buttons[8].OnClicked.AddListener(()=>review.SetClipping(!review.Clipping));
+            buttons[9].OnClicked.AddListener(()=>review.SelectMaterial(-1));
+            buttons[10].OnClicked.AddListener(()=>review.SelectMaterial(1));
             buttons[11].OnClicked.AddListener(explode.Toggle);
             buttons[12].OnClicked.AddListener(ToggleQuality);
             buttons[13].OnClicked.AddListener(ToggleMenu);
-            if(buttons.Length>14)buttons[14].OnClicked.AddListener(ToggleCabinView);
-            if(buttons.Length>15)buttons[15].OnClicked.AddListener(ToggleRecordingMode);
+            buttons[14].OnClicked.AddListener(()=>snapshot.Capture());
+            buttons[15].OnClicked.AddListener(ToggleRecordingMode);
+            buttons[16].OnClicked.AddListener(()=>{var color=ColorValue();review.SetColor(color);});
+            buttons[17].OnClicked.AddListener(()=>review.SetMetallic(review.Metallic+.1f));
+            buttons[18].OnClicked.AddListener(()=>review.SetMetallic(review.Metallic-.1f));
+            buttons[19].OnClicked.AddListener(()=>review.SetRoughness(review.Roughness+.1f));
+            buttons[20].OnClicked.AddListener(()=>review.SetRoughness(review.Roughness-.1f));
+            buttons[21].OnClicked.AddListener(()=>review.SetOpacity(review.ColorValue.a+.1f));
+            buttons[22].OnClicked.AddListener(()=>review.SetOpacity(review.ColorValue.a-.1f));
+            buttons[23].OnClicked.AddListener(()=>{annotations.BeginPlacement();menuOpen=false;menu.gameObject.SetActive(false);});
+            buttons[24].OnClicked.AddListener(annotations.RemoveLast);
+            buttons[25].OnClicked.AddListener(()=>review.SetPlaneAxis(Vector3.right));
+            buttons[26].OnClicked.AddListener(()=>review.MovePlane(-.1f));
+            buttons[27].OnClicked.AddListener(()=>review.MovePlane(.1f));
         }
-        // Local metres in the imported vehicle: left seat, behind the wheel,
-        // below the 1.35m roof. Lower only the viewing rig, never the model.
-        internal Vector3 CabinEye => car.TransformPoint(new Vector3(-.435f,1.05f,-.48f));
-        public void ToggleCabinView()
+        Color ColorValue()
         {
-            if(teleporting)return;
-            if(CabinView){GoTo(0);return;}
-            StartCoroutine(EnterCabin());
-        }
-        internal IEnumerator EnterCabin()
-        {
-            var eye=CabinEye;
-            if(teleporting || CabinView || !ValidateDestination(new Vector3(eye.x,entry.y,eye.z),out var floor))yield break;
-            teleporting=true;CancelAim();menuOpen=false;menu.gameObject.SetActive(false);
-            yield return Fade(1,.1f);
-            if(Desktop || HeadTracked())
-            {
-                var offset=origin.CameraFloorOffsetObject.transform;
-                standingFloorOffset=offset.localPosition;
-                offset.localPosition+=Vector3.up*(eye.y-floor.y-(origin.Camera.transform.position.y-origin.transform.position.y));
-                CabinView=true;MoveRig(floor,car.eulerAngles.y);teleportCount++;
-                if(Desktop){pitch=8;origin.Camera.transform.localRotation=Quaternion.Euler(pitch,0,0);}
-                Debug.Log($"[CarAR VR] Cabin inspection; eye={origin.Camera.transform.position:F3}; left stick moves; menu restores standing");
-            }
-            yield return Fade(0,.13f);teleporting=false;locomotionReady=turnReady=false;
-        }
-        void RestoreStandingHeight()
-        {
-            if(!CabinView)return;
-            origin.CameraFloorOffsetObject.transform.localPosition=standingFloorOffset;CabinView=false;
+            Color[] colors={new(.8f,.04f,.03f),new(.9f,.9f,.9f),new(.03f,.25f,.8f),new(.08f,.55f,.25f)};
+            var current=review.ColorValue;
+            int closest=0;float distance=float.MaxValue;
+            for(int i=0;i<colors.Length;i++){float d=Vector3.Distance(new Vector3(current.r,current.g,current.b),new Vector3(colors[i].r,colors[i].g,colors[i].b));if(d<distance){distance=d;closest=i;}}
+            var next=colors[(closest+1)%colors.Length];next.a=current.a;return next;
         }
         public void GoTo(int index)
         {
@@ -698,17 +707,18 @@ namespace CarAR
         }
         void LateUpdate()
         {
-            string instructions=error??(Desktop?"AMG GT · 沉浸漫游\nWASD 移动 · 右键环视 · T 指向地面后单击传送\nTab 面板 · F 返回入口 · 1–4 门盖 · 空格 爆炸 / 还原":
-                "AMG GT · 沉浸漫游\n左摇杆移动 · 右摇杆前推松开传送 / 左右转向 30°\n菜单 / Y / B：驾驶位、站立与门盖 · 扳机点选");
+            string instructions=error??(Desktop?"GLB 模型 · 沉浸评审\nWASD 移动 · 右键环视 · T 指向地面后单击传送\nTab 面板 · F 返回入口 · 空格 爆炸 / 还原":
+                "GLB 模型 · 沉浸评审\n左摇杆移动 · 右摇杆前推松开传送 / 左右转向 30°\n菜单 / Y / B：剖切、材质、快照与标注 · 扳机点选");
+            if(annotations.AwaitingPlacement)instructions+="\n请用射线在模型上选点，再输入标注文字";
             if(status.text!=instructions)status.text=instructions;
             SetLabel(0,Continuous?"移动：连续 + 传送":"移动：舒适传送");
             SetLabel(1,speed<1.3f?"步速：缓慢":"步速：正常");
-            SetLabel(11,explode.IsExploded?"组装还原":"整车爆炸");
+            SetLabel(8,review.Clipping?"关闭剖切":"开启剖切");
+            SetLabel(11,explode.IsExploded?"组装还原":"模型爆炸");
             SetLabel(12,HighQuality?"画质：精细":"画质：流畅");
             SetLabel(5,"右后视角");
             SetLabel(4,"右侧视角");
-            if(buttons.Length>14)SetLabel(14,CabinView?"下车 / 恢复站立":"进入驾驶位");
-            if(buttons.Length>15)SetLabel(15,RecordingMode?"录屏优化：开启":"录屏优化：关闭");
+            SetLabel(15,RecordingMode?"录屏优化：开启":"录屏优化：关闭");
         }
         void SetLabel(int index,string value)
         {
@@ -727,16 +737,17 @@ namespace CarAR
                 if(GUI.Button(new Rect(35,72,430,36),"[F2] 进入桌面漫游",style))EnterDesktopFallback();
                 return;
             }
-            GUI.Box(new Rect(18,18,480,70),"AMG GT · 场景漫游\nWASD 移动 / 右键环视 / Tab 面板 / T 传送");
+            GUI.Box(new Rect(18,18,610,70),"GLB 模型 · 场景评审\nWASD 移动 / 右键环视 / Tab 面板 / T 传送");
             if(!menuOpen)return;
-            string[] labels={Continuous?"移动：连续 + 传送":"移动：舒适传送",speed<1.3f?"步速：缓慢":"步速：正常","返回入口 [F]","车头视角","右侧视角","右后视角","车尾视角","左车门 [1]","右车门 [2]","尾门 [3]","发动机盖 [4]","爆炸 / 还原 [空格]",HighQuality?"画质：精细":"画质：流畅","收起面板 [Tab]",CabinView?"下车 / 恢复站立":"进入驾驶位",RecordingMode?"录屏优化：开启 [F8]":"录屏优化：关闭 [F8]"};
-            for(int i=0;i<labels.Length;i++)if(GUI.Button(new Rect(18+(i%2)*200,100+(i/2)*43,194,38),labels[i],style))buttons[i].OnClicked.Invoke();
+            string[] labels={Continuous?"移动：连续 + 传送":"移动：舒适传送",speed<1.3f?"步速：缓慢":"步速：正常","返回入口 [F]","车头视角","右侧视角","右后视角","车尾视角","导入 GLB",review.Clipping?"关闭剖切":"开启剖切","上一材质","下一材质","爆炸 / 还原 [空格]",HighQuality?"画质：精细":"画质：流畅","收起面板 [Tab]","保存快照",RecordingMode?"录屏优化：开启 [F8]":"录屏优化：关闭 [F8]","切换颜色","金属度 +","金属度 -","粗糙度 +","粗糙度 -","透明度 +","透明度 -","添加标注","撤销标注","剖面 X","剖面 -10cm","剖面 +10cm"};
+            for(int i=0;i<labels.Length;i++)if(GUI.Button(new Rect(18+(i%3)*205,100+(i/3)*43,198,38),labels[i],style))buttons[i].OnClicked.Invoke();
+            GUI.Label(new Rect(18,545,610,60),$"{modelLoader.Status}\n{review.SelectedName} · 标注 {annotations.Count} 个");
         }
         void EnterDesktopFallback()
         {
             StopXR();foreach(var a in actions)a.Disable();
             if(left!=null)left.controller.gameObject.SetActive(false);if(right!=null)right.controller.gameObject.SetActive(false);
-            RestoreStandingHeight();Desktop=true;Ready=tracking=true;error=null;ConfigureDesktop();
+            Desktop=true;annotations.IsDesktop=true;Ready=tracking=true;error=null;ConfigureDesktop();
             MoveRig(entry,Quaternion.LookRotation(Vector3.ProjectOnPlane(entryLook-entry,Vector3.up)).eulerAngles.y);
             menuOpen=false;menu.gameObject.SetActive(false);
             PositionMenu();comfort.SetFloat("_Fade",0);
@@ -772,7 +783,7 @@ namespace CarAR
             try
             {
                 if(!navInstance.valid || !Ready || !Desktop)throw new Exception("VR desktop/navmesh startup failed");
-                if(environment.GetComponentsInChildren<Renderer>().Length<10 || car.GetComponentsInChildren<Renderer>().Length<100)throw new Exception("Missing source environment or vehicle");
+                if(environment.GetComponentsInChildren<Renderer>().Length<10 || car.GetComponentsInChildren<Renderer>().Length==0)throw new Exception("Missing source environment or model");
                 if(RenderSettings.customReflectionTexture==null || LightmapSettings.lightmaps.Length==0)throw new Exception("Missing reflection / baked indirect lighting");
                 foreach(var probe in FindObjectsByType<ReflectionProbe>(FindObjectsSortMode.None))
                     if(probe.texture==null)throw new Exception("Missing packaged local reflection: "+probe.name);
@@ -780,7 +791,7 @@ namespace CarAR
                 float startupScale=XRLaunch.HasArgument("--vr-recording")?RecordingScale:1;
                 if(!HighQuality || !Mathf.Approximately(pipeline.renderScale,startupScale) || pipeline.mainLightShadowmapResolution!=4096)throw new Exception("VR did not start at the requested high quality / recording preset");
                 bool wasRecording=RecordingMode;
-                if(buttons.Length!=16)throw new Exception("VR recording button is missing");
+                if(buttons.Length!=28)throw new Exception("VR review buttons are missing");
                 buttons[15].OnClicked.Invoke();
                 if(RecordingMode==wasRecording || !HighQuality || !Mathf.Approximately(pipeline.renderScale,wasRecording?1:RecordingScale))throw new Exception("Recording button did not switch render resolution independently of high quality");
                 ToggleQuality();
@@ -802,12 +813,10 @@ namespace CarAR
             yield return Teleport(landing.position,null);
             if(teleportCount!=1 || Vector3.Distance(Feet,beforeTeleport)<.4f || environment.localToWorldMatrix!=scenePose || car.localToWorldMatrix!=vehiclePose)
             {Debug.LogError("[CarAR VR Smoke] Teleport moved the world or failed");Application.Quit(1);yield break;}
-            panels[0].Toggle();yield return new WaitForSeconds(.8f);
-            if(!panels[0].IsOpen){Application.Quit(1);yield break;}
-            Capture("vr-door.png");VerifyFixedVehicleShadow();panels[0].Close();yield return new WaitForSeconds(.8f);
+            review.SetClipping(true);yield return new WaitForSeconds(.2f);Capture("vr-clipped.png");review.SetClipping(false);
             explode.SetTarget(1);yield return new WaitForSeconds(2.5f);Capture("vr-exploded.png");
             explode.SetTarget(0);yield return new WaitForSeconds(2.2f);
-            if(explode.Progress>.001f || !panels[0].IsClosed){Application.Quit(1);yield break;}
+            if(explode.Progress>.001f){Application.Quit(1);yield break;}
             for(int i=1;i<5;i++)
             {
                 int previous=teleportCount;GoTo(i);yield return new WaitForSeconds(.7f);
@@ -818,7 +827,7 @@ namespace CarAR
             if(!HighQuality || !Mathf.Approximately(pipeline.renderScale,RecordingMode?RecordingScale:1) || pipeline.mainLightShadowmapResolution!=4096)throw new Exception("High quality preset was not restored");
             GoTo(0);yield return new WaitForSeconds(.5f);
             yield return VRControllerSmoke.Run(this);
-            Debug.Log("[CarAR VR Smoke] PASS: CarRoom-2, source color transform, HDR, baked GI, reflections, valid/invalid teleport, fixed world/car, articulated panels, explode/assemble and quality presets.");
+            Debug.Log("[CarAR VR Smoke] PASS: CarRoom-2, source color transform, HDR, baked GI, reflections, valid/invalid teleport, fixed world/model, clipping, generic explode/assemble and quality presets.");
             Application.Quit(0);
         }
         void CaptureMaterialDiagnostics()
@@ -858,11 +867,12 @@ namespace CarAR
                 if(i/1280<400 && before>45 && after<before*.93f)darkened++;
             }
             if(darkened<150)throw new Exception("Vehicle shadows did not darken baked receivers: "+darkened+" pixels");
-            // The ground shadow must not introduce dark patches on the dashboard.
+            // The ground shadow must not introduce dark patches on model surfaces.
+            var inspectionEye=car.TransformPoint(ModelBounds.Local(car).center);
             var cabinRotation=car.rotation*Quaternion.Euler(8,0,0);
-            var cabinWith=Capture("vr-cabin-shadow-on.png",CabinEye,cabinRotation);
+            var cabinWith=Capture("vr-cabin-shadow-on.png",inspectionEye,cabinRotation);
             Color32[] cabinWithout;
-            try {VehicleShadow.gameObject.SetActive(false);cabinWithout=Capture("vr-cabin-shadow-off.png",CabinEye,cabinRotation);}
+            try {VehicleShadow.gameObject.SetActive(false);cabinWithout=Capture("vr-cabin-shadow-off.png",inspectionEye,cabinRotation);}
             finally {VehicleShadow.gameObject.SetActive(true);}
             int cabinChanged=0;
             for(int y=150;y<400;y++)for(int x=360;x<920;x++)

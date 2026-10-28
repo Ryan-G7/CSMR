@@ -85,6 +85,8 @@ namespace CarAR.EditorTools
                 AssetDatabase.DeleteAsset(Settings+"Volume.asset");
                 foreach(var root in cached.GetRootGameObjects())
                 {
+                    foreach(var part in root.GetComponentsInChildren<Transform>(true))
+                        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(part.gameObject);
                     var light=root.GetComponent<Light>();
                     if(light==null || light.type!=LightType.Directional)continue;
                     light.shadowBias=.3f;light.shadowNormalBias=.3f;
@@ -104,13 +106,23 @@ namespace CarAR.EditorTools
                         renderer.sharedMaterials=refreshed;
                     }
                     var leftover=review.car.GetComponent<ConstraintManager>();
-                    if(leftover!=null){UnityEngine.Object.DestroyImmediate(leftover);EditorSceneManager.SaveScene(cached,ScenePath);}
+                    if(leftover!=null)UnityEngine.Object.DestroyImmediate(leftover);
+                    foreach(var interactable in review.car.GetComponentsInChildren<StatefulInteractable>(true))
+                        UnityEngine.Object.DestroyImmediate(interactable);
                     review.origin.Camera.nearClipPlane=.02f;
                     review.origin.Camera.GetUniversalAdditionalCameraData().renderPostProcessing=false;
-                    if(review.buttons.Length!=16)
+                    if(review.buttons.Length!=28)
                     {
                         UnityEngine.Object.DestroyImmediate(review.menu.gameObject);CreateMenu(review);
                     }
+                    var cachedKeyboard=UnityEngine.Object.FindAnyObjectByType<MixedReality.Toolkit.UX.Experimental.NonNativeKeyboard>();
+                    if(cachedKeyboard==null)
+                    {
+                        var instance=(GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(
+                            "Packages/org.mixedrealitytoolkit.uxcomponents/Experimental/NonNativeKeyboard/NonNativeKeyboard.prefab"));
+                        instance.name="VR review spatial keyboard";cachedKeyboard=instance.GetComponent<MixedReality.Toolkit.UX.Experimental.NonNativeKeyboard>();
+                    }
+                    PrepareKeyboard(cachedKeyboard.gameObject);
                     var font=AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/CarAR/Fonts/ShowroomChinese.asset");
                     foreach(var label in review.menu.GetComponentsInChildren<TMP_Text>(true))
                     {
@@ -228,7 +240,6 @@ namespace CarAR.EditorTools
             var app=new GameObject("VR CarRoom experience").AddComponent<VRShowroom>();
             app.origin=origin;app.car=vehicle.transform;app.environment=environment.transform;
             app.explode=vehicle.GetComponent<ExplodeController>();
-            app.panels=new[]{FindPanel(vehicle,"DoorLeft"),FindPanel(vehicle,"DoorRight"),FindPanel(vehicle,"RearHatch"),FindPanel(vehicle,"Hood")};
             app.pipeline=pipeline;app.ambientCoefficients=coefficients;
             app.entry=V(source.entry);app.entryLook=V(source.entry_look);
             app.viewpoints=new[]{new Vector3(-3.25f,0,2.5f),new Vector3(-2.8f,0,-2.6f),new Vector3(2.8f,0,-2.8f),new Vector3(3.2f,0,2.6f)};
@@ -236,6 +247,9 @@ namespace CarAR.EditorTools
             app.rayMaterial=AssetDatabase.LoadAssetAtPath<Material>("Assets/CarAR/Settings/ControllerRay.mat");
             app.comfortMaterial=SaveMaterial(Settings+"Comfort.mat","CarAR/VRComfort");
             CreateMenu(app);
+            var keyboard=(GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Packages/org.mixedrealitytoolkit.uxcomponents/Experimental/NonNativeKeyboard/NonNativeKeyboard.prefab"));
+            keyboard.name="VR review spatial keyboard";PrepareKeyboard(keyboard);
             Debug.Log("[CarAR VR Build] Building walkable navigation from source geometry");
             BakeNavigation(app,environment,source);
             Debug.Log("[CarAR VR Build] Navigation ready; preparing static GI");
@@ -466,11 +480,6 @@ namespace CarAR.EditorTools
             foreach(var root in scene.GetRootGameObjects())if(root.name==name)return root;
             throw new InvalidDataException("Build the MR scene before generating VR");
         }
-        static CarPanel FindPanel(GameObject root,string name)
-        {
-            foreach(var p in root.GetComponentsInChildren<CarPanel>(true))if(p.name==name)return p;
-            throw new InvalidDataException("Missing articulated panel "+name);
-        }
         static void ConfigurePipeline(Source source,out UniversalRenderPipelineAsset pipeline)
         {
             var renderer=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/CarAR/Settings/URP_Renderer.asset"));
@@ -553,25 +562,35 @@ namespace CarAR.EditorTools
             settings.FindProperty("m_SoftShadowsSupported").boolValue=true;
             settings.ApplyModifiedPropertiesWithoutUndo();EditorUtility.SetDirty(pipeline);
         }
+        static void PrepareKeyboard(GameObject keyboard)
+        {
+            if(PrefabUtility.IsAnyPrefabInstanceRoot(keyboard))
+                PrefabUtility.UnpackPrefabInstance(keyboard,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);
+            foreach(var image in keyboard.GetComponentsInChildren<Image>(true))
+            {
+                var serialized=new SerializedObject(image);serialized.FindProperty("m_Sprite").objectReferenceValue=null;
+                serialized.FindProperty("m_Sprite").objectReferenceEntityIdValue=default;serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
         static void CreateMenu(VRShowroom app)
         {
             var panel=new GameObject("VR review menu",typeof(RectTransform),typeof(Canvas));
             var canvas=panel.GetComponent<Canvas>();canvas.renderMode=RenderMode.WorldSpace;canvas.worldCamera=app.origin.Camera;
-            var rect=panel.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(700,680);rect.localScale=Vector3.one*.001f;app.menu=rect;
+            var rect=panel.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(700,1000);rect.localScale=Vector3.one*.001f;app.menu=rect;
             var bg=new GameObject("Background",typeof(RectTransform),typeof(Image));bg.transform.SetParent(rect,false);
             var br=bg.GetComponent<RectTransform>();br.anchorMin=Vector2.zero;br.anchorMax=Vector2.one;br.offsetMin=br.offsetMax=Vector2.zero;
             bg.GetComponent<Image>().color=new Color(.015f,.025f,.04f,.94f);bg.GetComponent<Image>().raycastTarget=false;
             var font=AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/CarAR/Fonts/ShowroomChinese.asset");
             var text=new GameObject("VR instructions",typeof(RectTransform),typeof(TextMeshProUGUI));text.transform.SetParent(rect,false);
-            text.GetComponent<RectTransform>().sizeDelta=new Vector2(670,180);text.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,235);
+            text.GetComponent<RectTransform>().sizeDelta=new Vector2(670,180);text.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,400);
             app.status=text.GetComponent<TMP_Text>();app.status.font=font;app.status.fontSize=24;app.status.alignment=TextAlignmentOptions.Center;app.status.raycastTarget=false;
-            string[] labels={"移动：连续 + 传送","步速：正常","返回入口","车头视角","右侧视角","右后视角","车尾视角","左车门","右车门","后备厢尾门","发动机盖","整车爆炸","画质：精细","收起面板","进入驾驶位","录屏优化：关闭"};
+            string[] labels={"移动：连续 + 传送","步速：正常","返回入口","车头视角","右侧视角","右后视角","车尾视角","导入 GLB","开启剖切","上一材质","下一材质","模型爆炸","画质：精细","收起面板","保存快照","录屏优化：关闭","切换颜色","金属度 +","金属度 -","粗糙度 +","粗糙度 -","透明度 +","透明度 -","添加标注","撤销标注","剖面 X","剖面 -10cm","剖面 +10cm"};
             app.buttons=new StatefulInteractable[labels.Length];
             var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Packages/org.mixedrealitytoolkit.uxcomponents/Button/Prefabs/Action Button.prefab");
             for(int i=0;i<labels.Length;i++)
             {
                 var go=(GameObject)PrefabUtility.InstantiatePrefab(prefab);go.name=labels[i];go.transform.SetParent(rect,false);
-                var r=go.GetComponent<RectTransform>();r.sizeDelta=new Vector2(205,62);r.anchoredPosition=new Vector2((i%3-1)*220,90-i/3*78);
+                var r=go.GetComponent<RectTransform>();r.sizeDelta=new Vector2(205,62);r.anchoredPosition=new Vector2((i%3-1)*220,220-i/3*78);
                 app.buttons[i]=go.GetComponent<StatefulInteractable>();app.buttons[i].UseGazeDwell=false;
                 foreach(var label in go.GetComponentsInChildren<TMP_Text>(true))
                 {
