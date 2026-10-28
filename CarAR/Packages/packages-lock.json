@@ -259,6 +259,15 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.varjo.xr": {
+      "version": "file:../../Vendor/Varjo/com.varjo.xr",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.unity.xr.management": "4.4.0",
+        "com.unity.xr.arfoundation": "5.1.3"
+      }
+    },
     "org.mixedrealitytoolkit.core": {
       "version": "file:../../Vendor/MRTK/org.mixedrealitytoolkit.core",
       "depth": 0,

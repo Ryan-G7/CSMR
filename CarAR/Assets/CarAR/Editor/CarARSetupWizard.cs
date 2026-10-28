@@ -11,6 +11,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
+using Varjo.XR;
 using Unity.XR.CoreUtils;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
@@ -194,8 +195,26 @@ namespace CarAR.EditorTools
                 desktopLoader = ScriptableObject.CreateInstance<OpenXRLoaderNoPreInit>();
                 AssetDatabase.CreateAsset(desktopLoader, desktopLoaderPath);
             }
-            if (!desktop.AssignedSettings.TrySetLoaders(new System.Collections.Generic.List<XRLoader> { desktopLoader }))
-                throw new Exception("Cannot assign Unity OpenXR loader without PreInit");
+            const string varjoLoaderPath = "Assets/XR/Loaders/VarjoLoader.asset";
+            var varjoLoader = AssetDatabase.LoadAssetAtPath<VarjoLoader>(varjoLoaderPath);
+            if (varjoLoader == null)
+            {
+                varjoLoader = ScriptableObject.CreateInstance<VarjoLoader>();
+                AssetDatabase.CreateAsset(varjoLoader, varjoLoaderPath);
+            }
+            if (!desktop.AssignedSettings.TrySetLoaders(new System.Collections.Generic.List<XRLoader> { desktopLoader, varjoLoader }))
+                throw new Exception("Cannot assign OpenXR and Varjo XR loaders");
+            EnsureFolder("Assets/XR/Settings");
+            const string varjoSettingsPath = "Assets/XR/Settings/VarjoSettings.asset";
+            var varjoSettings = AssetDatabase.LoadAssetAtPath<VarjoSettings>(varjoSettingsPath);
+            if (varjoSettings == null)
+            {
+                varjoSettings = ScriptableObject.CreateInstance<VarjoSettings>();
+                AssetDatabase.CreateAsset(varjoSettings, varjoSettingsPath);
+            }
+            varjoSettings.Opaque = false;
+            EditorUtility.SetDirty(varjoSettings);
+            EditorBuildSettings.AddConfigObject("Varjo.XR.Settings", varjoSettings, true);
             // General settings belong inside the per-target container. Separate
             // main assets trigger XR Management's legacy upgrader on reimport.
             EditorUtility.SetDirty(desktop); EditorUtility.SetDirty(desktop.AssignedSettings);
@@ -397,6 +416,7 @@ namespace CarAR.EditorTools
             diagnostics.showroom = showroom; diagnostics.origin = origin;
             var vendor = showroom.gameObject.AddComponent<Huijing.HuijingMRBridge>();
             vendor.placement = placement;
+            showroom.gameObject.AddComponent<VarjoSupport.VarjoMRBridge>();
             carRoot.SetActive(false);
 
             const string scenePath = SceneDir + "/CarAR.unity";
@@ -537,7 +557,7 @@ namespace CarAR.EditorTools
                     throw new Exception("HJXR build must use Unity's OpenXR loader without PreInit");
                 Debug.Log("[HJXR Validation] PASS: built player does not bootstrap a temporary OpenXR instance");
                 Debug.Log(presentation?"[CarAR Presentation] RELEASE BUILD PASS":"[CarAR] PREVIEW BUILD PASSED");
-                System.IO.File.WriteAllText(output+"/carar-capabilities.json", "{\"vr\":true,\"mr\":true,\"scene\":\"CarVR\",\"version\":1}");
+                System.IO.File.WriteAllText(output+"/carar-capabilities.json", "{\"vr\":true,\"mr\":true,\"varjoVr\":true,\"varjoMr\":true,\"scene\":\"CarVR\",\"version\":2}");
                 exitCode=0;
             }
             catch (Exception e) { Debug.LogException(e); }

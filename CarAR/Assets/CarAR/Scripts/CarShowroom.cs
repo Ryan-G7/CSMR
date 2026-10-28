@@ -22,7 +22,8 @@ namespace CarAR
         public ReviewSnapshot snapshot;
         public ModelAnnotations annotations;
         public ModelMeasurement measurement;
-        public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 && !Huijing.HuijingMRBridge.Requested;
+        public bool IsPreview => Application.platform != RuntimePlatform.Android && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--xr") < 0 &&
+            !Huijing.HuijingMRBridge.Requested && !VarjoSupport.VarjoMRBridge.Requested;
         float brightness = 0, temperature = 6500, yaw = 145, pitch = 22, distance = 6.4f;
         GUIStyle title, text, button;
         Vector2 toolsScroll;
@@ -66,12 +67,21 @@ namespace CarAR
                 if (Application.platform != RuntimePlatform.Android)
                 {
                     var vendor = GetComponent<Huijing.HuijingMRBridge>();
+                    var varjo = GetComponent<VarjoSupport.VarjoMRBridge>();
                     if (vendor != null) vendor.ConfigureTrackingReference();
                     var manager = XRGeneralSettings.Instance.Manager;
+                    VarjoSupport.VarjoMRBridge.PrepareLoader(manager);
                     yield return manager.InitializeLoader();
-                    if (manager.activeLoader == null) { Debug.LogError("[CarAR] OpenXR initialization failed. Check the connected headset and runtime."); yield break; }
+                    if (manager.activeLoader == null) { Debug.LogError("[CarAR] XR initialization failed. Check the connected headset and runtime."); yield break; }
+                    if (!VarjoSupport.VarjoMRBridge.ValidateLoader(manager.activeLoader)) yield break;
                     manager.StartSubsystems();
-                    Debug.Log("[CarAR] PC OpenXR started: " + UnityEngine.XR.OpenXR.OpenXRRuntime.name + "; loader=" + manager.activeLoader.GetType().Name);
+                    string runtime = VarjoSupport.VarjoMRBridge.Requested ? "Varjo Base" : UnityEngine.XR.OpenXR.OpenXRRuntime.name;
+                    Debug.Log("[CarAR] PC XR started: " + runtime + "; loader=" + manager.activeLoader.GetType().Name);
+                    if (VarjoSupport.VarjoMRBridge.MixedRealityRequested && varjo != null)
+                    {
+                        yield return null;
+                        if (!varjo.StartMixedReality()) yield break;
+                    }
                     if (vendor != null)
                     {
                         yield return null;
@@ -99,6 +109,8 @@ namespace CarAR
         void OnDestroy()
         {
             if (IsPreview || Application.platform == RuntimePlatform.Android) return;
+            var varjo = GetComponent<VarjoSupport.VarjoMRBridge>();
+            if (varjo != null) varjo.Shutdown();
             var vendor = GetComponent<Huijing.HuijingMRBridge>();
             if (vendor != null) vendor.Shutdown();
             var settings = XRGeneralSettings.Instance;

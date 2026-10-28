@@ -16,5 +16,6 @@ EditorBuildSettings:
     guid: bdfd87c677c3c40429e528db7425ab08
   m_configObjects:
     UnityEditor.XR.Management.XRGeneralSettingsPerBuildTarget: {fileID: 11400000, guid: b4940e27d163632488b5667e2b69c6bd, type: 2}
+    Varjo.XR.Settings: {fileID: 11400000, guid: d350d37fea75fde46bb7babc8b73eab9, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: b4940e27d163632488b5667e2b69c6bd, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 23fdf6c8ffd56864282382d7dafe0c2a, type: 2}

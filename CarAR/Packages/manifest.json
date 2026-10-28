@@ -2,6 +2,7 @@
   "dependencies": {
     "com.unity.render-pipelines.universal": "17.6.3",
     "com.unity.xr.openxr": "1.18.0",
+    "com.varjo.xr": "file:../../Vendor/Varjo/com.varjo.xr",
     "com.unity.xr.arfoundation": "6.6.2",
     "com.unity.xr.hands": "1.9.0",
     "com.unity.cloud.gltfast": "6.20.0",

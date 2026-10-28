@@ -220,9 +220,11 @@ namespace CarAR
             if (!Desktop)
             {
                 var manager=XRGeneralSettings.Instance?.Manager;
-                if (manager == null) { StartupFailed("未配置 OpenXR。请使用桌面漫游入口。"); yield break; }
+                if (manager == null) { StartupFailed("未配置 XR Loader。请使用桌面漫游入口。"); yield break; }
+                VarjoSupport.VarjoMRBridge.PrepareLoader(manager);
                 yield return manager.InitializeLoader();
-                if (manager.activeLoader==null) { StartupFailed("头显启动失败。请检查 OpenXR 运行时与设备连接；可按 F2 进入桌面漫游。"); yield break; }
+                if (manager.activeLoader==null) { StartupFailed("头显启动失败。请检查 XR 运行时与设备连接；可按 F2 进入桌面漫游。"); yield break; }
+                if (!VarjoSupport.VarjoMRBridge.ValidateLoader(manager.activeLoader)) { StartupFailed("Varjo 启动失败。请检查 Varjo Base 与设备连接；可按 F2 进入桌面漫游。"); yield break; }
                 manager.StartSubsystems(); initializedXR=true;
                 // XROrigin.Start can run before the manually started XR loader
                 // exists. Apply the origin again now that input is available.

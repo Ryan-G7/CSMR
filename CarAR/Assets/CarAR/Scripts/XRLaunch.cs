@@ -19,7 +19,7 @@ namespace CarAR
                 else if (arguments[i].StartsWith("--model=", StringComparison.Ordinal)) ModelPath = arguments[i].Substring(8);
             }
             DesktopVR = HasArgument("--vr-desktop") || HasArgument("--vr-smoke");
-            SceneManager.LoadScene(DesktopVR || HasArgument("--vr") ? "CarVR" : "CarAR");
+            SceneManager.LoadScene(DesktopVR || HasArgument("--vr") || HasArgument("--varjo") ? "CarVR" : "CarAR");
         }
         public static void OpenVRPreview()
         {

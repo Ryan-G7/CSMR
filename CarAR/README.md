@@ -1,12 +1,12 @@
 # 通用 GLB 大厅 MR / VR 模型评审
 
-实际 Unity 工程在本目录 `CarAR`，使用 Unity 6000.6.3f1。部署链路为 Windows / Pimax OpenXR / 荟镜 HJXR 透视。系统审查与尚缺少的正式评审能力见 [代码审查报告](CODE-REVIEW.md)。
+实际 Unity 工程在本目录 `CarAR`，使用 Unity 6000.6.3f1。部署链路为 Windows / Pimax OpenXR / 荟镜 HJXR 透视，以及 Windows / Varjo XR Plugin / Varjo XR-4 VR 与视频透视 MR。系统审查与尚缺少的正式评审能力见 [代码审查报告](CODE-REVIEW.md)。
 
-首次克隆、免编辑器运行包下载和可移植构建命令见 [仓库首页](../README.md)。MRTK 依赖随仓库位于 `../Vendor/MRTK`，无需子模块；原始模型使用 Git LFS。
+首次克隆、免编辑器运行包下载和可移植构建命令见 [仓库首页](../README.md)。MRTK 依赖随仓库位于 `../Vendor/MRTK`，Varjo XR Plugin 3.7.3 位于 `../Vendor/Varjo/com.varjo.xr`，无需子模块或 GitHub 包下载；原始模型使用 Git LFS。
 
 ## VR 室内展厅
 
-`CarVR.unity` 使用 `D:\BaiduNetdiskDownload\CarRoom-2.blend`。`Launch.unity` 在创建 XR rig 之前按启动参数选择模式：无参数为原桌面预览，`--hjxr` 为原荟镜 MR，`--vr` 为原生 OpenXR VR，`--vr-desktop` 为桌面第一人称漫游，`--vr-smoke` 为 VR 自动回归。根目录有两个 VR 启动器，完整操作见仓库首页。
+`CarVR.unity` 使用 `D:\BaiduNetdiskDownload\CarRoom-2.blend`。`Launch.unity` 在创建 XR rig 之前按启动参数选择模式：无参数为原桌面预览，`--hjxr` 为原荟镜 MR，`--vr` 为原生 OpenXR VR，`--varjo` 为 Varjo VR，`--varjo-mr` 为 Varjo 视频透视 MR，`--vr-desktop` 为桌面第一人称漫游，`--vr-smoke` 为 VR 自动回归。根目录仅保留 `启动VR.cmd` 和 `启动MR.cmd`，启动后按提示选择设备或桌面模式，完整操作见仓库首页。
 
 VR 在 OpenXR 输入启动后重新请求 Floor 参考空间，等待定位稳定再放置访客。若眼高低于 0.25 米或高于 2.7 米（例如旧定位把视点放到地下约 15.6 米），改用 Device / LOCAL，并通过相机与手柄共用的父节点恢复 1.65 米初始眼高，之后保留真实蹲下与头部移动。`[CarAR VR Origin]` 日志记录实际参考空间、原始位置、眼高和偏移；无法恢复有效定位时显示错误，可按 F2 进入桌面漫游。
 
@@ -22,7 +22,13 @@ VR 每次启动强制使用“精细”画质：100% 渲染比例、4096 阴影�
 
 左摇杆连续移动默认开启，方向相对头部，保留回中和跟踪恢复防误触；主动推杆自动收起面板，传送瞄准期间不同时连续行走。菜单提供入口和四个固定观察视角，可围绕任意加载模型检查外观与几何细节。近裁剪为 0.02 米，减少贴近模型时的裁切。失跟立即停控，持续 0.15 秒才渐黑，稳定恢复 0.12 秒后重新等待摇杆回中；运行日志会记录跟踪变化。自动回归覆盖左杆移动、近模型落点、传送和短暂失跟不闪黑检查。
 
-录屏：根目录 `启动VR录屏模式.cmd` 对应 `Launch/Start-VR.ps1 -Recording` 与 `--vr-recording`，独立于普通启动。开启后 URP 渲染比例额外乘 0.65（精细 0.65 / 流畅 0.52），减少约 58% 的每眼像素数，保留精细档 4096 阴影、4x MSAA、模型和材质。普通启动仍为精细 1.0。菜单“录屏优化”或焦点窗口 F8 即时切换；原生 XR 控制显示节奏，不用桌面限帧冒充头显限帧。所有 VR 档位均关闭未被场景材质使用的 opaque color copy，减少双眼高分辨率复制。录屏窗口请求 1920×1080；EV 建议先录窗口区域、1080p / 30 帧。负载改善不等于 EV 抓取黑屏已经排除。回归分别验证普通与录屏启动、按钮切换以及画质组合恢复；日志分别为 `vr-headset.log` / `vr-recording.log`，包含 renderScale 和眼纹理尺寸。
+录屏：`Launch/Start-VR.ps1 -Recording` 对应 `--vr-recording`，可在启动时直接启用；运行中通过菜单“录屏优化”或焦点窗口 F8 即时切换，无需独立启动入口。开启后 URP 渲染比例额外乘 0.65（精细 0.65 / 流畅 0.52），减少约 58% 的每眼像素数，保留精细档 4096 阴影、4x MSAA、模型和材质。普通启动仍为精细 1.0。原生 XR 控制显示节奏，不用桌面限帧冒充头显限帧。所有 VR 档位均关闭未被场景材质使用的 opaque color copy，减少双眼高分辨率复制。录屏窗口请求 1920×1080；EV 建议先录窗口区域、1080p / 30 帧。负载改善不等于 EV 抓取黑屏已经排除。回归分别验证普通与录屏启动、按钮切换以及画质组合恢复；日志分别为 `vr-headset.log` / `vr-recording.log`，包含 renderScale 和眼纹理尺寸。
+
+## Varjo XR-4 VR / MR
+
+安装 Varjo Base 4.0+ 并连接 XR-4，运行根目录 `启动VR.cmd` 或 `启动MR.cmd` 并选择 Varjo XR-4。Standalone XR Manager 同时保留 OpenXR 与 Varjo Loader，启动时按 `--vr` / `--hjxr` / `--varjo` / `--varjo-mr` 重排首选 Loader，避免已安装的其他运行时抢占错误设备。Varjo VR 使用上述 `CarVR.unity`，MR 使用与荟镜相同的 `CarAR.unity` 和评审工具。
+
+Varjo MR 预载 `Opaque=false` 的 `VarjoSettings`，在原生子系统启动后调用 `VarjoMixedReality.StartRender()`，相机清为 RGBA 0 透明并关闭重复的 `ARCameraBackground`，由 Varjo 合成器提供真实视频。退出时调用 `StopRender()`。Index / Vive 控制器继续使用现有 `<XRController>` aim / grip、扳机、握键、摇杆和菜单绑定，不另设设备专用评审按钮。Varjo Base、透视权限、控制器映射、透视配准与性能需要实机确认。
 
 ## 当前空间定位方式
 
@@ -34,13 +40,13 @@ VR 每次启动强制使用“精细”画质：100% 渲染比例、4096 阴影�
 
 ## 运行与头显操作
 
-双击工作区根目录 `启动汽车MR.cmd`，或运行：
+双击工作区根目录 `启动MR.cmd` 并选择荟镜 MR，或运行：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\CarAR\Launch\Start-HuijingMR.ps1
 ```
 
-启动脚本自动启动或复用厂家相机后台和 MR 服务器，等待新启动的相机就绪，不重复启动现有 CarAR。缺少真实画面时运行根目录 `修复透视并重启.cmd`，或加 `-RestartCameraBackend`。日志为 `CarAR/huijing-mr.log`，重启前自动备份旧日志。
+启动脚本自动启动或复用厂家相机后台和 MR 服务器，等待新启动的相机就绪，不重复启动现有 CarAR。缺少真实画面时给上述 PowerShell 命令加 `-RestartCameraBackend`。日志为 `CarAR/huijing-mr.log`，重启前自动备份旧日志。
 
 启动环境变量只传给本次应用，不修改 OpenXR 注册表、不替换厂家 DLL、不调用 SaveConfigToFile。Unity 保留透明 Alpha，VST 在背景、车辆在前景，显式关闭 VR head lock。
 
@@ -68,7 +74,7 @@ Windows 运行中持续检查跟踪。头显失效或已跟踪手柄与头显空
 
 爆炸按导入层级分支组织，单分支模型回退到子分支或网格级，不再识别车门、后备箱、引擎盖或轮组名称。评审工具包含不封口的手动 / 手柄跟随单平面剖切、材质颜色 / 金属度 / 粗糙度 / 透明度修改和逐网格显隐。测量直接读取网格与表面选点，输出两点距离、多点折线长度、命中三角形面积和完整网格面积；结果按当前世界缩放计算。
 
-快照保存到 `persistentDataPath/Snapshots`，只包含虚拟场景，不合成荟镜真实摄像头帧。空间文字标注按模型完整路径哈希保存到 `persistentDataPath/Annotations`，重新加载模型时恢复，并出现在快照中。每张快照的同名 `.png.json` 记录模型路径、当时的模型标注和后续快照文字注释。
+快照保存到 `persistentDataPath/Snapshots`，只包含虚拟场景，不合成荟镜或 Varjo 的真实摄像头帧。空间文字标注按模型完整路径哈希保存到 `persistentDataPath/Annotations`，重新加载模型时恢复，并出现在快照中。每张快照的同名 `.png.json` 记录模型路径、当时的模型标注和后续快照文字注释。
 
 默认 AMG 来自 Blender 源文件，未经原厂尺寸标定。重新制作默认资产时提供源文件路径，后台导出不覆盖 `.blend`：
 

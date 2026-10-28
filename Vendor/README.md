@@ -13,3 +13,10 @@ MRTK is BSD-3-Clause; see `MRTK/LICENSE.md` and each package's license notices.
 CarAR also embeds XRI 2.6.5 and Graphics Tools 0.8.0 under `CarAR/Packages`;
 their source and licenses are included there. Unity registry dependencies and
 exact resolved versions are recorded in `CarAR/Packages/packages-lock.json`.
+
+`Varjo/com.varjo.xr` contains the runtime and editor files from the official
+Varjo XR Plugin `3.7.3` tag, including its license and Windows x64 binaries.
+Source: https://github.com/varjocom/VarjoUnityXRPlugin.git
+
+Files were obtained through jsDelivr and verified against the mirror's SHA-256
+metadata. Optional HDRP samples and change logs are not vendored.
