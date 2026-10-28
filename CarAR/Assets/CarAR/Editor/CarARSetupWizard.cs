@@ -56,8 +56,8 @@ namespace CarAR.EditorTools
 
         static void ConfigurePlayer()
         {
-            PlayerSettings.companyName = "CarAR";
-            PlayerSettings.productName = "CarAR AMG GT";
+            PlayerSettings.companyName = "CrownStyling";
+            PlayerSettings.productName = "CrownStyling VR/MR";
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.preserveFramebufferAlpha = true;
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneWindows64 &&
